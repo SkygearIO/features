@@ -33,3 +33,7 @@ Please comment on the feature issue to:
 - link to relevant issues in other repos
 
 For discussion of details of the design or specification. Please update the issue description once it is concluded.
+
+## What is a Meta Feature Issue?
+
+Feature issue with "meta" label are Meta Feature Issue. It is usually when a few related requests are seen together and it span across multiple features completion to provide a workable solutions for Skygear users.
