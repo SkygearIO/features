@@ -2,15 +2,19 @@
 
 **Add 2-3 sentence description of your feature**
 
+# Questions
+
+**Put a list of questions here before if you cannot provide a complete design / specification yet**
+
+# Design/Specification
+
+**Put Design and Specification here with links**
+
 # Related Issues
 
 - Server Issues
 - Client Issues
 - Guides Issues
-
-# Design/Specification
-
-**Put Design and Specification here with links**
 
 # Progress Tracker
 
@@ -24,13 +28,13 @@
   - [ ] Update release notes
   - [ ] Release
 
-# Advices
+# Advice
 
 - Specification Design Approval
   - Once you get LGTM from another Skygear Core Team Member, you can check this checkbox. And apply the "workflow/design-complete" label.
 - Coding
   - Use as many PRs as you need.  Write tests in the same or different PRs, as is convenient for you.
-  - API docs should goes in the same PR with the code.
+  - API doc should goes in the same PR with the code.
   - As each PR is merged, add a comment to this issue referencing the PRs.
   - When you are done with the code, apply the "workflow/code-complete" label.
 - Guides
