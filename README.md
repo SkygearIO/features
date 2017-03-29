@@ -37,3 +37,20 @@ For discussion of details of the design or specification. Please update the issu
 ## What is a Meta Feature Issue?
 
 Feature issue with "meta" label are Meta Feature Issue. It is usually when a few related requests are seen together and it span across multiple features completion to provide a workable solutions for Skygear users.
+
+## How to use the Labels?
+
+- For Meta Feature issues:
+  - Add `meta` label if an issue is about multiple features
+- For Feature issues:
+  - Add the appropriate `workflow/` labels, usually it is `workflow/discussion` if a design specification have not been agreed.
+  - Add the appropriate `area/` labels for which components it is related with.
+  - Add `attn/Portal` if the feature include changes from Skygear.io portal, and require UI/UX design.
+
+For the workflow labels, here are the meaning:
+
+- `workflow/discussion` - When this issue's design specification require further discussion.
+- `workflow/WIP` - When someone is actively working on the spec/code/doc.
+- `workflow/design-complete` - When the design specification have been approved.
+- `workflow/code-complete` - When all PR have been merged.
+- `workflow/guides-complete` - When all guides PR have been merged.
