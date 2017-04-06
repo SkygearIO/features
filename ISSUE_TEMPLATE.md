@@ -2,13 +2,36 @@
 
 **Add 2-3 sentence description of your feature**
 
-# Questions
+# Portal Design
 
-**Put a list of questions here before if you cannot provide a complete design / specification yet**
+**Remove this section if the feature have no Portal**
 
-# Design/Specification
+## Portal Features
+
+**Put Portal Feature List here**
+
+## UX Design
+**Put (link to) Portal Design here**
+
+# API Design
+
+**Remove this section if the feature have no API**
+
+## Scenario
+
+**Put list of Scenario how developers will use this API**
+
+## Sample Code
+
+**Put sample code of how you vision this API will be used, consider different type of developers and different abstract level**
+
+## API Design
 
 **Put Design and Specification here with links**
+
+# Open Questions
+
+**Put a list of open questions here before a complete design / specification is decided**
 
 # Related Issues
 
