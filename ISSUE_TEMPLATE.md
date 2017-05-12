@@ -10,9 +10,6 @@
 
 **Put Portal Feature List here**
 
-## UX Design
-**Put (link to) Portal Design here**
-
 # API Design
 
 **Remove this section if the feature have no API**
@@ -20,14 +17,6 @@
 ## Scenario
 
 **Put list of Scenario how developers will use this API**
-
-## Sample Code
-
-**Put sample code of how you vision this API will be used, consider different type of developers and different abstract level**
-
-## API Design
-
-**Put Design and Specification here with links**
 
 # Open Questions
 
