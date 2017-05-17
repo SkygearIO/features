@@ -10,15 +10,18 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 * Sign in with web redirect
 * Sign in with limited capability devices (TV/Command line)
 * Sign in with Mobile
+* Sign in, and then interact with 3rd party service using the auth information
 * Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, show an error and tell users to login with another `AuthProvide B`
 * Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, tell users to login and link with new AuthProvider
 * Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, assume it is two different accounts (will break the assumption of Skygear, which each users got unique email address)
 * At User Setting page, add another `AuthProvider`
+* Integrate with any service that supports OAuth by writing cloud code.
 
 # Sample Codes for Use Cases
 
+User wants to post things to Facebook, they want to write code like this
+
 ```
-// User wants to post things to Facebook, they want to write code like this
 skygear.loginWithFacebook({use3rdPartyClient: true}).then(skygearUser=> {
   // They can call this because we are using FB.login internally
   FB.post('hi'); // post to timeline
@@ -27,6 +30,45 @@ skygear.loginWithFacebook({use3rdPartyClient: true}).then(skygearUser=> {
     //tokens['com.facebook'] is FB's access token
   });
 })
+```
+
+User wants to integrate with a website supporting OAuth
+
+```
+skygear.loginWithOAuthProvider('com.example', {
+  clientID: 'xxxxxxx',
+  uxMode: 'popup',
+  scope: 'email'
+}).then(skygearUser => {
+  // At this point, the user is logged in
+  skygear.getOAuthTokens().then(function(tokens){
+    //tokens['com.example'] is FB's access token
+  });
+})
+```
+
+Cloud code to add an OAuth provider
+
+```
+@skygear.provides("oauth", "com.facebook")
+class FacebookOAuthProvider
+  def auth_url(self):
+    return "http://example.com/auth"
+
+  def access_token_url(self, code):
+    return "http://example.com/access_token?code="+code
+```
+
+Access OAuth tokens in Cloud code:
+
+```
+container = SkygearContainer(user_id='1', api_key='master')
+tokens = container.getOAuthTokens()
+token = tokens['com.facebook']
+
+# It's an object with detail of token
+token.access_token
+token.expire_date
 ```
 
 # Changes on SDK
