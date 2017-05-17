@@ -229,7 +229,9 @@ def handleAccessToken(token):
 
 ## APIs
 
-- `oauth:auth_url`
+### APIs for auth flow
+
+- New lambda `oauth:auth_url`
   - Accepts a provider id and options
   - Return an url for auth
   - Example pseudo return value
@@ -238,7 +240,7 @@ def handleAccessToken(token):
         client_id={app-id}
         &redirect_uri=http%3A%2F%2Fskygear.dev%2Foauth%2Fhandle_code%3Fprovider%3Dcom.facebook%26user_id%3D123
 
-- `oauth:handle_code`
+- New handler `oauth:handle_code`
   - A handler that accepts code from 3rd party service
   - Exchange code with access token
   - Create user if needed
@@ -247,7 +249,7 @@ def handleAccessToken(token):
 
         http://skygear.dev/oauth/handle_code?provider=com.facebook&user_id=123&code=223344
 
-- `oauth:handle_access_token`
+- New lambda `oauth:handle_access_token`
   - Accepts a provider id, and access token
   - If this handler is called with a user logged in
     - Associate the user with auth provider and access token
@@ -278,6 +280,26 @@ def handleAccessToken(token):
 # Database Scheme
 
 No changes.
+Since we are going to use the existing auth provider to handle auth data, I expect those related data to be saved in `_user` table's `auth` column. There is no specific format for the data.
+
+I am proposing the following format for data in the auth column.
+
+- Data from OAuth providers will be saved with a "oauth." prefix in id
+- The data inside will be almost the same as the [OAuth Access Token Response](https://tools.ietf.org/html/rfc6749#section-4.2.2), e.g.
+  - `access_token`
+  - `token_type`
+  - `expires_at`, calculated from `expires_in`, an absolute timestamp
+  - `refresh_token`
+
+      {
+        "oauth.com.facebook": {
+          "access_token": "...",
+          "token_type": "bearer",
+          "expires_at": 1495052619,
+          "refresh_token": "...."
+        }
+      }
+
 
 # Others Supplement Information
 
@@ -290,17 +312,17 @@ JS, iOS and Android should follow this flow:
 1. Call 3rd party client
 2. When user is authed, get the access_token
 3. Pass access_token to `oauth:handle_access_token`, to receive skygear user
-  - Server behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
+  - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 4. Return user and access_token
 
 #### When using OAuth flow
 
 1. Ask for a url to display via `oauth:auth_url`
 2. Show the url to user, either popup or redirect
-3. After user login, the webpage should be redirected to skygear-server with a code
-4. Skygear-server exchange access token with code (`oauth:handle_code`)
+3. After user login, the webpage should be redirected to plugin with a code
+4. Plugin exchanges access token with code (`oauth:handle_code`)
   - Behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
-5. Skygear-server create or login a user
+5. Plugin creates or logins a user
 6. Pass the user back to client side
 
 ### For devices with limited capability
@@ -308,9 +330,9 @@ JS, iOS and Android should follow this flow:
 1. Fetch code and URL from Google / Facebook
 2. Return the above data to the developer, expect the URL and should to be shown to user
 3. Constantly poll Google / Facebook for auth result
-   - With timeout
+  - With timeout
 4. When access_token is received via polling, send it to skygear-server `oauth:handle_access_token`
-  - Server behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
+  - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 5. Pass the user from skygear user and access_token back to user
 
 
