@@ -195,13 +195,13 @@ It will be used to generate urls when user auth.
 Since the map is in plugin, user should be able to extend it easily.
 
 ```
-@oauth_auth('com.custom.website')
-def auth():
-  return "http://example.com/auth"
+@skygear.provides("oauth", "com.facebook")
+class FacebookOAuthProvider
+  def auth_url(self):
+    return "http://example.com/auth"
 
-@oauth_access_token('com.custom.website')
-def access_token(code):
-  return "http://example.com/access_token?code="+code
+  def access_token_url(self, code):
+    return "http://example.com/access_token?code="+code
 ```
 
 Pseudo code of `oauth:handle_access_token`:
@@ -254,6 +254,26 @@ def handleAccessToken(token):
   - Otherwise,
     - Login or create new users according to the provider and access token
   - Return the user
+
+### API for integrating other services
+
+- New decorator `@skygear.provides("oauth", <provider id>)`
+  - Register a new class that returns urls for OAuth flow
+  - Example in the above session
+  - The goal is to let users to integrate any website that support OAuth
+
+### Functions for working with 3rd party services after auth
+
+- New method `container.getOAuthTokens()`
+  - Return a dictionary of OAuth tokens of the current user
+  - Pseudo code
+
+        container.getOAuthTokens()['com.facebook'].access_token
+
+- New method `container.refreshToken(provider_id)`
+  - A convenient method that refreshs access_token if needed, and if possible.
+  - Updates database after refresh
+  - Returns the new token
 
 # Database Scheme
 
