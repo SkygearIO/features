@@ -126,25 +126,62 @@ None.
 - `GOOGLE_API_KEY`
 - `SSO_ENABLED` e.g `FACEBOOK,GOOGLE`.
 
+## Implementation
+
+The plugin internally has a "Map<ProviderID, (info -> URL)>" map, something like this.
+It will be used to generate urls when user auth.
+
+```
+{
+  'com.facebook': {
+    'auth': () =>
+        "https://www.facebook.com/v2.9/dialog/oauth" +
+        "?client_id=" + clientID +
+        "&redirect_uri=" + generateRedirectURL()
+    'access_token': (code)=>
+        "https://www.facebook.com/v2.9/dialog/access_token" +
+        "?client_id=" + clientID +
+        "&client_secret=" + FACEBOOK_CLIENT_SECRET
+  },
+  'com.google': {
+    'auth': ...,
+    'access_token': ...
+  }
+}
+```
+
+Since the map is in plugin, user should be able to extend it easily.
+
+```
+@oauth_auth('com.custom.website')
+def auth():
+  return "http://example.com/auth"
+
+@oauth_access_token('com.custom.website')
+def access_token(code):
+  return "http://example.com/access_token?code="+code
+```
+
 Pseudo code of `oauth:handle_access_token`:
 
 ```
-function handleAccessToken(token) {
-  // Code should be organized in a way to share logic with auto provider
-  var existingUser = getUserByAccessToken(token);
-  if (existingUser) {
-    return existingUser;
-  }
-  var emailOfThirdPartyAccount = getEmail(token);
-  if (emailOfThirdPartyAccount) {
-    var user = getUserByEmail(emailOfThirdPartyAccount);
-    if (user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS) {
-      return Error("The email is associated with another account");
-    }
-    addAuthToUser(user, token);
-    return user;
-  }
-  return createNewUser(token);
+def handleAccessToken(token):
+  # Code should be organized in a way to share logic with auto provider
+  existingUser = getUserByAccessToken(token)
+  if existingUser:
+    return existingUser
+
+  emailOfThirdPartyAccount = getEmail(token)
+  if emailOfThirdPartyAccount:
+    user = getUserByEmail(emailOfThirdPartyAccount)
+
+    if user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS:
+      return Error("The email is associated with another account")
+
+    addAuthToUser(user, token)
+    return user
+
+  return createNewUser(token)
 }
 ```
 
@@ -153,11 +190,21 @@ function handleAccessToken(token) {
 - `oauth:auth_url`
   - Accepts a provider id and options
   - Return an url for auth
+  - Example pseudo return value
+
+        https://www.facebook.com/v2.9/dialog/oauth?
+        client_id={app-id}
+        &redirect_uri=http%3A%2F%2Fskygear.dev%2Foauth%2Fhandle_code%3Fprovider%3Dcom.facebook%26user_id%3D123
+
 - `oauth:handle_code`
   - A handler that accepts code from 3rd party service
   - Exchange code with access token
   - Create user if needed
   - Pass the user back to client
+  - An pseudo example of the url that is expect to be called
+
+        http://skygear.dev/oauth/handle_code?provider=com.facebook&user_id=123&code=223344
+
 - `oauth:handle_access_token`
   - Accepts a provider id, and access token
   - If this handler is called with a user logged in
