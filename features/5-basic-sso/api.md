@@ -57,6 +57,9 @@ class FacebookOAuthProvider
 
   def access_token_url(self, code):
     return "http://example.com/access_token?code="+code
+
+  def refresh_token_url(self, refresh_token):
+    return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
 ```
 
 Access OAuth tokens in Cloud code:
@@ -96,6 +99,7 @@ token.expire_date
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user to this url after auth. If it is null, back to the current URL
   - This function returns a skygear user, and an access token of the new service.
 - `getOAuthTokens()`
+  - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
   - Return a promise of tokens
 
         getOAuthTokens().then(function(tokens){
@@ -157,7 +161,12 @@ token.expire_date
 
 # Changes on API at skygear-server
 
-None.
+- New lambda `user:oauth_tokens`
+  - Return OAuth data from database, the `_user.auth` column
+
+- New lambda `user:set_oauth_token`
+  - Take a provider id, and OAuth data
+  - Save data into `_user.auth`, with "oauth." prefix in OAuth data
 
 # Changes on Plugin
 
@@ -202,6 +211,9 @@ class FacebookOAuthProvider
 
   def access_token_url(self, code):
     return "http://example.com/access_token?code="+code
+
+  def refresh_token_url(self, refresh_token):
+    return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
 ```
 
 Pseudo code of `oauth:handle_access_token`:
@@ -244,6 +256,7 @@ def handleAccessToken(token):
   - A handler that accepts code from 3rd party service
   - Exchange code with access token
   - Create user if needed
+  - Add access token to user `user:set_oauth_token`
   - Pass the user back to client
   - An pseudo example of the url that is expect to be called
 
@@ -255,6 +268,7 @@ def handleAccessToken(token):
     - Associate the user with auth provider and access token
   - Otherwise,
     - Login or create new users according to the provider and access token
+    - Add access token to user `user:set_oauth_token`
   - Return the user
 
 ### API for integrating other services
@@ -268,6 +282,7 @@ def handleAccessToken(token):
 
 - New method `container.getOAuthTokens()`
   - Return a dictionary of OAuth tokens of the current user
+  - Call `skygear-server` `user:oauth_tokens` `user:set_oauth_token`
   - Pseudo code
 
         container.getOAuthTokens()['com.facebook'].access_token
