@@ -119,7 +119,6 @@ Package: /
       timeoutOptions
 
     api:
-      makeUploadAssetRequest
       sendRequestObject
       makeRequest
 
@@ -183,6 +182,7 @@ Package: /db
       cacheResponse(Boolean)
 
     api:
+      makeUploadAssetRequest
       setAdminRole
       setDefaultRole
       getDefaultACL
