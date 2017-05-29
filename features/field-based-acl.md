@@ -3,22 +3,23 @@ Field-based ACL
 
 # API Design Overview
 
-Field-based ACL is a Skygear feature defining the accessibility of the fields
-of a Skygear Record type.
+Field-based ACL is a Skygear feature defining the accessibility and
+discoverability of the fields of a Skygear Record type.
 
 ## Accessibility levels
 
-The field-based accessibility is divided into 5 levels:
+The field-based accessibility is divided into 3 levels:
 
-- `ReadWrite`: fields that available for read and write
-- `Queryable`: Fields that can be used to perform any query predicates and
-  will be returned after query.
+- `ReadWrite`: Fields that available for read and write.
+- `ReadOnly`: Fields that will be returned in query.
+- `NoAccess`: Fields that will not be accessible.
+
+## Discovery levels
+
+- `Queryable`: Fields that can be used to perform any query predicates.
 - `Discoverable`: Fields that can only be used to perform equality query
-  predicate and will be returned in query.
-- `ReadOnly`: Fields that cannot be used to perform any query predicates but
-  will be returned in query.
-- `NoAccess`: Fields that cannot be used to perform any query predicates and
-  will not be returned in query.
+  predicate (`=` or `IN` operator, but not wrapping in `NOT` nor `OR`).
+- `NotQueryable`: Fields that not available to perform query.
 
 ## Access Control Entity (ACE)
 
@@ -31,6 +32,7 @@ Each field-based ACE model will contains:
 - `Field`: the record field the entity apply to, or `*` which implies all
   record fields
 - `AccessLevel`: the accessibility level the entity defines
+- `DiscoveryLevel`: the discovery level the entity defines
 
 By defining field-based ACL, the permission of users performing actions on a
 record field is defined. A user would have permission to perform an action on a
@@ -55,9 +57,9 @@ resolve order will be:
 Since the field-based ACL is allow-based, the following entities would be added
 serving as a base ACL.
 
-| Class | UserRole | Field |   Level   |
-|-------|----------|-------|-----------|
-| *     | Public   | *     | ReadWrite |
+| Class | UserRole | Field | AccessLevel | DiscoveryLevel |
+|-------|----------|-------|-------------|----------------|
+| *     | Public   | *     | ReadWrite   | Queryable      |
 
 ## Work together with record-based ACL
 
@@ -107,53 +109,58 @@ function recordOperationVeridation (operation) {
 
 - Make gender field of user record private to every one except owner
 
-| Class | UserRole | Field  |   Level   |
-|-------|----------|--------|-----------|
-| *     | Public   | *      | ReadWrite |
-| User  | AnyUser  | gender | NoAccess  |
-| User  | Owner    | gender | ReadWrite |
+| Class | UserRole | Field  | AccessLevel | DiscoveryLevel |
+|-------|----------|--------|-------------|----------------|
+| *     | Public   | *      | ReadWrite   | Queryable      |
+| User  | AnyUser  | gender | NoAccess    | NotQueryable   |
+| User  | Owner    | gender | ReadWrite   | Queryable      |
 
-- Make gender field of user record private to every one, readable to friends
-  and updatable to owner
+- Make gender field of user record private to every one, readable and queryable
+  to friends and updatable to owner
 
-| Class |  UserRole   | Field  |   Level   |
-|-------|-------------|--------|-----------|
-| *     | Public      | *      | ReadWrite |
-| User  | AnyUser     | gender | NoAccess  |
-| User  | Ref:Friends | gender | ReadOnly  |
-| User  | Owner       | gender | ReadWrite |
+| Class |  UserRole   | Field  | AccessLevel | DiscoveryLevel |
+|-------|-------------|--------|-------------|----------------|
+| *     | Public      | *      | ReadWrite   | Queryable      |
+| User  | AnyUser     | gender | NoAccess    | NotQueryable   |
+| User  | Ref:Friends | gender | ReadOnly    | Queryable      |
+| User  | Owner       | gender | ReadWrite   | Queryable      |
 
 - Make a slug field of photo record, updatable to owner but only discoverable
   by others
 
-| Class |  UserRole   | Field |    Level     |
-|-------|-------------|-------|--------------|
-| *     | Public      | *     | ReadWrite    |
-| Photo | AnyUser     | slug  | Discoverable |
-| Photo | Owner       | slug  | ReadWrite    |
+| Class |  UserRole   | Field | AccessLevel | DiscoveryLevel |
+|-------|-------------|-------|-------------|----------------|
+| *     | Public      | *     | ReadWrite   | Queryable      |
+| Photo | AnyUser     | slug  | Readable    | Discoverable   |
+| Photo | Owner       | slug  | ReadWrite   | Queryable      |
 
 # Changes on SDK
 
 The following API will be added to SDKs and expected to be called under
 development mode by users with admin role.
 
-- `container.setRecordFieldAccess(RecordClass, fields, userRoles, level)`
+- `container.setRecordFieldAccess(RecordClass, fields, userRoles, accessLevel,
+  discoveryLevel)`
 
   This API will update the ACL of a list of fields (specified by `fields`) of a
   record type (specified by `RecordClass`) for a list of user roles (specified
-  by `userRoles`) to a specific access level (specified by `level`).
+  by `userRoles`) to a specific access level (specified by `accessLevel`) and
+  discovery level (specified by `discoveryLevel`).
 
-- `container.setRecordAllFieldsAccess(RecordClass, userRoles, level)`
+- `container.setRecordAllFieldsAccess(RecordClass, userRoles, accessLevel,
+  discoveryLevel)`
 
   This API will update the ACL of all the fields of a record type (specified
   by `RecordClass`) for a list of user roles (specified by `userRoles`) to a
-  specific access level (specified by `level`).
+  specific access level (specified by `accessLevel`) and discovery level
+  (specified by `discoveryLevel`).
 
-- `container.setAllRecordFieldsAccess(userRoles, level)`
+- `container.setAllRecordFieldsAccess(userRoles, accessLevel, discoveryLevel)`
 
   This API will update the ACL of all the fields of all record types for a list
   of user roles (specified by `userRoles`) to a specific access level
-  (specified by `level`).
+  (specified by `accessLevel`) and discovery level (specified by
+  `discoveryLevel`).
 
 - `container.removeRecordFieldAccess(RecordClass, fields, userRoles)`
 
@@ -175,8 +182,19 @@ development mode by users with admin role.
 
 An endpoint would be added to Skygear server for updating field-based ACL. The
 endpoint name is open to implementor. It is suggested to name it like
-`schema:record_field_access`. The endpoint would expected to receive
-the following sample payload:
+`schema:record_field_access`.
+
+Since the field-based ACL contains both access
+level and discovery level. It is suggested to use bitwise representation for
+the 2 types of levels:
+
+- `Queryable`: `1 << 4`
+- `Discoverable`: `1 << 3`
+- `ReadWrite`: `1 << 2`
+- `ReadOnly`: `1 << 1`
+- `NoAccess` / `NotQueryable`: `1 << 0`
+
+The sample payload is as followed:
 
 ```json
 {
@@ -186,7 +204,7 @@ the following sample payload:
   "record_type": "Photo",
   "record_fields": ["slug"],
   "user_roles": ["_any_user"],
-  "level": "Discoverable",
+  "level": 15,
   "for_all_record_types": false,
   "for_all_record_fields": false
 }
@@ -219,7 +237,7 @@ CREATE TABLE "_recrod_field_access" (
     "record_type" text NOT NULL,
     "record_field" text NOT NULL,
     "user_role" text NOT NULL,
-    "level" text NOT NULL,
+    "level" integer NOT NULL,
     PRIMARY KEY ("record_type", "record_field", "user_role")
 );
 ```
