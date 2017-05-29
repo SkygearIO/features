@@ -28,7 +28,7 @@ skygear.db.public.save(sampleItem);
 ```
 
 ```js
-// Retreieve contexts
+// Retrieve contexts
 
 var apiKey = skygear.apiKey;
 var currentAccessToken = skygear.auth.currentAccessToken;
@@ -51,7 +51,7 @@ SKYRecord *sampleItem = [SKYRecord recordWithRecordType:@"SampleItem"];
 ```
 
 ```obj-c
-// Retreieve contexts
+// Retrieve contexts
 #import <SKYKit/SKYKit.h>
 
 SKYContainer *container = [SKYContainer defaultContainer];
@@ -78,7 +78,7 @@ container.db().public().save(sampleItem, null);
 ```
 
 ```java
-// Retreieve contexts
+// Retrieve contexts
 import android.content.Context;
 import io.skygear.skygear.Container;
 
