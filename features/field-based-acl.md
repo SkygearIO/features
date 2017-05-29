@@ -185,6 +185,6 @@ CREATE TABLE "_recrod_field_access" (
     "record_field" text NOT NULL,
     "user_role" text NOT NULL,
     "level" text NOT NULL,
-    PRIMARY KEY ("record_type", "record_field")
+    PRIMARY KEY ("record_type", "record_field", "user_role")
 );
 ```
