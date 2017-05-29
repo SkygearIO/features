@@ -4,7 +4,7 @@ Re-organize API of different functionality to different groups, from the current
 
 ## Goal
 
-- API and context of different features are grouped to new objects under `Container` object.
+- Split the current `Container` to smaller containers, by different features
 - Effort of using skygear should remain the same, no extra setup is required.
 - Feature set remains the same.
 
@@ -90,168 +90,181 @@ Map publicDBCache = container.db().public().cache();
 
 # Changes on SDK
 
-Proposal:
+## Web (Base)
 
 ```
-Package: /
+Container:
 
-  Container:
+  state:
+    url
+    apiKey
+    timeoutOptions
+    auth(AuthContainer)
+    db(DatabaseContainer)
+    pubsub(PubsubContainer)
+    push(PushContainer)
+    chat(ChatContainer)
+    analytics(AnalyticsContainer)
 
-    state:
-      url
-      apiKey
-      auth(AuthContainer)
-      user(UserContainer)
-      db(DatabaseContainer)
-      device(DeviceContainer)
-      pubsub(PubsubContainer)
-
-    api:
-      config
-      configApiKey
-      lambda
-
-  Error:
-
-  _Private(can be part of Container):
-
-    state:
-      timeoutOptions
-
-    api:
-      sendRequestObject
-      makeRequest
+  api:
+    config
+    configApiKey
+    lambda
+    sendRequestObject
+    makeRequest
 
 
-Package: /auth
+AuthContainer:
 
-  AuthContainer:
+  state:
+    accessToken
+    user(User)
 
-    state:
-      accessToken
-
-    api:
-      signupWithUsername
-      signupWithEmail
-      signupWithUsernameAndProfile
-      signupWithEmailAndProfile
-      signupAnonymously
-      loginWithUsername
-      loginWithEmail
-      loginWithProvider
-      logout
-      changePassword
-      forgotPassword
-
-
-Package: /user
-
-  UserContainer:
-
-    state:
-      user
-      relation(RelationContainer)
-
-    api:
-      saveUser
-      whoami
-      getUsersByEmail
-      getUsersByUsername
-      discoverUserByEmails
-      discoverUserByUsernames
-
-  User:
-
-  RelationContainer:
-
-    api:
-      queryFriend
-      queryFollower
-      queryFollowing
-      add
-      remove
+  api:
+    signupWithUsername
+    signupWithEmail
+    signupWithUsernameAndProfile
+    signupWithEmailAndProfile
+    signupAnonymously
+    loginWithUsername
+    loginWithEmail
+    loginWithProvider
+    logout
+    changePassword
+    forgotPassword
+    saveUser
+    whoami
+    getUsersByEmail
+    getUsersByUsername
+    discoverUserByEmails
+    discoverUserByUsernames
+    queryFriend
+    queryFollower
+    queryFollowing
+    addRelation
+    removeRelation
 
 
-Package: /db
+DatabaseContainer:
 
-  DatabaseContainer:
+  state:
+    public(PublicDatabase)
+    private(PrivateDatabase)
+    cacheResponse(Boolean)
 
-    state:
-      publicDB(Database)
-      privateDB(Database)
-      cacheResponse(Boolean)
-
-    api:
-      makeUploadAssetRequest
-      setAdminRole
-      setDefaultRole
-      getDefaultACL
-      setDefaultACL
-      setRecordCreateAccess
-      setRecordDefaultAccess
-
-  Database:
-
-    state:
-      cacheStore
-
-    api:
-      getRecordByID
-      save
-      query
-      del
-      clearCache
-
-  Record:
-
-  Query:
-
-  User:
-
-  Role:
-
-  ACL:
-
-  Sequence:
-
-  Asset:
-
-  Reference:
-
-  Geolocation:
-
-  Subscription:
+  api:
+    makeUploadAssetRequest
 
 
-Package: /device
+PublicDatabase:
 
-  DeviceContainer:
+  state:
+    cacheStore
 
-    state:
-      deviceToken
-      deviceID
-
-    api:
-      inferDeviceType
-      registerDevice
-      unregisterDevice
-
-
-Package: /pubsub
-
-  PubsubContainer:
-
-    state:
-      channel
-      internalChannel
-      autoPubsub(Boolean)
-
-    api:
-      on
-      off
+  api:
+    setAdminRole
+    setDefaultRole
+    getDefaultACL
+    setDefaultACL
+    setRecordCreateAccess
+    setRecordDefaultAccess
+    getRecordByID
+    save
+    query
+    del
+    clearCache
+    fetchSubscriptionWithID
+    saveSubscription
+    deleteSubscriptionWithID
 
 
-Package: /cloud
+PrivateDatabase:
+
+  state:
+    cacheStore
+
+  api:
+    getRecordByID
+    save
+    query
+    del
+    clearCache
+    fetchSubscriptionWithID
+    saveSubscription
+    deleteSubscriptionWithID
 
 
+PubsubContainer:
+
+  state:
+    channel
+    internalChannel
+    autoPubsub(Boolean)
+
+  api:
+    on
+    off
+
+
+PushContainer:
+
+  api:
+    sendPushNotification
+
+
+ChatContainer:
+
+
+AnalyticsContainer:
+
+
+```
+
+## Cloud
+
+```
+Container:
+
+  state:
+    cloud(CloudContainer)
+
+
+CloudContainer:
+
+  api:
+    op
+    every
+    event
+    handler
+    hook
+    beforeSave
+    afterSave
+    beforeDelete
+    afterDelete
+    staticAsset
+    configModule
+
+```
+
+## Mobile (react-native, iOS and Android)
+
+```
+PushContainer:
+
+  state:
+    deviceToken
+    deviceID
+
+  api:
+    registerDevice
+    unregisterDevice
+```
+
+### Javascript (react-native)
+
+```
+PushContainer:
+
+  api:
+    inferDeviceType
 ```
