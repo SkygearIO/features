@@ -133,6 +133,7 @@ AuthContainer:
     logout
     changePassword
     forgotPassword
+    // following api would be affected by https://github.com/SkygearIO/features/pull/68
     saveUser
     whoami
     getUsersByEmail
