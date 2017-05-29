@@ -22,7 +22,7 @@ skygear.auth.loginWithEmail("email@example.com", "secret");
 skygear.auth.forgotPassword("email@example.com");
 skygear.pubsub.on("channel", function() {});
 
-var SampleItem = skygear.db.Record.extend('SampleItem');
+var SampleItem = skygear.Record.extend('SampleItem');
 var sampleItem = new SampleItem();
 skygear.db.public.save(sampleItem);
 ```
@@ -66,7 +66,7 @@ NSDictionary *publicDBCache = [container.db.public cache];
 // Call API
 import android.content.Context;
 import io.skygear.skygear.Container;
-import io.skygear.skygear.db.Record;
+import io.skygear.skygear.Record;
 
 Container container = Container.defaultContainer(Context.getApplicationContext());
 container.auth().loginWithEmail("email@example.com", "secret");
@@ -267,4 +267,50 @@ PushContainer:
 
   api:
     inferDeviceType
+```
+
+## Importing `class`
+
+### Javascript
+
+For easier class import in Javascript, classes are proxied in the skygear container object. These classes already exist in skygear container object.
+
+```
+User
+Record
+UserRecord
+Query
+User
+Role
+ACL
+Sequence
+Asset
+Reference
+Geolocation
+Subscription
+Database
+ErrorCodes(Constants)
+```
+
+For consistency, the following class would also be moved to skygear container.
+
+```
+skygear.relation.Friend -> skygear.FriendRelation
+skygear.relation.Follower -> skygear.FollowerRelation
+skygear.relation.Following -> skygear.FollowingRelation
+```
+
+### Others
+
+Importing classes in other languages would remain the same.
+
+iOS:
+```obj-c
+#import <SKYKit/SKYKit.h>
+```
+
+Java:
+```java
+import io.skygear.skygear.Container;
+import io.skygear.skygear.Record;
 ```
