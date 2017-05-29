@@ -141,17 +141,33 @@ development mode by users with admin role.
   record type (specified by `RecordClass`) for a list of user roles (specified
   by `userRoles`) to a specific access level (specified by `level`).
 
-- `container.setRecordAllFieldAccess(RecordClass, userRoles, level)`
+- `container.setRecordAllFieldsAccess(RecordClass, userRoles, level)`
 
   This API will update the ACL of all the fields of a record type (specified
   by `RecordClass`) for a list of user roles (specified by `userRoles`) to a
   specific access level (specified by `level`).
 
-- `container.setAllRecordFieldAccess(userRoles, level)`
+- `container.setAllRecordFieldsAccess(userRoles, level)`
 
   This API will update the ACL of all the fields of all record types for a list
   of user roles (specified by `userRoles`) to a specific access level
   (specified by `level`).
+
+- `container.removeRecordFieldAccess(RecordClass, fields, userRoles)`
+
+  This API will remove the ACL of a list of fields (specified by `fields`) of a
+  record type (specified by `RecordClass`) for a list of user roles (specified
+  by `userRoles`).
+
+- `container.removeRecordAllFieldsAccess(RecordClass, userRoles)`
+
+  The API will remove the ACL of all the fields of a record type (specified by
+  `RecordClass`) for a list of user roles (specified by `userRoles`).
+
+- `container.removeAllRecordFieldsAccess(userRoles)`
+
+  This API will remove the ACL of all the fields of all record types for a list
+  of user roles (specified by `userRoles`).
 
 # Changes on API at skygear-server
 
@@ -169,6 +185,23 @@ the following sample payload:
   "record_fields": ["slug"],
   "user_roles": ["_any_user"],
   "level": "Discoverable",
+  "for_all_record_types": false,
+  "for_all_record_fields": false
+}
+```
+
+To support removing a specific rule of field-based ACL, the endpoint would
+accept a `null` in `level` field of the payload as followed:
+
+```json
+{
+  "action": "schema:record_field_access",
+  "api_key": "my-api-key",
+  "access_token": "admin-user-token",
+  "record_type": "User",
+  "record_fields": ["gender"],
+  "user_roles": ["_any_user"],
+  "level": null,
   "for_all_record_types": false,
   "for_all_record_fields": false
 }
