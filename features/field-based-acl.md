@@ -25,9 +25,11 @@ The field-based accessibility is divided into 5 levels:
 The field-based ACL is an array of field-based Access Control Entities (ACE).
 Each field-based ACE model will contains:
 
-- `RecordType`: the record type the entity belongs to, wildcards are allowed
+- `RecordType`: the record type the entity belongs to, or `*` which implies all
+  record types
 - `UserRole`: the user role the entity apply to
-- `Field`: the record field the entity apply to, wildcards are allowed
+- `Field`: the record field the entity apply to, or `*` which implies all
+  record fields
 - `AccessLevel`: the accessibility level the entity defines
 
 By defining field-based ACL, the permission of users performing actions on a
