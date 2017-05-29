@@ -116,13 +116,13 @@ function recordOperationVeridation (operation) {
 | User  | Owner    | gender | ReadWrite   | Queryable      |
 
 - Make gender field of user record private to every one, readable and queryable
-  to friends and updatable to owner
+  to stared users and updatable to owner
 
 | Class |  UserRole   | Field  | AccessLevel | DiscoveryLevel |
 |-------|-------------|--------|-------------|----------------|
 | *     | Public      | *      | ReadWrite   | Queryable      |
 | User  | AnyUser     | gender | NoAccess    | NotQueryable   |
-| User  | Ref:Friends | gender | ReadOnly    | Queryable      |
+| User  | Ref:stared  | gender | ReadOnly    | Queryable      |
 | User  | Owner       | gender | ReadWrite   | Queryable      |
 
 - Make a slug field of photo record, updatable to owner but only discoverable
@@ -182,46 +182,38 @@ development mode by users with admin role.
 
 An endpoint would be added to Skygear server for updating field-based ACL. The
 endpoint name is open to implementor. It is suggested to name it like
-`schema:record_field_access`.
-
-Since the field-based ACL contains both access
-level and discovery level. It is suggested to use bitwise representation for
-the 2 types of levels:
-
-- `Queryable`: `1 << 4`
-- `Discoverable`: `1 << 3`
-- `ReadWrite`: `1 << 2`
-- `ReadOnly`: `1 << 1`
-- `NoAccess` / `NotQueryable`: `1 << 0`
+`schema:record_field_access:update`.
 
 The sample payload is as followed:
 
 ```json
 {
-  "action": "schema:record_field_access",
+  "action": "schema:record_field_access:update",
   "api_key": "my-api-key",
   "access_token": "admin-user-token",
   "record_type": "Photo",
   "record_fields": ["slug"],
   "user_roles": ["_any_user"],
-  "level": 15,
+  "writable": true,
+  "readable": true,
+  "comparable": true,
+  "discoverable": true,
   "for_all_record_types": false,
   "for_all_record_fields": false
 }
 ```
 
-To support removing a specific rule of field-based ACL, the endpoint would
-accept a `null` in `level` field of the payload as followed:
+To support removing a specific rule of field-based ACL, another endpoint would
+be added:
 
 ```json
 {
-  "action": "schema:record_field_access",
+  "action": "schema:record_field_access:delete",
   "api_key": "my-api-key",
   "access_token": "admin-user-token",
   "record_type": "User",
   "record_fields": ["gender"],
   "user_roles": ["_any_user"],
-  "level": null,
   "for_all_record_types": false,
   "for_all_record_fields": false
 }
@@ -237,7 +229,10 @@ CREATE TABLE "_recrod_field_access" (
     "record_type" text NOT NULL,
     "record_field" text NOT NULL,
     "user_role" text NOT NULL,
-    "level" integer NOT NULL,
+    "writable" boolean NOT NULL,
+    "readable" boolean NOT NULL,
+    "comparable" boolean NOT NULL,
+    "writable" boolean NOT NULL,
     PRIMARY KEY ("record_type", "record_field", "user_role")
 );
 ```
