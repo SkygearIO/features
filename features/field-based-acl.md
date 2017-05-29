@@ -41,12 +41,12 @@ Since multiple rules with different user roles can be applied to a field of a
 record type, the resolve order of different user roles is important. The
 resolve order will be:
 
-1. **Public**: any users with correct API key
 1. **Owner**: the owner of the record instance
 1. **Specific User**: the user specified by user ID
 1. **Reference Users**: the users specified in a field of the records
 1. **Defined Roles**: the user-defined roles
 1. **Any Users**: any logged-in users
+1. **Public**: any users with correct API key
 
 ## Base ACL
 
@@ -55,7 +55,7 @@ serving as a base ACL.
 
 | Class | UserRole | Field |   Level   |
 |-------|----------|-------|-----------|
-| *     | AnyUser  | *     | ReadWrite |
+| *     | Public   | *     | ReadWrite |
 
 ## Work together with record-based ACL
 
@@ -107,7 +107,7 @@ function recordOperationVeridation (operation) {
 
 | Class | UserRole | Field  |   Level   |
 |-------|----------|--------|-----------|
-| *     | AnyUser  | *      | ReadWrite |
+| *     | Public   | *      | ReadWrite |
 | User  | AnyUser  | gender | NoAccess  |
 | User  | Owner    | gender | ReadWrite |
 
@@ -116,7 +116,7 @@ function recordOperationVeridation (operation) {
 
 | Class |  UserRole   | Field  |   Level   |
 |-------|-------------|--------|-----------|
-| *     | AnyUser     | *      | ReadWrite |
+| *     | Public      | *      | ReadWrite |
 | User  | AnyUser     | gender | NoAccess  |
 | User  | Ref:Friends | gender | ReadOnly  |
 | User  | Owner       | gender | ReadWrite |
@@ -126,7 +126,7 @@ function recordOperationVeridation (operation) {
 
 | Class |  UserRole   | Field |    Level     |
 |-------|-------------|-------|--------------|
-| *     | AnyUser     | *     | ReadWrite    |
+| *     | Public      | *     | ReadWrite    |
 | Photo | AnyUser     | slug  | Discoverable |
 | Photo | Owner       | slug  | ReadWrite    |
 
