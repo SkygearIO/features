@@ -100,6 +100,7 @@ Container:
     apiKey
     timeoutOptions
     auth(AuthContainer)
+    relation(RelationContainer)
     db(DatabaseContainer)
     pubsub(PubsubContainer)
     push(PushContainer)
@@ -138,6 +139,11 @@ AuthContainer:
     getUsersByUsername
     discoverUserByEmails
     discoverUserByUsernames
+
+
+RelationContainer:
+
+  api:
     queryFriend
     queryFollower
     queryFollowing
