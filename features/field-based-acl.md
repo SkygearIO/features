@@ -105,35 +105,6 @@ function recordOperationVeridation (operation) {
 }
 ```
 
-# Sample ACL for Use Cases
-
-- Make gender field of user record private to every one except owner
-
-| Class | UserRole | Field  | AccessLevel | DiscoveryLevel |
-|-------|----------|--------|-------------|----------------|
-| *     | Public   | *      | ReadWrite   | Queryable      |
-| User  | AnyUser  | gender | NoAccess    | NotQueryable   |
-| User  | Owner    | gender | ReadWrite   | Queryable      |
-
-- Make gender field of user record private to every one, readable and queryable
-  to stared users and updatable to owner
-
-| Class |  UserRole   | Field  | AccessLevel | DiscoveryLevel |
-|-------|-------------|--------|-------------|----------------|
-| *     | Public      | *      | ReadWrite   | Queryable      |
-| User  | AnyUser     | gender | NoAccess    | NotQueryable   |
-| User  | Ref:stared  | gender | ReadOnly    | Queryable      |
-| User  | Owner       | gender | ReadWrite   | Queryable      |
-
-- Make a slug field of photo record, updatable to owner but only discoverable
-  by others
-
-| Class |  UserRole   | Field | AccessLevel | DiscoveryLevel |
-|-------|-------------|-------|-------------|----------------|
-| *     | Public      | *     | ReadWrite   | Queryable      |
-| Photo | AnyUser     | slug  | Readable    | Discoverable   |
-| Photo | Owner       | slug  | ReadWrite   | Queryable      |
-
 # Changes on SDK
 
 The following API will be added to SDKs and expected to be called under
@@ -177,6 +148,132 @@ development mode by users with admin role.
 
   This API will remove the ACL of all the fields of all record types for a list
   of user roles (specified by `userRoles`).
+
+
+# Sample Codes for Use Cases
+
+Use Case 1: Make gender field of user record private to every one except owner
+
+| Class | UserRole | Field  | AccessLevel | DiscoveryLevel |
+|-------|----------|--------|-------------|----------------|
+| *     | Public   | *      | ReadWrite   | Queryable      |
+| User  | AnyUser  | gender | NoAccess    | NotQueryable   |
+| User  | Owner    | gender | ReadWrite   | Queryable      |
+
+```js
+// during app bootstrapping
+const skygear = require('skygear');
+const User = skygear.Record.extend('User');
+const Role = skygear.Role;
+const ACL = skygear.ACL;
+
+Promise.all(
+  skygear.setRecordFieldAccess(
+    User,
+    ['gender'],
+    Role.AnyUser,
+    ACL.NoAccess,
+    ACL.NotQueryable
+  ),
+  skygear.setRecordFieldAccess(
+    User,
+    ['gender'],
+    Role.Owner,
+    ACL.ReadWrite,
+    ACL.Queryable
+  )
+).then(() => {
+  console.log('Successfully set record field access');
+}).catch((err) => {
+  console.error(`Failed to set record field access: ${err.message}`);
+});
+```
+
+
+Use Case 2: Make gender field of user record private to every one, readable
+and queryable to stared users and updatable to owner
+
+| Class |  UserRole   | Field  | AccessLevel | DiscoveryLevel |
+|-------|-------------|--------|-------------|----------------|
+| *     | Public      | *      | ReadWrite   | Queryable      |
+| User  | AnyUser     | gender | NoAccess    | NotQueryable   |
+| User  | Ref:stared  | gender | ReadOnly    | Queryable      |
+| User  | Owner       | gender | ReadWrite   | Queryable      |
+
+```js
+// during app bootstrapping
+const skygear = require('skygear');
+const User = skygear.Record.extend('User');
+const Role = skygear.Role;
+const ACL = skygear.ACL;
+
+Promise.all(
+  skygear.setRecordFieldAccess(
+    User,
+    ['gender'],
+    Role.AnyUser,
+    ACL.NoAccess,
+    ACL.NotQueryable
+  ),
+  skygear.setRecordFieldAccess(
+    User,
+    ['gender'],
+    Role.Reference('stared'),
+    ACL.ReadOnly,
+    ACL.Queryable
+  ),
+  skygear.setRecordFieldAccess(
+    User,
+    ['gender'],
+    Role.Owner,
+    ACL.ReadWrite,
+    ACL.Queryable
+  )
+).then(() => {
+  console.log('Successfully set record field access');
+}).catch((err) => {
+  console.error(`Failed to set record field access: ${err.message}`);
+});
+```
+
+
+Use Case 3: Make a slug field of photo record, updatable to owner but only
+discoverable by others
+
+| Class |  UserRole   | Field | AccessLevel | DiscoveryLevel |
+|-------|-------------|-------|-------------|----------------|
+| *     | Public      | *     | ReadWrite   | Queryable      |
+| Photo | AnyUser     | slug  | Readable    | Discoverable   |
+| Photo | Owner       | slug  | ReadWrite   | Queryable      |
+
+```js
+// during app bootstrapping
+const skygear = require('skygear');
+const Photo = skygear.Record.extend('Photo');
+const Role = skygear.Role;
+const ACL = skygear.ACL;
+
+Promise.all(
+  skygear.setRecordFieldAccess(
+    Photo,
+    ['slug'],
+    Role.AnyUser,
+    ACL.Readable,
+    ACL.Discoverable
+  ),
+  skygear.setRecordFieldAccess(
+    Photo,
+    ['slug'],
+    Role.Owner,
+    ACL.ReadWrite,
+    ACL.Queryable
+  )
+).then(() => {
+  console.log('Successfully set record field access');
+}).catch((err) => {
+  console.error(`Failed to set record field access: ${err.message}`);
+});
+```
 
 # Changes on API at skygear-server
 
