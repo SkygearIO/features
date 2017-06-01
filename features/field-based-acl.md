@@ -47,15 +47,17 @@ resolve order will be:
 
 1. **Owner**: the owner of the record instance
 1. **Specific User**: the user specified by user ID
-1. **Reference Users**: the users specified in a field of the records
+1. **Dynamic User Set**: the users specified in a field of the records
 1. **Defined Roles**: the user-defined roles
 1. **Any Users**: any logged-in users
 1. **Public**: any users with correct API key
 
 ## Base ACL
 
-Since the field-based ACL is allow-based, the following entities would be added
-serving as a base ACL.
+Since the field-based ACL is allow-based, the following entities would be the
+base case of the ACL. The base ACL will be used when no field-based ACE is
+found for a specific operation. Developers can define their ACE to avoid
+falling onto the base ACL.
 
 | Class | UserRole | Field | AccessLevel | DiscoveryLevel |
 |-------|----------|-------|-------------|----------------|
@@ -150,7 +152,7 @@ development mode by users with admin role.
   of user roles (specified by `userRoles`).
 
 
-# Sample Codes for Use Cases
+# Samples for Some Use Cases
 
 Use Case 1: Make gender field of user record private to every one except owner
 
@@ -193,12 +195,12 @@ Promise.all(
 Use Case 2: Make gender field of user record private to every one, readable
 and queryable to stared users and updatable to owner
 
-| Class |  UserRole   | Field  | AccessLevel | DiscoveryLevel |
-|-------|-------------|--------|-------------|----------------|
-| *     | Public      | *      | ReadWrite   | Queryable      |
-| User  | AnyUser     | gender | NoAccess    | NotQueryable   |
-| User  | Ref:stared  | gender | ReadOnly    | Queryable      |
-| User  | Owner       | gender | ReadWrite   | Queryable      |
+| Class |  UserRole      | Field  | AccessLevel | DiscoveryLevel |
+|-------|----------------|--------|-------------|----------------|
+| *     | Public         | *      | ReadWrite   | Queryable      |
+| User  | AnyUser        | gender | NoAccess    | NotQueryable   |
+| User  | UserSet:stared | gender | ReadOnly    | Queryable      |
+| User  | Owner          | gender | ReadWrite   | Queryable      |
 
 ```js
 // during app bootstrapping
@@ -218,7 +220,7 @@ Promise.all(
   skygear.setRecordFieldAccess(
     User,
     ['gender'],
-    Role.Reference('stared'),
+    Role.UserSet('stared'),
     ACL.ReadOnly,
     ACL.Queryable
   ),
@@ -277,42 +279,57 @@ Promise.all(
 
 # Changes on API at skygear-server
 
-An endpoint would be added to Skygear server for updating field-based ACL. The
-endpoint name is open to implementor. It is suggested to name it like
-`schema:record_field_access:update`.
+Two actions would be added to Skygear server for getting and updating the
+field-based ACL. Both of them are expected to called with master key.
 
-The sample payload is as followed:
+## Get the field-based ACL
+
+The sample request is shown as followed:
 
 ```json
 {
-  "action": "schema:record_field_access:update",
-  "api_key": "my-api-key",
-  "access_token": "admin-user-token",
-  "record_type": "Photo",
-  "record_fields": ["slug"],
-  "user_roles": ["_any_user"],
-  "writable": true,
-  "readable": true,
-  "comparable": true,
-  "discoverable": true,
-  "for_all_record_types": false,
-  "for_all_record_fields": false
+  "action": "schema:field_access:get",
+  "api_key": "my-master-key"
 }
 ```
 
-To support removing a specific rule of field-based ACL, another endpoint would
-be added:
+## Update the field-based ACL
+
+The sample request is shown as followed:
 
 ```json
 {
-  "action": "schema:record_field_access:delete",
-  "api_key": "my-api-key",
-  "access_token": "admin-user-token",
-  "record_type": "User",
-  "record_fields": ["gender"],
-  "user_roles": ["_any_user"],
-  "for_all_record_types": false,
-  "for_all_record_fields": false
+  "action": "schema:field_access:update",
+  "api_key": "my-master-key",
+  "access": [
+    {
+      "record_type": "User",
+      "record_field": "*",
+      "user_role": "_owner",
+      "writable": true,
+      "readable": true,
+      "comparable": true,
+      "discoverable": true
+    },
+    {
+      "record_type": "Photo",
+      "record_field": "slug",
+      "user_role": "_any_user",
+      "writable": false,
+      "readable": true,
+      "comparable": false,
+      "discoverable": true
+    },
+    {
+      "record_type": "Photo",
+      "record_field": "slug",
+      "user_role": "_owner",
+      "writable": true,
+      "readable": true,
+      "comparable": true,
+      "discoverable": true
+    }
+  ]
 }
 ```
 
@@ -329,7 +346,7 @@ CREATE TABLE "_recrod_field_access" (
     "writable" boolean NOT NULL,
     "readable" boolean NOT NULL,
     "comparable" boolean NOT NULL,
-    "writable" boolean NOT NULL,
+    "discoverable" boolean NOT NULL,
     PRIMARY KEY ("record_type", "record_field", "user_role")
 );
 ```
