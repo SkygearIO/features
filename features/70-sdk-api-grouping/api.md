@@ -321,3 +321,80 @@ Java:
 import io.skygear.skygear.Container;
 import io.skygear.skygear.Record;
 ```
+
+# Example of other sdk
+
+## Firebase
+
+Grouping:
+- firebase
+- firebase.app
+- firebase.auth
+  - Provide authentication methods
+  - Firebase User has a fixed set of basic properties, custom data of user are stored somewhere else (database)
+- firebase.database
+  - stores JSON application data
+- firebase.messaging
+- firebase.storage
+  - Cloud Storage is built for app developers who need to store and serve user-generated content, such as photos or videos.
+
+Javascript:
+```js
+firebase.initializeApp(defaultAppConfig);
+var app = firebase.app();
+var auth = app.auth;
+var database = app.database;
+
+var defaultAuth = firebase.auth();
+firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+  // Handle Errors here.
+  var errorCode = error.code;
+  var errorMessage = error.message;
+  // ...
+});
+```
+
+Objective-C:
+```obj-c
+[FIRApp configure];
+FIRApp *app = [FIRApp defaultApp];
+
+// sign up
+[[FIRAuth auth] createUserWithEmail:email
+                           password:password
+                         completion:^(FIRUser *_Nullable user, NSError *_Nullable error) {
+  // ...
+}];
+
+// longer version of [FIRAuth auth]
+FIRApp *defaultApp = [FIRApp defaultApp];
+[FIRAuth authWithApp:defaultApp];
+```
+
+Java:
+```java
+// sign up
+FirebaseAuth mAuth = FirebaseAuth.getInstance();
+mAuth.createUserWithEmailAndPassword(email, password)
+        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (task.isSuccessful()) {
+                    // Sign in success, update UI with the signed-in user's information
+                    Log.d(TAG, "createUserWithEmail:success");
+                    FirebaseUser user = mAuth.getCurrentUser();
+                    updateUI(user);
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                    Toast.makeText(EmailPasswordActivity.this, "Authentication failed.",
+                            Toast.LENGTH_SHORT).show();
+                    updateUI(null);
+                }
+
+                // ...
+            }
+        });
+```
+
+Note that, you can get the group from `firebase` in JS, while in ObjC and Java, you have to retrieve the group from the group class static method.
