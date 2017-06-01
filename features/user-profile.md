@@ -11,18 +11,17 @@ setting field-based ACL, user record can serve as both public profile and
 private profile.
 
 The following table gives an example of the field-based ACL of user record
-fulfilling: 1) both username and email are readable and discoverable; 2) status
-and profile photo are readable, but not queryable; 3) game score is queryable;
+fulfilling: 1) both username, email and status are readable and discoverable;
+2) profile photo is readable, but not queryable; 3) game score is queryable;
 and 4) birthday is private:
 
 | Class | UserRole |    Field    | AccessLevel | DiscoveryLevel |
 |-------|----------|-------------|-------------|----------------|
 | *     | Public   | *           | ReadWrite   | Queryable      |
-| User  | Public   | *           | NoAccess    | NotQueryable   |
 | User  | Owner    | *           | ReadWrite   | Queryable      |
 | User  | AnyUser  | username    | ReadOnly    | Discoverable   |
 | User  | AnyUser  | email       | ReadOnly    | Discoverable   |
-| User  | AnyUser  | status      | ReadOnly    | NotQueryable   |
+| User  | AnyUser  | status      | ReadOnly    | Discoverable   |
 | User  | AnyUser  | profile_pic | ReadOnly    | NotQueryable   |
 | User  | AnyUser  | game_score  | ReadOnly    | Queryable      |
 | User  | AnyUser  | birthday    | NoAccess    | NotQueryable   |
@@ -62,7 +61,7 @@ skygear.discoverUser({ gender: 'male' })
 });
 
 // the above equals to:
-const User = skygear.Record.extend('User');
+const User = skygear.Record.extend('user');
 const q = skygear.Query(User);
 q.equalTo('gender', 'male');
 skygear.publicDB.query(q)
@@ -110,15 +109,100 @@ The current log in API will be kept as helper methods:
 
 # Sample Codes for Use Cases
 
-<!--
-  TODO: Give some sample code demonstrate how field-based ACL is set on
-        user record
--->
+## User discovery API
 
-<!--
-  TODO: Give some sample code demonstrate how information in user record can
-        be discovered.
--->
+The following sample code shows how to use user discovery API for different
+purposes:
+
+```js
+const skygear = require('skygear');
+
+// Use Case 1: discover user by username
+skygear.discoverUserByUsername('cheungpat')
+.then((users) => {
+  if (users.length) {
+    console.warn('Cannot find cheungpat');
+    return;
+  }
+
+  const theUser = users[0];
+  const score = theUser['game_score'];
+  console.log(`The game score of cheungpat is ${score}`);
+});
+
+// Use Case 2: discover user by discoverable fields
+skygear.discoverUser({ gender: 'male', status: 'online' })
+.then((users) => {
+  console.log(`${users.length} male users are online`);
+});
+
+// Comparison: query user
+/*
+    Since user discovery API only for equality query, for other comparisons on
+    other user fields, developers should use record query on user record.
+ */
+const User = skygear.Record.extend('user');
+const userQuery = new skygear.Query(User);
+userQuery.greaterThan('game_score', 3000);
+userQuery.equalTo('status', 'online');
+skygear.publicDB.query(userQuery)
+.then((users) => {
+  console.log(`Found ${users.length} high score users online`);
+});
+```
+
+## New sign up / log in API
+
+The usage of new sign up / log in API is shown as followed:
+
+```js
+const skygear = require('skygear');
+
+// Use Case 1: sign up and setting user profile
+skygear.signup(
+  { 'username': 'user001' }
+  's3cuRe-p@ssw0rd',
+  {
+    birthday: new Date(1992, 2, 29),
+    game_score: 1000
+  }
+).then((user) => {
+  console.log(`Successfully sign up with user ID: ${user.id}`);
+}).catch((err) => {
+  console.error(`Failed to sign up: ${err.message}`);
+});
+
+// Use Case 2: sign up with custom data
+skygear.signup(
+  { username: 'user002', role: 'doctor' },
+  's3cuRe-p@ssw0rd'
+).then((user) => {
+  console.log(`Successfully sign up with user ID: ${user.id}`);
+}).catch((err) => {
+  console.error(`Failed to sign up: ${err.message}`);
+});
+
+// Use Case 3: log in with user name and password
+skygear.login(
+  { 'username': 'user001' },
+  's3cuRe-p@ssw0rd'
+).then((user) => {
+  console.log(`Successfully log in with user ID: ${user.id}`);
+}).catch((err) => {
+  console.error(`Failed to log in: ${err.message}`);
+});
+
+// Use Case 4: log in with custom data
+skygear.login(
+  { username: 'user002', role: 'doctor' },
+  's3cuRe-p@ssw0rd'
+).then((user) => {
+  console.log(`Successfully log in with user ID: ${user.id}`);
+}).catch((err) => {
+  console.error(`Failed to log in: ${err.message}`);
+});
+
+```
 
 # Changes on SDK
 
@@ -132,9 +216,7 @@ The SDKs would be expected to have the following changes:
 - remove `saveUser()` method. It can be replaced by record save operation on
   user record.
 
-# Database Scheme
-
-<!-- TODO: Provide migration SQL -->
+# Changes on Database Scheme
 
 1. Rename `_user` table to `_auth`
 1. Move `username` and `email` from `_auth` to `user`
