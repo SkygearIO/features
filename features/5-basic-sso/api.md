@@ -1,6 +1,7 @@
 # API Design Overview
 
-Have official plugins for common SSO support; And also make it easy to enable and config them from Skygear Portal.
+Have official plugins for common SSO support; And also make it easy to enable
+and config them from Skygear Portal.
 
 Portal needs to have an interface for on/off and configuration of ID / Secret.
 
@@ -11,9 +12,14 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 * Sign in with limited capability devices (TV/Command line)
 * Sign in with Mobile
 * Sign in, and then interact with 3rd party service using the auth information
-* Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, show an error and tell users to login with another `AuthProvide B`
-* Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, tell users to login and link with new AuthProvider
-* Login by `AuthProvider A`, but the email already got another account from `AuthProvider B`, assume it is two different accounts (will break the assumption of Skygear, which each users got unique email address)
+* Login by `AuthProvider A`, but the email already got another account from
+  `AuthProvider B`, show an error and tell users to login with another
+  `AuthProvide B`
+* Login by `AuthProvider A`, but the email already got another account from
+  `AuthProvider B`, tell users to login and link with new AuthProvider
+* Login by `AuthProvider A`, but the email already got another account from
+  `AuthProvider B`, assume it is two different accounts (will break the
+  assumption of Skygear, which each users got unique email address)
 * At User Setting page, add another `AuthProvider`
 * Integrate with any service that supports OAuth by writing cloud code.
 
@@ -21,37 +27,56 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 
 User wants to post things to Facebook, they want to write code like this
 
-```
-skygear.loginWithFacebook({use3rdPartyClient: true}).then(skygearUser=> {
+``` js
+skygear.auth.loginWithFacebook({
+  use3rdPartyClient: true
+}).then((skygearUser) => {
   // They can call this because we are using FB.login internally
   FB.post('hi'); // post to timeline
 
-  skygear.getOAuthTokens().then(function(tokens){
-    //tokens['com.facebook'] is FB's access token
+  skygear.auth.getFacebookToken().then(function(authResult) {
+    // authResult['access_token'] is FB's access token
+    /*
+    {
+      "access_token": "...",
+      "token_type": "bearer",
+      "expires_at": 1495052619,
+      "scope": ["email", "friends"],
+      "refresh_token": "...."
+    }
+    */
   });
 })
 ```
 
 User wants to integrate with a website supporting OAuth
 
-```
+``` js
 skygear.loginWithOAuthProvider('com.example', {
   clientID: 'xxxxxxx',
   uxMode: 'popup',
   scope: 'email'
-}).then(skygearUser => {
+}).then((skygearUser) => {
   // At this point, the user is logged in
-  skygear.getOAuthTokens().then(function(tokens){
-    //tokens['com.example'] is FB's access token
+  skygear.getOAuthTokens('com.example').then(function(authResult) {
+    /*
+    {
+      "access_token": "...",
+      "token_type": "bearer",
+      "expires_at": 1495052619,
+      "scope": ["email", "friends"],
+      "refresh_token": "...."
+    }
+    */
   });
 })
 ```
 
 Cloud code to add an OAuth provider
 
-```
-@skygear.provides("oauth", "com.facebook")
-class FacebookOAuthProvider
+``` python
+@skygear.provides("oauth", "com.example")
+class ExampleOAuthProvider
   def auth_url(self):
     return "http://example.com/auth"
 
@@ -64,10 +89,11 @@ class FacebookOAuthProvider
 
 Access OAuth tokens in Cloud code:
 
-```
+``` python
 container = SkygearContainer(user_id='1', api_key='master')
+# Getting all tokens
 tokens = container.getOAuthTokens()
-token = tokens['com.facebook']
+token = tokens['com.example'] //
 
 # It's an object with detail of token
 token.access_token
@@ -77,6 +103,7 @@ token.expire_date
 # Changes on SDK
 
 ## JS
+All function are under `skygear.auth`
 
 - `loginWithOAuthProvider(providerID, options, [accessToken])`
   - Create or login a new skygear user, associated with the provider
@@ -85,8 +112,11 @@ token.expire_date
     - uxMode - Either `popup`(default), or `redirect`
     - clientID
     - scope
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user to this url after auth. If it is null, back to the current URL
-  - `accessToken` - Optional. Pass in access token if client already has it, skygear will try to login directly instead of going through the OAuth flow.
+    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
+      to this url after auth. If it is null, back to the current URL
+  - `accessToken` - Optional. Pass in access token if client already has it,
+    skygear will try to login directly instead of going through the OAuth
+    flow.
   - This function returns a skygear user, and an access token of the service.
 - `associateAccountWithProvider(providerID, options)`
   - Add a new auth provider to the user by going through the auth flow
@@ -96,14 +126,24 @@ token.expire_date
     - uxMode - Either `popup`(default), or `redirect`
     - clientID
     - scope
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user to this url after auth. If it is null, back to the current URL
-  - This function returns a skygear user, and an access token of the new service.
-- `getOAuthTokens()`
+    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
+      to this url after auth. If it is null, back to the current URL
+  - This function returns a skygear user, and an access token of the new
+    service.
+- `getOAuthTokens(providerID)`
   - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
-  - Return a promise of tokens
+  - Return a promise of authResult
 
-        getOAuthTokens().then(function(tokens){
-          //tokens['com.facebook'] is FB's access token
+        getOAuthTokens('com.example').then(function(authResult) {
+          /*
+          {
+            "access_token": "...",
+            "token_type": "bearer",
+            "expires_at": 1495052619,
+            "scope": ["email", "friends"],
+            "refresh_token": "...."
+          }
+          */
         });
 
 ### Platform specific API
@@ -112,44 +152,62 @@ token.expire_date
     - uxMode - Either `popup`(default), or `redirect`
     - clientID
     - scope
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user to this url after auth. If it is null, back to the current URL
-    - use3rdPartyClient - whether to use 3rd party client, e.g. Facebook JS SDK. Default `false`
+    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
+      to this url after auth. If it is null, back to the current URL
+    - use3rdPartyClient - whether to use 3rd party client, e.g. Facebook JS
+      SDK. Default `false`
 
 ## iOS
 
-- `-[SKYContainer loginWithOAuthProvider:(NSString*)providerID, options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
+- `-[SKYContainer.auth loginWithOAuthProvider:(NSString*)providerID,
+  options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Create or login a new skygear user, associated with the provider
   - `providerID` - A string that identify the login provider
     - We will provide `com.facebook`, `com.google`
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`, popup means in-app-browser (SFSafariViewController/WKWebView) and redirect means Safari.app
+    - uxMode - Either `popup`(default), or `redirect`, popup means
+      in-app-browser (SFSafariViewController/WKWebView) and redirect means
+      Safari.app
     - clientID
     - scope
     - version - FB Client SDK only
     - cookiePolicy - Google Client SDK only
-  - This function returns a skygear user, and an access token of the service, via a delegate.
-- `-[SKYContainer loginWithOAuthProvider:(NSString*)providerID, accessToken:(NSString*)accessToken completion:(void(^)(NSError*, SKYUser*))]`
-  - `accessToken` - Client calls this API if it already has an access token, skygear will try to login directly instead of going through the OAuth flow.
-- `-[SKYContainer associateAccountWithProvider:(NSString*)providerID options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
+  - This function returns a skygear user, and an access token of the service,
+    via a delegate.
+- `-[SKYContainer.auth loginWithOAuthProvider:(NSString*)providerID,
+  accessToken:(NSString*)accessToken completion:(void(^)(NSError*,
+  SKYUser*))]`
+  - `accessToken` - Client calls this API if it already has an access token,
+    skygear will try to login directly instead of going through the OAuth
+    flow.
+- `-[SKYContainer associateAccountWithProvider:(NSString*)providerID
+  options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Add a new auth provider to the user by going through the auth flow
   - `providerID` - A string that identify the login provider
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`, popup means in-app-browser (SFSafariViewController/WKWebView) and redirect means Safari.app
+    - uxMode - Either `popup`(default), or `redirect`, popup means
+      in-app-browser (SFSafariViewController/WKWebView) and redirect means
+      Safari.app
     - clientID
     - scope
     - version - FB Client SDK only
     - cookiePolicy - Google Client SDK only
-  - This function returns a skygear user, and an access token of the new service, via delegate.
-- `-[SKYContainer getOAuthTokensWithCompletion:(void(^)(NSError*, NSDictionary*))]`
-  - Return tokens
+  - This function returns a skygear user, and an access token of the new
+    service, via delegate.
+- `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
+  NSDictionary*))]`
+  - Return all AuthResult 
 
-        [container getOAuthTokensWithCompletion:^(NSDictionary *tokens){
-          //tokens['com.facebook'] is FB's access token
-        }];
+        [container.auth getOAuthTokensWithCompletion:^(NSDictionary *authResult){
+        //tokens['com.facebook'] is FB's access token }];
+
+- `-[SKYContainer.auth getOAuthTokenWithOAuthProvider:(NSString*)providerID,
+  completion:(void(^)(NSError*, NSDictionary*))]`
+
 
 ### Platform specific APIs
 
-- `-[SKYContainer loginWithFacebook:(NSDictionary*)options]` and `-[SKYContainer loginWithGoogle:(NSDictionary*)options]`
+- `-[SKYContainer.auth loginWithFacebook:(NSDictionary*)options]` and `-[SKYContainer loginWithGoogle:(NSDictionary*)options]`
   - `options`
     - uxMode - Either `popup`(default), or `redirect`, popup means in-app-browser (SFSafariViewController/WKWebView) and redirect means Safari.app
     - clientID
@@ -158,6 +216,20 @@ token.expire_date
     - cookiePolicy - Google Client SDK only
     - use3rdPartyClient - whether to use 3rd party client, e.g. Facebook iOS SDK. Default `false`
   - Returns the user logged in via delegate.
+
+## Android
+
+- `container.auth().loginWithOAuthProvider(providerID, new
+  AuthResponseHandler())`
+- `container.auth().getOAuthToken(providerID, new
+  OAuthResponseHandler())`
+
+OAuthResponseHandler Interface
+
+```
+OAuthResponseHandler.onAuthFails(Error error);
+OAuthResponseHandler.onAuthSuccess(AuthResult result);
+```
 
 # Changes on API at skygear-server
 
@@ -179,8 +251,8 @@ token.expire_date
 
 ## Implementation
 
-The plugin internally has a "Map<ProviderID, (info -> URL)>" map, something like this.
-It will be used to generate urls when user auth.
+The plugin internally has a `"Map<ProviderID, (info -> URL)>"` map, something
+like this. It will be used to generate URLs when user auth.
 
 ```
 {
@@ -204,14 +276,15 @@ It will be used to generate urls when user auth.
 Since the map is in plugin, user should be able to extend it easily.
 
 ```
-@skygear.provides("oauth", "com.facebook")
-class FacebookOAuthProvider
-  def auth_url(self):
-    return "http://example.com/auth"
+@skygear.provides("oauth", "com.example")
+class ExampleOAuthProvider
+  auth_url = "http://example.com/auth"
 
+  @property
   def access_token_url(self, code):
     return "http://example.com/access_token?code="+code
 
+  @property
   def refresh_token_url(self, refresh_token):
     return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
 ```
@@ -274,7 +347,7 @@ def handleAccessToken(token):
 ### API for integrating other services
 
 - New decorator `@skygear.provides("oauth", <provider id>)`
-  - Register a new class that returns urls for OAuth flow
+  - Register a new class that returns URLs for OAuth flow
   - Example in the above session
   - The goal is to let users to integrate any website that support OAuth
 
@@ -285,9 +358,9 @@ def handleAccessToken(token):
   - Call `skygear-server` `user:oauth_tokens` `user:set_oauth_token`
   - Pseudo code
 
-        container.getOAuthTokens()['com.facebook'].access_token
+        container.getOAuthTokens('com.facebook').access_token
 
-- New method `container.refreshToken(provider_id)`
+- New method `container.refreshToken(providerID)`
   - A convenient method that refreshs access_token if needed, and if possible.
   - Updates database after refresh
   - Returns the new token
@@ -295,7 +368,9 @@ def handleAccessToken(token):
 # Database Scheme
 
 No changes.
-Since we are going to use the existing auth provider to handle auth data, I expect those related data to be saved in `_user` table's `auth` column. There is no specific format for the data.
+Since we are going to use the existing auth provider to handle auth data, I
+expect those related data to be saved in `_user` table's `auth` column. There
+is no specific format for the data.
 
 I am proposing the following format for data in the auth column.
 
@@ -348,6 +423,5 @@ JS, iOS and Android should follow this flow:
   - With timeout
 4. When access_token is received via polling, send it to skygear-server `oauth:handle_access_token`
   - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
-5. Pass the user from skygear user and access_token back to user
-
+5. Pass the user from skygear user and `access_token` back to user
 
