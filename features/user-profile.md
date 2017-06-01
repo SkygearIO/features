@@ -209,12 +209,15 @@ skygear.login(
 The SDKs would be expected to have the following changes:
 
 - All log in / sign up method would returns **a user record**, instead of
-  a `_user` object.
-- remove `getUserByEmails()`, `getUserByUsernames()`, `discoverUserByEmails()`
-  and `discoverUserByUsernames()` in Skygear Container. These operations can be
-  replaced by record query operation on user record
+  a `User` object.
 - remove `saveUser()` method. It can be replaced by record save operation on
   user record.
+- remove `User` model. Move user role manipulation API to Skygear container
+- remove `getUserByEmails()`, `getUserByUsernames()`  in Skygear container.
+
+# Changes on Skygear Server
+
+- Accept new sign up / log in flow
 
 # Changes on Database Scheme
 
