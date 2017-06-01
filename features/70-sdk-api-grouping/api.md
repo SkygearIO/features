@@ -398,3 +398,74 @@ mAuth.createUserWithEmailAndPassword(email, password)
 ```
 
 Note that, you can get the group from `firebase` in JS, while in ObjC and Java, you have to retrieve the group from the group class static method.
+
+
+## Backendless
+
+see: https://backendless.com/docs/js/doc.html
+
+Grouping:
+- Backendless.UserService (auth)
+  - user and data can be used together, see: https://backendless.com/docs/js/doc.html#creating-user-to-geo
+- Backendless.Data (database)
+- Backendless.Messaging (pubsub + push + email)
+- Backendless.Files
+- Backendless.Geo
+- Backendless.Logging
+- Backendless.Cache
+- Backendless.Counters (atomic counters api)
+  - Backendless.Counters.incrementAndGet("my counter");
+
+Javascript:
+```js
+function userRegistered( user )
+{
+  console.log( "user has been registered" );
+}
+
+function gotError( err ) // see more on error handling
+{
+  console.log( "error message - " + err.message );
+  console.log( "error code - " + err.statusCode );
+}
+
+var user = new Backendless.User();
+user.email = "james.bond@mi6.co.uk";
+user.password = "iAmWatchingU";
+
+Backendless.UserService.register( user ).then( userRegistered ).catch( gotError );
+```
+
+Objective-C:
+```obj-c
+    BackendlessUser *user = [BackendlessUser new];
+    [user setProperty:@"email" object:@"james.bond@mi6.co.uk"];
+    [user setPassword:@"iAmWatchingU"];
+    [backendless.userService registerUser:user
+               response:^(BackendlessUser *registeredUser) {
+                 NSLog(@"User registered: %@", [registeredUser valueForKey:@"email"]);
+               }
+               error:^(Fault *fault) {
+                 NSLog(@"Server reported an error: %@", fault.description);
+               }];
+```
+
+Java:
+```java
+BackendlessUser user = new BackendlessUser();
+user.setProperty( "email", "james.bond@mi6.co.uk" );
+user.setPassword( "iAmWatchingU" );
+
+Backendless.UserService.register( user, new AsyncCallback<BackendlessUser>()
+{
+  public void handleResponse( BackendlessUser registeredUser )
+  {
+    // user has been registered and now can login
+  }
+
+  public void handleFault( BackendlessFault fault )
+  {
+    // an error has occurred, the error code can be retrieved with fault.getCode()
+  }
+} );
+```
