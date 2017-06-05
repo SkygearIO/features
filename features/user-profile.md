@@ -6,9 +6,9 @@ The design depends on [the field-based ACL](field-based-acl.md) feature.
 
 ## New User Record
 
-The newly designed user record contains different information of user.By
-setting field-based ACL, user record can serve as both public profile and
-private profile.
+The newly designed user record contains different information of user. By
+setting field-based ACL, user record can contain public attributes and
+private attributes.
 
 The following table gives an example of the field-based ACL of user record
 fulfilling: 1) both username, email and status are readable and discoverable;
@@ -29,7 +29,7 @@ and 4) birthday is private:
 ## Authentication Object
 
 The new authentication object (i.e. `_auth` object) is to replace the old
- `_user` object, to avoid ambiguity with the user record.
+`_user` object, to avoid ambiguity with the user record.
 
 The authentication object contains the following fields:
 
@@ -80,11 +80,13 @@ used:
 
 ## New Sign Up and Log In API
 
+### Sign Up API
+
 The new sign up API is proposed to enable: 1) sign up with custom data;
 2) update user profile during sign up. The new sign up API will perform:
 
-1. Discover user with the provided data
-1. Sign up with the provided data and password, if no user is found
+1. Discover user with the authentication data
+1. Sign up with the authentication data and password, if no user is found
 1. Update user record as profile
 
 The function signature will be `container.signup(authData, password, profile)`
@@ -95,17 +97,46 @@ kept as helper methods:
 - `container.signupWithEmail(email, password)`
 - `container.signupAnonymously()`
 
+### Log In API
+
 The similar signature is also proposed to log in API to enable log in with
 custom data: `container.login(authData, password)`.  The new log in API will
 perform:
 
-1. Discover user with the provided data
-1. Log in with the provided data and password, if only one user is found
+1. Discover user with the authentication data
+1. Log in with the authentication data and password, if only one user is found
 
 The current log in API will be kept as helper methods:
 
 - `container.loginWithUsername(username, password)`
 - `container.loginWithEmail(email, password)`
+
+### Authentication Record Configurations
+
+Since Skygear Server does not have a way for developers to set the uniqueness
+constraint of record fields (except writing the `before_save` hook of the
+record), configurations are proposed for authentication record.
+
+Authentication Record Configurations should contains: 1) Authentication Record
+Type; 2) Authentication Record Fields. They are suggested to be provided by
+environment variables during implementation:
+
+- `AUTH_RECORD_TYPE`: the record type for authentication, default: `user`
+- `AUTH_RECORD_FIELDS`: the record field names of the record for
+  authentication. The format will be a comma separated list while each list
+  item is either a field name or another comma separated list wrapped with a
+  pair of brackets. (e.g. `slug,(username,role),(email,role)`). The default
+  value would be `username,email`.
+
+The authentication record field configuration defines the following behavior:
+
+- the list of unique constraints on the corresponding table of the
+  authentication record.
+- the list of available authentication data for sign up / log in on non
+  development mode. For example, if `AUTH_RECORD_FIELDS` is set to
+  `slug,(username,role)`, only the following formats of authentication data
+  are accepted on non development mode: 1) `slug` only; 2) `username` together
+  with `role`.
 
 # Sample Codes for Use Cases
 
@@ -120,7 +151,7 @@ const skygear = require('skygear');
 // Use Case 1: discover user by username
 skygear.discoverUserByUsername('cheungpat')
 .then((users) => {
-  if (users.length) {
+  if (users.length === 0) {
     console.warn('Cannot find cheungpat');
     return;
   }
@@ -153,14 +184,14 @@ skygear.publicDB.query(userQuery)
 
 ## New sign up / log in API
 
-The usage of new sign up / log in API is shown as followed:
+The usage of new sign up / log in API is shown as follows:
 
 ```js
 const skygear = require('skygear');
 
 // Use Case 1: sign up and setting user profile
 skygear.signup(
-  { 'username': 'user001' }
+  { 'username': 'user001' },
   's3cuRe-p@ssw0rd',
   {
     birthday: new Date(1992, 2, 29),
@@ -222,5 +253,6 @@ The SDKs would be expected to have the following changes:
 # Changes on Database Scheme
 
 1. Rename `_user` table to `_auth`
+1. Create a view named `_user` for backward compatibility
 1. Move `username` and `email` from `_auth` to `user`
 1. Insert correct field-based ACL on `user` record
