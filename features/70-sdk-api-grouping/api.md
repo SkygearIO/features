@@ -24,7 +24,7 @@ skygear.pubsub.on("channel", function() {});
 
 var SampleItem = skygear.Record.extend('SampleItem');
 var sampleItem = new SampleItem();
-skygear.db.public.save(sampleItem);
+skygear.publicDB.save(sampleItem);
 ```
 
 ```js
@@ -32,7 +32,7 @@ skygear.db.public.save(sampleItem);
 
 var apiKey = skygear.apiKey;
 var currentAccessToken = skygear.auth.currentAccessToken;
-var publicDBCache = skygear.db.public.cache;
+var publicDBCache = skygear.publicDB.cache;
 ```
 
 ## Objective-C
@@ -47,7 +47,7 @@ SKYContainer *container = [SKYContainer defaultContainer];
 [container.pubsub subscribeTo:"channel" handler:nil];
 
 SKYRecord *sampleItem = [SKYRecord recordWithRecordType:@"SampleItem"];
-[container.db.public saveRecord:sampleItem completion:nil];
+[container.publicDB saveRecord:sampleItem completion:nil];
 ```
 
 ```obj-c
@@ -57,7 +57,7 @@ SKYRecord *sampleItem = [SKYRecord recordWithRecordType:@"SampleItem"];
 SKYContainer *container = [SKYContainer defaultContainer];
 NSString *apiKey = [container apiKey];
 NSString *currentAccessToken = [container.auth currentAccessToken];
-NSDictionary *publicDBCache = [container.db.public cache];
+NSDictionary *publicDBCache = [container.publicDB cache];
 ```
 
 ## Java
@@ -74,7 +74,7 @@ container.auth().forgotPassword("email@example.com");
 container.pubsub().subscribe("channel", new Pubsub.Handler());
 
 Record sampleItem = new Record('SampleItem');
-container.db().public().save(sampleItem, null);
+container.publicDB().save(sampleItem, null);
 ```
 
 ```java
@@ -85,7 +85,7 @@ import io.skygear.skygear.Container;
 Container container = Container.defaultContainer(Context.getApplicationContext());
 String apiKey = container.apiKey();
 String currentAccessToken = container.auth().currentAccessToken();
-Map publicDBCache = container.db().public().cache();
+Map publicDBCache = container.publicDB().cache();
 ```
 
 # Changes on SDK
@@ -101,7 +101,8 @@ Container:
     timeoutOptions
     auth(AuthContainer)
     relation(RelationContainer)
-    db(DatabaseContainer)
+    publicDB(PublicDatabaseContainer)
+    privateDB(PrivateDatabaseContainer)
     pubsub(PubsubContainer)
     push(PushContainer)
     chat(ChatContainer)
@@ -152,20 +153,10 @@ RelationContainer:
     removeRelation
 
 
-DatabaseContainer:
+PublicDatabaseContainer:
 
   state:
-    public(PublicDatabase)
-    private(PrivateDatabase)
     cacheResponse(Boolean)
-
-  api:
-    makeUploadAssetRequest
-
-
-PublicDatabase:
-
-  state:
     cacheStore
 
   api:
@@ -183,11 +174,13 @@ PublicDatabase:
     fetchSubscriptionWithID
     saveSubscription
     deleteSubscriptionWithID
+    makeUploadAssetRequest
 
 
-PrivateDatabase:
+PrivateDatabaseContainer:
 
   state:
+    cacheResponse(Boolean)
     cacheStore
 
   api:
@@ -199,6 +192,7 @@ PrivateDatabase:
     fetchSubscriptionWithID
     saveSubscription
     deleteSubscriptionWithID
+    makeUploadAssetRequest
 
 
 PubsubContainer:
