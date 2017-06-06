@@ -151,8 +151,12 @@ $ skycli cloud function invoke hook add_info --record-type note --trigger before
 
 `--record-type` and `--trigger` is not required if the name is unique.
 
-An editing session is opened with the following content. Save and exit to
-invoke.
+An editing session is opened with some content to help the user invoke
+cloud function without entering boilerplate. The editing session should
+be prepopulated with either:
+
+- Templated params according to the record type and trigger
+- Payload from previous invocation for the same cloud function if any
 
 ```
 # Save to invoke. This line is ignored.
@@ -169,6 +173,10 @@ invoke.
   }
 }
 ```
+
+When the editing session quit with success exit code, the `skycli` should
+save the param for invocation again later and call skygear-server with the
+params.
 
 Will print the result to stdout:
 
