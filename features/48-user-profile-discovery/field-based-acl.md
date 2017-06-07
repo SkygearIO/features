@@ -203,7 +203,7 @@ An table would be created for saving field-based access control entities. The
 schema would be like:
 
 ```SQL
-CREATE TABLE "_recrod_field_access" (
+CREATE TABLE "_record_field_access" (
     "record_type" text NOT NULL,
     "record_field" text NOT NULL,
     "user_role" text NOT NULL,
