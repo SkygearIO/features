@@ -99,7 +99,6 @@ Request:
 ```json
 {
   "action": "cloudfunc:invoke",
-  "include_logs": false,
   "func": {
     "kind": "hook",
     "name": "hook_name",
@@ -120,8 +119,7 @@ Response:
     "response": {
       /* the response is specific to the cloud function */
     }
-    "log": "<base64 encoded string>"
-  	}
+  }
 }
 ```
 
@@ -190,12 +188,7 @@ Other options to invoke cloud function:
 $ skycli help cloud function invoke
 Usage: skycli cloud function invoke [options]
     --again  Run with payload from previous invocation
-    --log    Print log to stderr
 
 $ skycli cloud function invoke note.add_info --again
 { /* ... */ }
-
-$ skycli cloud function invoke note.add_info --again --log
-{ /* ... */ } 
-[py-skygear] ...log...
 ```
