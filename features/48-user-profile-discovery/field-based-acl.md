@@ -107,10 +107,50 @@ function recordOperationVeridation (operation) {
 }
 ```
 
+## Partial Record Fields Update
+
+For backward compatibility of Skygear API, partial record fields update is
+introduced. For non-atomic record save request, partial fields update is
+allowed, which means that even some record fields are not writable for the
+requesting user, the record will still be updated on other writable fields.
+An warning message would be responded to developers showing which field updates
+are rejected because of the field-based ACL.
+
 # Changes on SDK
 
-No changes on SDK since this feature would be expected to be used on Skygear
-Cloud Portal or Skygear CLI, which will be specified on another document.
+Skygear SDKs have not many changes since the setup of field-based ACL would be
+expected on Skygear Cloud Portal or Skygear CLI, which will be specified on
+another document.
+
+The record save API on Skygear SDKs would be updated to support partial record
+fields update on non-atomic request.
+
+```js
+// saving one record
+skygear.publicDB.save(record1)
+.then((savedRecord) => {
+  console.log(`Successfully saved record: ${savedRecord}`);
+  console.warn(`Rejected saving fields: ${savedRecord.$rejectedFields}`)
+}, (err) => {
+  console.error(`Failed to save: ${err}`);
+});
+
+// saving multiple records
+skygear.publicDB.save([record1, record2])
+.then((result) => {
+  const { savedRecords, errors } = result;
+  savedRecords.foeEach((eachRecord, idx) => {
+    if (eachRecord) {
+      console.log(`Successfully saved record: ${eachRecord}`);
+      console.warn(`Rejected saving fields: ${eachRecord.$rejectedFields}`)
+    } else {
+      console.log(`Failed to save: ${errors[idx]}`);
+    }
+  });
+}, (err) => {
+  console.error(`Failed to save: ${err}`);
+});
+```
 
 # Samples for Some Use Cases
 
@@ -144,7 +184,7 @@ discoverable by others
 # Changes on API at skygear-server
 
 Two actions would be added to Skygear server for getting and updating the
-field-based ACL. Both of them are expected to called with master key.
+field-based ACL. Both of them are expected to called with **master key**.
 
 ## Get the field-based ACL
 
