@@ -270,8 +270,16 @@ The following is a sample response of a record partial update:
       "_created_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
       "_id": "note/2",
       "_ownerID": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
-      // list of fields rejected from update
-      "_rejected_fields": ["tags"],
+      // list of warnings for the request
+      "_warnings": [
+        {
+          "code": 999,
+          "message": "fields permission denied",
+          "info": {
+            "fields": ["tags"]
+          }
+        }
+      ],
       "_type": "record",
       "_updated_at": "2017-06-19T06:33:33.089476Z",
       "_updated_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
