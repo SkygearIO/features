@@ -122,7 +122,7 @@ Type; 2) Authentication Record Fields. They are suggested to be provided by
 environment variables during implementation:
 
 - `AUTH_RECORD_TYPE`: the record type for authentication, default: `user`
-- `AUTH_RECORD_FIELDS`: the record field names of the record for
+- `AUTH_RECORD_KEYS`: the record field names of the record for
   authentication. The format will be a comma separated list while each list
   item is either a field name or another comma separated list wrapped with a
   pair of brackets. (e.g. `slug,(username,role),(email,role)`). The default
@@ -133,7 +133,7 @@ The authentication record field configuration defines the following behavior:
 - the list of unique constraints on the corresponding table of the
   authentication record.
 - the list of available authentication data for sign up / log in on non
-  development mode. For example, if `AUTH_RECORD_FIELDS` is set to
+  development mode. For example, if `AUTH_RECORD_KEYS` is set to
   `slug,(username,role)`, only the following formats of authentication data
   are accepted on non development mode: 1) `slug` only; 2) `username` together
   with `role`.
