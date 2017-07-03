@@ -107,10 +107,50 @@ function recordOperationVeridation (operation) {
 }
 ```
 
+## Record Partial Update
+
+For backward compatibility of Skygear API, record partial update is
+introduced. For **non-atomic** record save request, partial fields update is
+allowed, which means that even some record fields are not writable for the
+requesting user, the record will still be updated on other writable fields.
+An warning message would be responded to developers showing which field updates
+are rejected because of the field-based ACL.
+
 # Changes on SDK
 
-No changes on SDK since this feature would be expected to be used on Skygear
-Cloud Portal or Skygear CLI, which will be specified on another document.
+Skygear SDKs have not many changes since the setup of field-based ACL would be
+expected on Skygear Cloud Portal or Skygear CLI, which will be specified on
+another document.
+
+The record save API on Skygear SDKs would be updated to support record partial
+update on **non-atomic** request.
+
+```js
+// saving one record
+skygear.publicDB.save(record1)
+.then((savedRecord) => {
+  console.log(`Successfully saved record: ${savedRecord}`);
+  console.warn(`Rejected saving fields: ${savedRecord.$rejectedFields}`)
+}, (err) => {
+  console.error(`Failed to save: ${err}`);
+});
+
+// saving multiple records
+skygear.publicDB.save([record1, record2])
+.then((result) => {
+  const { savedRecords, errors } = result;
+  savedRecords.foeEach((eachRecord, idx) => {
+    if (eachRecord) {
+      console.log(`Successfully saved record: ${eachRecord}`);
+      console.warn(`Rejected saving fields: ${eachRecord.$rejectedFields}`)
+    } else {
+      console.log(`Failed to save: ${errors[idx]}`);
+    }
+  });
+}, (err) => {
+  console.error(`Failed to save: ${err}`);
+});
+```
 
 # Samples for Some Use Cases
 
@@ -143,12 +183,12 @@ discoverable by others
 
 # Changes on API at skygear-server
 
+## Get / Update the field-based ACL
+
 Two actions would be added to Skygear server for getting and updating the
-field-based ACL. Both of them are expected to called with master key.
+field-based ACL. Both of them are expected to called with **master key**.
 
-## Get the field-based ACL
-
-The sample request is shown as followed:
+The following is a sample request of **getting field-based ACL**:
 
 ```json
 {
@@ -157,9 +197,7 @@ The sample request is shown as followed:
 }
 ```
 
-## Update the field-based ACL
-
-The sample request is shown as followed:
+The following is a sample request of **updating field-based ACL**:
 
 ```json
 {
@@ -192,6 +230,69 @@ The sample request is shown as followed:
       "readable": true,
       "comparable": true,
       "discoverable": true
+    }
+  ]
+}
+```
+
+## Record Partial Update
+
+To support record partial update, warnings are added to the response
+interface of `record:update` action to indicate the rejected fields on a
+**non-atomic** save action.
+
+The following is a sample response of a record partial update:
+
+```js
+{
+  "result": [
+    {
+      // record that saved successfully
+      "_access": [
+        { "level": "read", "public": true }
+      ],
+      "_created_at": "2017-06-19T06:06:16.734626Z",
+      "_created_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      "_id": "note/1",
+      "_ownerID": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      "_type": "record",
+      "_updated_at": "2017-06-19T06:33:33.081303Z",
+      "_updated_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      "content": "hello world",
+      "tags": ["important", "must-read"]
+    },
+    {
+      // record that saved partially
+      "_access": [
+        { "level": "read", "public": true }
+      ],
+      "_created_at": "2017-06-19T06:06:30.125993Z",
+      "_created_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      "_id": "note/2",
+      "_ownerID": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      // list of warnings for the request
+      "_warnings": [
+        {
+          "code": 999,
+          "message": "fields permission denied",
+          "info": {
+            "fields": ["tags"]
+          }
+        }
+      ],
+      "_type": "record",
+      "_updated_at": "2017-06-19T06:33:33.089476Z",
+      "_updated_by": "3c25ddff-b6d4-4d1d-8e67-45c3d82c90f5",
+      "content": "foo bar",
+      "tags": ["must-read"]
+    },
+    {
+      // record that failed to update
+      "_id": "note/3",
+      "_type": "error",
+      "code": 102,
+      "message": "no permission to modify",
+      "name": "PermissionDenied"
     }
   ]
 }
