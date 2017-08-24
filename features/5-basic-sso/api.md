@@ -25,17 +25,16 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 
 # Sample Codes for Use Cases
 
-User wants to post things to Facebook, they want to write code like this
+User wants to integrate with a website supporting OAuth
 
 ``` js
-skygear.auth.loginWithFacebook({
-  use3rdPartyClient: true
+skygear.loginWithOAuthProvider('com.example', {
+  clientID: 'xxxxxxx',
+  uxMode: 'popup',
+  scope: 'email'
 }).then((skygearUser) => {
-  // They can call this because we are using FB.login internally
-  FB.post('hi'); // post to timeline
-
-  skygear.auth.getFacebookToken().then(function(authResult) {
-    // authResult['access_token'] is FB's access token
+  // At this point, the user is logged in
+  skygear.getOAuthTokens('com.example').then(function(authResult) {
     /*
     {
       "access_token": "...",
@@ -49,16 +48,19 @@ skygear.auth.loginWithFacebook({
 })
 ```
 
-User wants to integrate with a website supporting OAuth
+User wants to login with 3rd sdk
+
+**[TBD]: Login with 3rd party SDK flow, should we wrap the 3rd party sdk call inside skygear SDK**
 
 ``` js
-skygear.loginWithOAuthProvider('com.example', {
-  clientID: 'xxxxxxx',
-  uxMode: 'popup',
-  scope: 'email'
+skygear.auth.loginWithFacebook({
+  use3rdPartyClient: true
 }).then((skygearUser) => {
-  // At this point, the user is logged in
-  skygear.getOAuthTokens('com.example').then(function(authResult) {
+  // They can call this because we are using FB.login internally
+  FB.post('hi'); // post to timeline
+
+  skygear.auth.getFacebookToken().then(function(authResult) {
+    // authResult['access_token'] is FB's access token
     /*
     {
       "access_token": "...",
@@ -85,6 +87,16 @@ class ExampleOAuthProvider
 
   def refresh_token_url(self, refresh_token):
     return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
+
+  def user_info_url(self):
+    return "https://www.googleapis.com/oauth2/v1/userinfo"
+
+  def device_code_url(self):
+    return "https://accounts.google.com/o/oauth2/device/code"
+
+  def poll_access_token_url(self):
+    return "https://www.googleapis.com/oauth2/v4/token"
+
 ```
 
 Access OAuth tokens in Cloud code:
@@ -196,7 +208,7 @@ All function are under `skygear.auth`
     service, via delegate.
 - `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
   NSDictionary*))]`
-  - Return all AuthResult 
+  - Return all AuthResult
 
         [container.auth getOAuthTokensWithCompletion:^(NSDictionary *authResult){
         //tokens['com.facebook'] is FB's access token }];
@@ -275,19 +287,47 @@ like this. It will be used to generate URLs when user auth.
 
 Since the map is in plugin, user should be able to extend it easily.
 
-```
+``` python
 @skygear.provides("oauth", "com.example")
 class ExampleOAuthProvider
-  auth_url = "http://example.com/auth"
+  def auth_url(self):
+    return "http://example.com/auth"
 
-  @property
   def access_token_url(self, code):
     return "http://example.com/access_token?code="+code
 
-  @property
   def refresh_token_url(self, refresh_token):
     return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
+
+  def user_info_url(self):
+    """
+    we need this for creating skygear user
+    """
+    return "https://www.googleapis.com/oauth2/v1/userinfo"
+
+  def device_code_url(self):
+    # For provider which support sign in with limited capability devices
+    return "https://accounts.google.com/o/oauth2/device/code"
+
+  def poll_access_token_url(self):
+    # For provider which support sign in with limited capability devices
+    return "https://www.googleapis.com/oauth2/v4/token"
+
 ```
+
+**Sign in with limited capability devices flow**
+
+Refs: [
+OAuth 2.0 for TV and Limited-Input Device Applications](https://accounts.google.com/o/oauth2/device/code)
+
+**Need providing hock to allow customizations for non compliant providers**
+
+Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
+
+- access_token_response
+- refresh_token_response
+- protected_request
+- user_infor_response
 
 Pseudo code of `oauth:handle_access_token`:
 
@@ -381,6 +421,7 @@ I am proposing the following format for data in the auth column.
   - `expires_at`, calculated from `expires_in`, an absolute timestamp
   - `refresh_token`
 
+```
       {
         "oauth.com.facebook": {
           "access_token": "...",
@@ -389,7 +430,7 @@ I am proposing the following format for data in the auth column.
           "refresh_token": "...."
         }
       }
-
+```
 
 # Others Supplement Information
 
@@ -405,6 +446,8 @@ JS, iOS and Android should follow this flow:
   - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 4. Return user and access_token
 
+![OAuth flow](./3rd_party_sdk_flow.png)
+
 #### When using OAuth flow
 
 1. Ask for a url to display via `oauth:auth_url`
@@ -415,6 +458,8 @@ JS, iOS and Android should follow this flow:
 5. Plugin creates or logins a user
 6. Pass the user back to client side
 
+![OAuth flow](./oauth_flow.png)
+
 ### For devices with limited capability
 
 1. Fetch code and URL from Google / Facebook
@@ -424,4 +469,3 @@ JS, iOS and Android should follow this flow:
 4. When access_token is received via polling, send it to skygear-server `oauth:handle_access_token`
   - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 5. Pass the user from skygear user and `access_token` back to user
-
