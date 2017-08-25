@@ -29,7 +29,6 @@ User wants to integrate with a website supporting OAuth
 
 ``` js
 skygear.loginWithOAuthProvider('com.example', {
-  clientID: 'xxxxxxx',
   uxMode: 'popup',
   scope: 'email'
 }).then((skygearUser) => {
@@ -77,26 +76,43 @@ skygear.auth.loginWithFacebook({
 Cloud code to add an OAuth provider
 
 ``` python
-@skygear.provides("oauth", "com.example")
-class ExampleOAuthProvider
-  def auth_url(self):
-    return "http://example.com/auth"
+@skygear.provides("oauth", "com.google")
+class GoogleOAuthProvider(BaseOAuthProvider)
+    name = 'google' # use to parse envvar and route
 
-  def access_token_url(self, code):
-    return "http://example.com/access_token?code="+code
+    def auth_base_url(self):
+        return "https://accounts.google.com/o/oauth2/v2/auth"
 
-  def refresh_token_url(self, refresh_token):
-    return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
+    def auth_url(self, request): # Implement for customization
+        return self.auth_base_url() + "?" +
+            "response_type=code&" +
+            "client_id=" + self.client_id + "&"
+            "redirect_uri=" + generate_redirect_url(redirect_uri) + "&" +
+            "access_type=offline&prompt=select_account"
 
-  def user_info_url(self):
-    return "https://www.googleapis.com/oauth2/v1/userinfo"
+    def access_token_base_url(self):
+        return "https://www.googleapis.com/oauth2/v4/token"
 
-  def device_code_url(self):
-    return "https://accounts.google.com/o/oauth2/device/code"
+    def refresh_token_base_url(self):
+        return "https://www.googleapis.com/oauth2/v4/token"
 
-  def poll_access_token_url(self):
-    return "https://www.googleapis.com/oauth2/v4/token"
+    """
+    we need this for creating skygear user
+    """
+    def user_info_url(self):
+        return "https://www.googleapis.com/oauth2/v1/userinfo"
 
+    """
+    limited capability devices support
+    """
+    def device_code_url(self):
+        return "https://accounts.google.com/o/oauth2/device/code"
+
+    """
+    limited capability devices support
+    """
+    def poll_access_token_url(self):
+        return "https://www.googleapis.com/oauth2/v4/token"
 ```
 
 Access OAuth tokens in Cloud code:
@@ -122,7 +138,6 @@ All function are under `skygear.auth`
   - `providerID` - A string that identify the login provider
   - `options`
     - uxMode - Either `popup`(default), or `redirect`
-    - clientID
     - scope
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
@@ -287,32 +302,166 @@ like this. It will be used to generate URLs when user auth.
 
 Since the map is in plugin, user should be able to extend it easily.
 
+
+### Pseudo code of AuthProvider
+
 ``` python
-@skygear.provides("oauth", "com.example")
-class ExampleOAuthProvider
-  def auth_url(self):
-    return "http://example.com/auth"
+@skygear.provides("oauth", "com.google")
+class GoogleOAuthProvider(BaseOAuthProvider)
+  name = 'google' # use to parse envvar and route
 
-  def access_token_url(self, code):
-    return "http://example.com/access_token?code="+code
+  def auth_base_url(self):
+    return "https://accounts.google.com/o/oauth2/v2/auth"
 
-  def refresh_token_url(self, refresh_token):
-    return "http://example.com/token?grant_type=refresh_token&refresh_token=" + refresh_token
+  def auth_url(self): # Implement for customization
+    return self.auth_base_url() + "?" +
+        "response_type=code&" +
+        "client_id=" + self.client_id + "&"
+        "redirect_uri=<redirect_uri>&" +
+        "access_type=offline&prompt=select_account"
 
-  def user_info_url(self):
-    """
-    we need this for creating skygear user
-    """
-    return "https://www.googleapis.com/oauth2/v1/userinfo"
-
-  def device_code_url(self):
-    # For provider which support sign in with limited capability devices
-    return "https://accounts.google.com/o/oauth2/device/code"
-
-  def poll_access_token_url(self):
-    # For provider which support sign in with limited capability devices
+  def access_token_base_url(self):
     return "https://www.googleapis.com/oauth2/v4/token"
 
+  def refresh_token_base_url(self):
+    return "https://www.googleapis.com/oauth2/v4/token"
+
+  """
+  we need this for creating skygear user
+  """
+  def user_info_url(self):
+    return "https://www.googleapis.com/oauth2/v1/userinfo"
+
+  """
+  limited capability devices support
+  """
+  def device_code_url(self):
+    return "https://accounts.google.com/o/oauth2/device/code"
+
+  """
+  limited capability devices support
+  """
+  def poll_access_token_url(self):
+    return "https://www.googleapis.com/oauth2/v4/token"
+
+
+class BaseOAuthProvider:
+    name = 'SSO' # use to parse envvar and route
+    client_id = None
+    client_secret = None
+    scope = []
+
+    def __init__(self):
+        env_name = self.name.upper()
+        self.client_id = os.environ.get(env_name + '_CLIENT_ID', None)
+        self.client_secret = os.environ.get(env_name + '_CLIENT_SECRET', None)
+        self.scope = os.environ.get(env_name + '_SCOPE', '').split(',')
+
+    def auth_base_url(self):
+        return "http://example.com/auth"
+
+    def auth_url(self, request):
+        return self.auth_base_url() + "?" +
+            "response_type=code&" +
+            "client_id=" + self.client_id + "&"
+            "redirect_uri=" + generate_redirect_url(redirect_uri) + "&" +
+            "access_type=offline&prompt=select_account"
+
+    def access_token_base_url(self):
+        return "http://example.com/access_token"
+
+    def access_token_url(self, code, redirect_uri):
+        return self.access_token_base_url() + "?" +
+            "client_id=your_client_id&" +
+            "client_secret=your_client_secret&" +
+            "code=" + code + "&" +
+            "grant_type=authorization_code"
+
+    def refresh_token_base_url(self):
+        return "http://example.com/token"
+
+    def refresh_token_url(self, refresh_token):
+        return self.refresh_token_base_url() + "?" +
+            "grant_type=refresh_token&refresh_token=" + refresh_token
+
+    def user_info_url(self):
+        return "https://www.googleapis.com/oauth2/v1/userinfo"
+
+    def device_code_url(self):
+        return "https://accounts.google.com/o/oauth2/device/code"
+
+    def poll_access_token_url(self):
+        return "https://www.googleapis.com/oauth2/v4/token"
+
+    def generate_redirect_url(self, redirect_uri):
+
+    def handle_code(self, request):
+        access_token_url = self.access_token_url(request.get('code'))
+
+        """
+          call access_token_url to request access_token
+        """
+        response = requests.POST(access_token_url)
+        ....
+
+        access_token_data = self.process_access_token_response(
+            response.json_body)
+
+        user = self.handle_access_token(access_token_data['access_token'])
+        # redirect to uri from generate_redirect_url
+        return
+
+    def handle_access_token(self, request):
+        user = self.handle_access_token(access_token_data['access_token'])
+        # redirect to uri from generate_redirect_url
+        return
+
+    def signup_user_with_access_token(self, token):
+        existing_user = get_user_by_access_token(token)
+        if existing_user:
+          return existing_user
+
+        # get user profile from 3rd party
+        user_info_url = self.user_info_url()
+        url, headers, data = self.process_protected_request(
+          user_info_url, auth_header, data
+        )
+        user_info_response = requests.get(
+          user_info_url, headers=auth_header, data=data)
+        user_info_data = self.process_user_info_response(response.json_body)
+
+        email = user_info_data.get('email')
+        if email:
+            user = getUserByEmail(email)
+
+            if user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS:
+                raise Error("The email is associated with another account")
+
+            add_auth_to_user(user, token)
+            return user
+
+        # create or login skygear user
+        return create_new_user()
+
+    def register(self, name):
+        skygear.handler('sso/'+ self.name +'/auth_url', self.auth_url)
+        skygear.handler('sso/'+ self.name +'/handle_code', self.handle_code) # auth dialog callback
+        skygear.handler('sso/'+ self.name +'/handle_access_token', self.handle_access_token) # login with 3rd party SDK
+
+    """
+    hock for customizations
+    """
+    def process_access_token_response(self, response_data):
+        return response_data
+
+    def process_refresh_token_response(self, response_data):
+        return response_data
+
+    def process_protected_request(self, url, headers, data):
+        return url, headers, data
+
+    def process_user_info_response(self, response_data):
+        return response_data
 ```
 
 **Sign in with limited capability devices flow**
@@ -320,37 +469,14 @@ class ExampleOAuthProvider
 Refs: [
 OAuth 2.0 for TV and Limited-Input Device Applications](https://accounts.google.com/o/oauth2/device/code)
 
-**Need providing hock to allow customizations for non compliant providers**
+**Need providing hook to allow customizations for non compliant providers**
 
 Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 
 - access_token_response
 - refresh_token_response
 - protected_request
-- user_infor_response
-
-Pseudo code of `oauth:handle_access_token`:
-
-```
-def handleAccessToken(token):
-  # Code should be organized in a way to share logic with auto provider
-  existingUser = getUserByAccessToken(token)
-  if existingUser:
-    return existingUser
-
-  emailOfThirdPartyAccount = getEmail(token)
-  if emailOfThirdPartyAccount:
-    user = getUserByEmail(emailOfThirdPartyAccount)
-
-    if user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS:
-      return Error("The email is associated with another account")
-
-    addAuthToUser(user, token)
-    return user
-
-  return createNewUser(token)
-}
-```
+- user_info_response
 
 ## APIs
 
