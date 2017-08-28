@@ -28,7 +28,7 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 ## JS
 All function are under `skygear.auth`
 
-- `loginProviderWithPopup(providerID, options)` and `loginProviderWithRedirect(providerID, options)`
+- `loginOAuthProviderWithPopup(providerID, options)` and `loginOAuthProviderWithRedirect(providerID, options)`
   - Create or login a new skygear user, associated with the provider
   - `providerID` - A string that identify the login provider
   - `options`
@@ -37,7 +37,7 @@ All function are under `skygear.auth`
   - This function returns a skygear user, and an access token of the service.
 
 ```js
-  skygear.auth.loginProviderWithPopup('facebook', {
+  skygear.auth.loginOAuthProviderWithPopup('com.facebook', {
     scope: []
   }).then(function(skygearUser) {
 
@@ -45,7 +45,7 @@ All function are under `skygear.auth`
 
   });
 
-  skygear.auth.loginProviderWithRedirect('facebook', {
+  skygear.auth.loginOAuthProviderWithRedirect('com.facebook', {
     scope: [],
     redirectUri: 'https://app.example.com/signup'
   });
@@ -68,7 +68,7 @@ All function are under `skygear.auth`
     service.
 
 ```js
-  skygear.auth.linkProviderWithPopup('facebook', {
+  skygear.auth.linkOAuthProviderWithPopup('com.facebook', {
     scope: []
   }).then(function(skygearUser) {
 
@@ -76,7 +76,7 @@ All function are under `skygear.auth`
 
   });
 
-  skygear.auth.linkProviderWithRedirect('facebook', {
+  skygear.auth.linkOAuthProviderWithRedirect('com.facebook', {
     scope: [],
     redirectUri: 'https://app.example.com/signup'
   });
@@ -88,21 +88,33 @@ All function are under `skygear.auth`
   });
 ```
 
+- `unlinkOAuthProvider(providerID)`
+
+```js
+  skygear.auth.unlinkOAuthProvider.then(function() {
+
+  }).catch(function(error) {
+
+  });
+```
+
 - `getOAuthTokens(providerID)`
   - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
   - Return a promise of authResult
 
-        getOAuthTokens('com.example').then(function(authResult) {
-          /*
-          {
-            "access_token": "...",
-            "token_type": "bearer",
-            "expires_at": 1495052619,
-            "scope": ["email", "friends"],
-            "refresh_token": "...."
-          }
-          */
-        });
+```js
+  skygear.auth.getOAuthTokens('com.example').then(function(authResult) {
+    /*
+    {
+      "access_token": "...",
+      "token_type": "bearer",
+      "expires_at": 1495052619,
+      "scope": ["email", "friends"],
+      "refresh_token": "...."
+    }
+    */
+  });
+```
 
 ### Platform specific API
 - `loginWithFacebook(options)` and `loginWithGoogle(options)`
@@ -134,7 +146,7 @@ All function are under `skygear.auth`
   - `accessToken` - Client calls this API if it already has an access token,
     skygear will try to login directly instead of going through the OAuth
     flow.
-- `-[SKYContainer.auth linkWithProvider:(NSString*)providerID
+- `-[SKYContainer.auth linkWithOAuthProvider:(NSString*)providerID
   options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Add a new auth provider to the user by going through the auth flow
   - `providerID` - A string that identify the login provider
@@ -142,6 +154,7 @@ All function are under `skygear.auth`
     - scope
   - This function returns a skygear user, and an access token of the new
     service, via delegate.
+- `-[SKYContainer.auth unlinkWithOAuthProvider:(NSString*)providerID completion:(void(^)(NSError*, SKYUser*))]`
 - `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
   NSDictionary*))]`
   - Return all AuthResult
@@ -166,7 +179,11 @@ All function are under `skygear.auth`
 ## Android
 
 - `container.auth().loginWithOAuthProvider(providerID, options, new
-  AuthResponseHandler())`
+  OAuthResponseHandler())`
+- `container.auth().linkWithOAuthProvider(providerID, options, new
+  OAuthResponseHandler())`
+- `container.auth().unlinkWithOAuthProvider(providerID, new
+  OAuthResponseHandler())`
 - `container.auth().getOAuthToken(providerID, new
   OAuthResponseHandler())`
 
