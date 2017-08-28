@@ -267,14 +267,27 @@ OAuthResponseHandler.onAuthSuccess(AuthResult result);
   - Take a provider id, and OAuth data
   - Save data into `_user.auth`, with "oauth." prefix in OAuth data
 
+# Changes on Portal
+
+Add SSO section, for each predefined provider:
+- checkbox for `SSO_{PROVIDER}_ENABLED`
+- input field for `SSO_{PROVIDER}_CLIENT_ID`
+- input field for `SSO_{PROVIDER}_CLIENT_SECRET`
+- input field for `SSO_{PROVIDER}_SCOPE`
+    - comma separated
+    - Could be checkbox list based on provider, for example:
+        - facebook: email, public_profile, user_likes ...
+        - google: https://www.googleapis.com/auth/userinfo.email, https://www.googleapis.com/auth/userinfo.profile ...
+
 # Changes on Plugin
 
 ## Environment variables
 
 - `UNIQUE_EMAIL_FOR_ACCOUNTS`, boolean
-- `FACEBOOK_CLIENT_SECRET`
-- `GOOGLE_API_KEY`
-- `SSO_ENABLED` e.g `FACEBOOK,GOOGLE`.
+- `SSO_{PROVIDER}_ENABLED`
+- `SSO_{PROVIDER}_CLIENT_ID`
+- `SSO_{PROVIDER}_CLIENT_SECRET`
+- `SSO_{PROVIDER}_SCOPE`
 
 ## Implementation
 
