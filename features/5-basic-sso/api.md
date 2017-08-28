@@ -133,7 +133,7 @@ token.expire_date
 ## JS
 All function are under `skygear.auth`
 
-- `loginWithOAuthProvider(providerID, options, [accessToken])`
+- `loginWithOAuthProvider(providerID, options)`
   - Create or login a new skygear user, associated with the provider
   - `providerID` - A string that identify the login provider
   - `options`
@@ -141,9 +141,6 @@ All function are under `skygear.auth`
     - scope
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
-  - `accessToken` - Optional. Pass in access token if client already has it,
-    skygear will try to login directly instead of going through the OAuth
-    flow.
   - This function returns a skygear user, and an access token of the service.
 - `associateAccountWithProvider(providerID, options)`
   - Add a new auth provider to the user by going through the auth flow
@@ -151,7 +148,6 @@ All function are under `skygear.auth`
   - `providerID` - A string that identify the login provider
   - `options`
     - uxMode - Either `popup`(default), or `redirect`
-    - clientID
     - scope
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
@@ -177,7 +173,6 @@ All function are under `skygear.auth`
 - `loginWithFacebook(options)` and `loginWithGoogle(options)`
   - `options`
     - uxMode - Either `popup`(default), or `redirect`
-    - clientID
     - scope
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
@@ -195,10 +190,7 @@ All function are under `skygear.auth`
     - uxMode - Either `popup`(default), or `redirect`, popup means
       in-app-browser (SFSafariViewController/WKWebView) and redirect means
       Safari.app
-    - clientID
     - scope
-    - version - FB Client SDK only
-    - cookiePolicy - Google Client SDK only
   - This function returns a skygear user, and an access token of the service,
     via a delegate.
 - `-[SKYContainer.auth loginWithOAuthProvider:(NSString*)providerID,
@@ -215,10 +207,7 @@ All function are under `skygear.auth`
     - uxMode - Either `popup`(default), or `redirect`, popup means
       in-app-browser (SFSafariViewController/WKWebView) and redirect means
       Safari.app
-    - clientID
     - scope
-    - version - FB Client SDK only
-    - cookiePolicy - Google Client SDK only
   - This function returns a skygear user, and an access token of the new
     service, via delegate.
 - `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
@@ -237,7 +226,6 @@ All function are under `skygear.auth`
 - `-[SKYContainer.auth loginWithFacebook:(NSDictionary*)options]` and `-[SKYContainer loginWithGoogle:(NSDictionary*)options]`
   - `options`
     - uxMode - Either `popup`(default), or `redirect`, popup means in-app-browser (SFSafariViewController/WKWebView) and redirect means Safari.app
-    - clientID
     - scope
     - version - FB Client SDK only
     - cookiePolicy - Google Client SDK only
@@ -246,7 +234,7 @@ All function are under `skygear.auth`
 
 ## Android
 
-- `container.auth().loginWithOAuthProvider(providerID, new
+- `container.auth().loginWithOAuthProvider(providerID, options, new
   AuthResponseHandler())`
 - `container.auth().getOAuthToken(providerID, new
   OAuthResponseHandler())`
@@ -255,7 +243,7 @@ OAuthResponseHandler Interface
 
 ```
 OAuthResponseHandler.onAuthFails(Error error);
-OAuthResponseHandler.onAuthSuccess(AuthResult result);
+OAuthResponseHandler.onAuthSuccess(SKYUser user);
 ```
 
 # Changes on API at skygear-server
