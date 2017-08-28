@@ -133,26 +133,68 @@ token.expire_date
 ## JS
 All function are under `skygear.auth`
 
-- `loginWithOAuthProvider(providerID, options)`
+- `loginProviderWithPopup(providerID, options)` and `loginProviderWithRedirect(providerID, options)`
   - Create or login a new skygear user, associated with the provider
   - `providerID` - A string that identify the login provider
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`
-    - scope
+    - scope - Override scope if set in portal
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
   - This function returns a skygear user, and an access token of the service.
-- `associateAccountWithProvider(providerID, options)`
+
+```js
+  skygear.auth.loginProviderWithPopup('facebook', {
+    scope: []
+  }).then(function(skygearUser) {
+
+  }).catch(function(error) {
+
+  });
+
+  skygear.auth.loginProviderWithRedirect('facebook', {
+    scope: [],
+    redirectUrl: 'https://app.example.com/signup'
+  });
+
+  skygear.auth.getLoginRedirectResult().then(function(skygearUser) {
+
+  }).catch(function(error) {
+
+  });
+```
+
+- `linkProviderWithPopup(providerID, options)` and `linkProviderWithRedirect(providerID, options)`
   - Add a new auth provider to the user by going through the auth flow
   - This API requires user to be logged in already, return error otherwise
   - `providerID` - A string that identify the login provider
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`
     - scope
     - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
       to this url after auth. If it is null, back to the current URL
   - This function returns a skygear user, and an access token of the new
     service.
+
+```js
+  skygear.auth.linkProviderWithPopup('facebook', {
+    scope: []
+  }).then(function(skygearUser) {
+
+  }).catch(function(error) {
+
+  });
+
+  skygear.auth.linkProviderWithRedirect('facebook', {
+    scope: [],
+    redirectUrl: 'https://app.example.com/signup'
+  });
+
+  skygear.auth.getLinkRedirectResult().then(function(skygearUser) {
+
+  }).catch(function(error) {
+
+  });
+```
+
 - `getOAuthTokens(providerID)`
   - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
   - Return a promise of authResult
