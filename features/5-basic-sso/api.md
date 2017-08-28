@@ -7,10 +7,10 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 
 ## Scenario
 
-* Sign in with web popup
-* Sign in with web redirect
-* Sign in with limited capability devices (TV/Command line)
-* Sign in with Mobile
+* Sign up and login with web popup
+* Sign up and login with web redirect
+* Sign up and login with limited capability devices (TV/Command line)
+* Sign up and login with Mobile
 * Sign in, and then interact with 3rd party service using the auth information
 * Login by `AuthProvider A`, but the email already got another account from
   `AuthProvider B`, show an error and tell users to login with another
@@ -33,8 +33,7 @@ All function are under `skygear.auth`
   - `providerID` - A string that identify the login provider
   - `options`
     - scope - Override scope if set in portal
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
-      to this url after auth. If it is null, back to the current URL
+    - redirectUri - The URL that skygear will redirect after authorization flow.
   - This function returns a skygear user, and an access token of the service.
 
 ```js
@@ -48,7 +47,7 @@ All function are under `skygear.auth`
 
   skygear.auth.loginProviderWithRedirect('facebook', {
     scope: [],
-    redirectUrl: 'https://app.example.com/signup'
+    redirectUri: 'https://app.example.com/signup'
   });
 
   skygear.auth.getLoginRedirectResult().then(function(skygearUser) {
@@ -64,8 +63,7 @@ All function are under `skygear.auth`
   - `providerID` - A string that identify the login provider
   - `options`
     - scope
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
-      to this url after auth. If it is null, back to the current URL
+    - redirectUri - The URL that skygear will redirect after authorization flow.
   - This function returns a skygear user, and an access token of the new
     service.
 
@@ -80,7 +78,7 @@ All function are under `skygear.auth`
 
   skygear.auth.linkProviderWithRedirect('facebook', {
     scope: [],
-    redirectUrl: 'https://app.example.com/signup'
+    redirectUri: 'https://app.example.com/signup'
   });
 
   skygear.auth.getLinkRedirectResult().then(function(skygearUser) {
@@ -136,14 +134,11 @@ All function are under `skygear.auth`
   - `accessToken` - Client calls this API if it already has an access token,
     skygear will try to login directly instead of going through the OAuth
     flow.
-- `-[SKYContainer associateAccountWithProvider:(NSString*)providerID
+- `-[SKYContainer.auth linkWithProvider:(NSString*)providerID
   options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Add a new auth provider to the user by going through the auth flow
   - `providerID` - A string that identify the login provider
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`, popup means
-      in-app-browser (SFSafariViewController/WKWebView) and redirect means
-      Safari.app
     - scope
   - This function returns a skygear user, and an access token of the new
     service, via delegate.
@@ -162,7 +157,6 @@ All function are under `skygear.auth`
 
 - `-[SKYContainer.auth loginWithFacebook:(NSDictionary*)options]` and `-[SKYContainer loginWithGoogle:(NSDictionary*)options]`
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`, popup means in-app-browser (SFSafariViewController/WKWebView) and redirect means Safari.app
     - scope
     - version - FB Client SDK only
     - cookiePolicy - Google Client SDK only
@@ -216,71 +210,50 @@ Add SSO section, for each predefined provider:
 
 ## Implementation
 
-The plugin internally has a `"Map<ProviderID, (info -> URL)>"` map, something
-like this. It will be used to generate URLs when user auth.
-
-```
-{
-  'com.facebook': {
-    'auth': () =>
-        "https://www.facebook.com/v2.9/dialog/oauth" +
-        "?client_id=" + clientID +
-        "&redirect_uri=" + generateRedirectURL()
-    'access_token': (code)=>
-        "https://www.facebook.com/v2.9/dialog/access_token" +
-        "?client_id=" + clientID +
-        "&client_secret=" + FACEBOOK_CLIENT_SECRET
-  },
-  'com.google': {
-    'auth': ...,
-    'access_token': ...
-  }
-}
-```
-
-Since the map is in plugin, user should be able to extend it easily.
-
-
 ### Pseudo code of AuthProvider
 
 ``` python
 @skygear.provides("oauth", "com.google")
 class GoogleOAuthProvider(BaseOAuthProvider)
-  name = 'google' # use to parse envvar and route
+    name = 'google' # use to parse envvar and route
 
-  def auth_base_url(self):
-    return "https://accounts.google.com/o/oauth2/v2/auth"
+    @property
+    def auth_base_url(self):
+      return "https://accounts.google.com/o/oauth2/v2/auth"
 
-  def auth_url(self): # Implement for customization
-    return self.auth_base_url() + "?" +
-        "response_type=code&" +
-        "client_id=" + self.client_id + "&"
-        "redirect_uri=<redirect_uri>&" +
-        "access_type=offline&prompt=select_account"
+    def auth_url(self, request): # Implement for customization
+      return self.auth_base_url + "?" +
+          "response_type=code&" +
+          "client_id=" + self.client_id + "&"
+          "redirect_uri={redirect_uri}&" +
+          "access_type=offline&prompt=select_account"
 
-  def access_token_base_url(self):
-    return "https://www.googleapis.com/oauth2/v4/token"
+    @property
+    def access_token_base_url(self):
+      return "https://www.googleapis.com/oauth2/v4/token"
 
-  def refresh_token_base_url(self):
-    return "https://www.googleapis.com/oauth2/v4/token"
+    def refresh_token_base_url(self):
+      return "https://www.googleapis.com/oauth2/v4/token"
 
-  """
-  we need this for creating skygear user
-  """
-  def user_info_url(self):
-    return "https://www.googleapis.com/oauth2/v1/userinfo"
+    """
+    we need this for creating skygear user
+    """
+    def user_info_url(self):
+      return "https://www.googleapis.com/oauth2/v1/userinfo"
 
-  """
-  limited capability devices support
-  """
-  def device_code_url(self):
-    return "https://accounts.google.com/o/oauth2/device/code"
+    """
+    limited capability devices support
+    """
+    @property
+    def device_code_base_url(self):
+      return "https://accounts.google.com/o/oauth2/device/code"
 
-  """
-  limited capability devices support
-  """
-  def poll_access_token_url(self):
-    return "https://www.googleapis.com/oauth2/v4/token"
+    """
+    limited capability devices support
+    """
+    @property
+    def poll_access_token_base_url(self):
+      return "https://www.googleapis.com/oauth2/v4/token"
 
 
 class BaseOAuthProvider:
@@ -295,45 +268,59 @@ class BaseOAuthProvider:
         self.client_secret = os.environ.get(env_name + '_CLIENT_SECRET', None)
         self.scope = os.environ.get(env_name + '_SCOPE', '').split(',')
 
+    @property
     def auth_base_url(self):
-        return "http://example.com/auth"
+        raise NotImplementedError('Missing auth base url')
 
     def auth_url(self, request):
-        return self.auth_base_url() + "?" +
+        # get `redirect_uri` from request which provided by client
+        # The URL that skygear will redirect after authorization flow
+        return self.auth_base_url + "?" +
             "response_type=code&" +
             "client_id=" + self.client_id + "&"
             "redirect_uri=" + generate_redirect_url(redirect_uri) + "&" +
             "access_type=offline&prompt=select_account"
 
+    @property
     def access_token_base_url(self):
-        return "http://example.com/access_token"
+        raise NotImplementedError('Missing access token base url')
 
     def access_token_url(self, code, redirect_uri):
-        return self.access_token_base_url() + "?" +
+        return self.access_token_base_url + "?" +
             "client_id=your_client_id&" +
             "client_secret=your_client_secret&" +
             "code=" + code + "&" +
             "grant_type=authorization_code"
 
+    @property
     def refresh_token_base_url(self):
-        return "http://example.com/token"
+        raise NotImplementedError('Missing refresh token base url')
 
     def refresh_token_url(self, refresh_token):
         return self.refresh_token_base_url() + "?" +
             "grant_type=refresh_token&refresh_token=" + refresh_token
 
     def user_info_url(self):
-        return "https://www.googleapis.com/oauth2/v1/userinfo"
+        raise NotImplementedError('Missing user info url')
+
+    @property
+    def device_code_base_url(self):
+        raise NotImplementedError('Missing device code url')
 
     def device_code_url(self):
-        return "https://accounts.google.com/o/oauth2/device/code"
+        raise NotImplementedError('Missing device code url')
+
+    @property
+    def poll_access_token_base_url(self):
+        raise NotImplementedError('Missing poll access token url')
 
     def poll_access_token_url(self):
-        return "https://www.googleapis.com/oauth2/v4/token"
+        raise NotImplementedError('Missing poll access token url')
 
     def generate_redirect_url(self, redirect_uri):
+        return "https://{app}.skygeario.com/sso/{provider}/callback?redirect_uri={redirect_uri}"
 
-    def handle_code(self, request):
+    def callback(self, request):
         access_token_url = self.access_token_url(request.get('code'))
 
         """
@@ -351,7 +338,6 @@ class BaseOAuthProvider:
 
     def handle_access_token(self, request):
         user = self.handle_access_token(access_token_data['access_token'])
-        # redirect to uri from generate_redirect_url
         return
 
     def signup_user_with_access_token(self, token):
@@ -370,7 +356,7 @@ class BaseOAuthProvider:
 
         email = user_info_data.get('email')
         if email:
-            user = getUserByEmail(email)
+            user = get_user_by_email(email)
 
             if user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS:
                 raise Error("The email is associated with another account")
@@ -383,7 +369,7 @@ class BaseOAuthProvider:
 
     def register(self, name):
         skygear.handler('sso/'+ self.name +'/auth_url', self.auth_url)
-        skygear.handler('sso/'+ self.name +'/handle_code', self.handle_code) # auth dialog callback
+        skygear.handler('sso/'+ self.name +'/callback', self.callback) # auth dialog callback
         skygear.handler('sso/'+ self.name +'/handle_access_token', self.handle_access_token) # login with 3rd party SDK
 
     """
@@ -420,7 +406,7 @@ Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 
 ### APIs for auth flow
 
-- New lambda `oauth:auth_url`
+- New lambda `sso/{provider}/auth_url`
   - Accepts a provider id and options
   - Return an url for auth
   - Example pseudo return value
@@ -429,7 +415,7 @@ Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
         client_id={app-id}
         &redirect_uri=http%3A%2F%2Fskygear.dev%2Foauth%2Fhandle_code%3Fprovider%3Dcom.facebook%26user_id%3D123
 
-- New handler `oauth:handle_code`
+- New lambda `sso/{provider}/callback`
   - A handler that accepts code from 3rd party service
   - Exchange code with access token
   - Create user if needed
@@ -439,7 +425,7 @@ Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 
         http://skygear.dev/oauth/handle_code?provider=com.facebook&user_id=123&code=223344
 
-- New lambda `oauth:handle_access_token`
+- New lambda `sso/{provider}/handle_access_token`
   - Accepts a provider id, and access token
   - If this handler is called with a user logged in
     - Associate the user with auth provider and access token
@@ -514,10 +500,10 @@ JS, iOS and Android should follow this flow:
 
 #### When using OAuth flow
 
-1. Ask for a url to display via `oauth:auth_url`
+1. Ask for a url to display via `sso/{provider}/auth_url`
 2. Show the url to user, either popup or redirect
 3. After user login, the webpage should be redirected to plugin with a code
-4. Plugin exchanges access token with code (`oauth:handle_code`)
+4. Plugin exchanges access token with code (`sso/{provider}/callback`)
   - Behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 5. Plugin creates or logins a user
 6. Pass the user back to client side
@@ -530,6 +516,6 @@ JS, iOS and Android should follow this flow:
 2. Return the above data to the developer, expect the URL and should to be shown to user
 3. Constantly poll Google / Facebook for auth result
   - With timeout
-4. When access_token is received via polling, send it to skygear-server `oauth:handle_access_token`
+4. When access_token is received via polling, send it to skygear-server `sso/{provider}/handle_access_token`
   - Plugin behaviour depends on `UNIQUE_EMAIL_FOR_ACCOUNTS`
 5. Pass the user from skygear user and `access_token` back to user
