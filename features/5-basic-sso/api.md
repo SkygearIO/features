@@ -23,6 +23,27 @@ Portal needs to have an interface for on/off and configuration of ID / Secret.
 * At User Setting page, add another `AuthProvider`
 * Integrate with any service that supports OAuth by writing cloud code.
 
+## Duplicate email handling
+
+To handle case when user login by `AuthProvider A`, but the email already
+got another account from `AuthProvider B`
+
+* Scenario A: Return error, client can show error in application code
+* Scenario B: Logged in user to `AuthProvider B` account
+* Scenario C: Create new account for `AuthProvider A`
+
+**Suggested Implementation:**
+
+Provide option `AUTO_LINK_PROVIDER_KEYS`, same format as `AUTH_RECORD_KEYS`
+default is `email`. Can only set `email` or empty in portal.
+
+* `AUTO_LINK_PROVIDER_KEYS` is `email` => Scenario B
+* `AUTO_LINK_PROVIDER_KEYS` is empty, default behavior => Scenario A
+* `AUTO_LINK_PROVIDER_KEYS` is empty, remove email from `AUTH_RECORD_KEYS` or
+  remove email by `sso_process_profile_response` => Scenario C
+
+As Scenario C is not a normal flow, so need adding code for customization
+
 # Changes on SDK
 
 ## JS
@@ -219,7 +240,7 @@ Add SSO section, for each predefined provider:
 
 ## Environment variables
 
-- `UNIQUE_EMAIL_FOR_ACCOUNTS`, boolean
+- `AUTO_LINK_PROVIDER`, boolean
 - `SSO_{PROVIDER}_ENABLED`
 - `SSO_{PROVIDER}_CLIENT_ID`
 - `SSO_{PROVIDER}_CLIENT_SECRET`
@@ -279,11 +300,13 @@ class BaseOAuthProvider:
     client_secret = None
     scope = []
 
-    def __init__(self):
+    def __init__(self, profile_response_customizer=None,
+                 duplicate_user_handler=None):
         env_name = self.name.upper()
         self.client_id = os.environ.get(env_name + '_CLIENT_ID', None)
         self.client_secret = os.environ.get(env_name + '_CLIENT_SECRET', None)
         self.scope = os.environ.get(env_name + '_SCOPE', '').split(',')
+        self.profile_response_customizer = profile_response_customizer
 
     @property
     def auth_base_url(self):
@@ -349,16 +372,16 @@ class BaseOAuthProvider:
         access_token_data = self.process_access_token_response(
             response.json_body)
 
-        user = self.handle_access_token(access_token_data['access_token'])
+        user = self.handle_access_token(access_token_data)
         # redirect to uri from generate_redirect_url
         return
 
     def handle_access_token(self, request):
-        user = self.handle_access_token(access_token_data['access_token'])
+        user = self.handle_access_token(access_token_data)
         return
 
-    def signup_user_with_access_token(self, token):
-        existing_user = get_user_by_access_token(token)
+    def signup_user_with_access_token(self, access_token_data):
+        existing_user = get_user_by_access_token(access_token_data)
         if existing_user:
           return existing_user
 
@@ -367,22 +390,25 @@ class BaseOAuthProvider:
         url, headers, data = self.process_protected_request(
           user_info_url, auth_header, data
         )
-        user_info_response = requests.get(
-          user_info_url, headers=auth_header, data=data)
-        user_info_data = self.process_user_info_response(response.json_body)
+        profile_response = requests.get(
+          user_info_url, headers=auth_header, data=data).json_body
 
-        email = user_info_data.get('email')
-        if email:
-            user = get_user_by_email(email)
+        if self.profile_response_customizer:
+            profile_response = self.profile_response_customizer(
+                profile_response
+            )
 
-            if user !== null && UNIQUE_EMAIL_FOR_ACCOUNTS:
-                raise Error("The email is associated with another account")
-
+        user = get_auto_link_user(AUTO_LINK_PROVIDER_KEYS, profile_response)
+        if user is not None:
             add_auth_to_user(user, token)
             return user
 
-        # create or login skygear user
-        return create_new_user()
+        try:
+            user = create_new_user(profile_response)
+        except DuplicateUserError as err:
+            raise Exception()
+
+        return user
 
     def register(self, name):
         skygear.handler('sso/'+ self.name +'/auth_url', self.auth_url)
@@ -401,8 +427,6 @@ class BaseOAuthProvider:
     def process_protected_request(self, url, headers, data):
         return url, headers, data
 
-    def process_user_info_response(self, response_data):
-        return response_data
 ```
 
 **Sign in with limited capability devices flow**
@@ -417,7 +441,28 @@ Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 - access_token_response
 - refresh_token_response
 - protected_request
-- user_info_response
+
+### Customization
+
+```py
+@sso_process_profile_response('com.facebook')
+def handle_facebook_profile_response(response):
+    return {
+      'username': response.get('username'),
+      'email': response.get('email'),
+      'firstname': response.get('first_name'),
+      'lastname': response.get('last_name')
+    }
+
+@sso_process_profile_response('com.google')
+def handle_google_profile_response(response):
+    return {
+      'username': response.get('username'),
+      'email': response.get('email'),
+      'firstname': response.get('given_name'),
+      'lastname': response.get('family_name')
+    }
+```
 
 ## APIs
 
