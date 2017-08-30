@@ -78,7 +78,22 @@ All function are under `skygear.auth`
   });
 ```
 
-- `linkProviderWithPopup(providerID, options)` and `linkProviderWithRedirect(providerID, options)`
+- `loginOAuthProviderWithAcessToken(providerID, accessToken)`
+  - `accessToken` - Client calls this API if it already has an access token,
+    skygear will try to login directly instead of going through the OAuth
+    flow.
+
+```js
+skygear.auth.loginOAuthProviderWithAcessToken('com.facebook', {
+  scope: []
+}).then(function(skygearUser) {
+
+}).catch(function(error) {
+
+});
+```
+
+- `linkOAuthProviderWithPopup(providerID, options)` and `linkOAuthProviderWithRedirect(providerID, options)`
   - Add a new auth provider to the user by going through the auth flow
   - This API requires user to be logged in already, return error otherwise
   - `providerID` - A string that identify the login provider
@@ -119,6 +134,21 @@ All function are under `skygear.auth`
   });
 ```
 
+- `linkOAuthProviderWithAcessToken(providerID, accessToken)`
+  - `accessToken` - Client calls this API if it already has an access token,
+    skygear will try to login directly instead of going through the OAuth
+    flow.
+
+```js
+skygear.auth.linkOAuthProviderWithAcessToken('com.facebook', {
+  scope: []
+}).then(function(skygearUser) {
+
+}).catch(function(error) {
+
+});
+```
+
 - `getOAuthTokens(providerID)`
   - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
   - Return a promise of authResult
@@ -137,45 +167,40 @@ All function are under `skygear.auth`
   });
 ```
 
-### Platform specific API
-- `loginWithFacebook(options)` and `loginWithGoogle(options)`
-  - `options`
-    - uxMode - Either `popup`(default), or `redirect`
-    - scope
-    - redirectUrl - when uxMode is `redirect`, skygear will redirect the user
-      to this url after auth. If it is null, back to the current URL
-    - use3rdPartyClient - whether to use 3rd party client, e.g. Facebook JS
-      SDK. Default `false`
-
 ## iOS
 
-- `-[SKYContainer.auth loginWithOAuthProvider:(NSString*)providerID,
+- `-[SKYContainer.auth loginOAuthProvider:(NSString*)providerID,
   options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Create or login a new skygear user, associated with the provider
   - `providerID` - A string that identify the login provider
     - We will provide `com.facebook`, `com.google`
   - `options`
-    - uxMode - Either `popup`(default), or `redirect`, popup means
-      in-app-browser (SFSafariViewController/WKWebView) and redirect means
-      Safari.app
     - scope
+    - scheme - For redirect after authorization flow
   - This function returns a skygear user, and an access token of the service,
     via a delegate.
-- `-[SKYContainer.auth loginWithOAuthProvider:(NSString*)providerID,
+- `-[SKYContainer.auth loginOAuthProvider:(NSString*)providerID,
   accessToken:(NSString*)accessToken completion:(void(^)(NSError*,
   SKYUser*))]`
   - `accessToken` - Client calls this API if it already has an access token,
     skygear will try to login directly instead of going through the OAuth
     flow.
-- `-[SKYContainer.auth linkWithOAuthProvider:(NSString*)providerID
+- `-[SKYContainer.auth linkOAuthProvider:(NSString*)providerID
   options:(NSDictionary*)options completion:(void(^)(NSError*, SKYUser*))]`
   - Add a new auth provider to the user by going through the auth flow
   - `providerID` - A string that identify the login provider
   - `options`
     - scope
+    - scheme - For redirect after authorization flow
   - This function returns a skygear user, and an access token of the new
     service, via delegate.
-- `-[SKYContainer.auth unlinkWithOAuthProvider:(NSString*)providerID completion:(void(^)(NSError*, SKYUser*))]`
+- `-[SKYContainer.auth linkOAuthProvider:(NSString*)providerID,
+  accessToken:(NSString*)accessToken completion:(void(^)(NSError*,
+  SKYUser*))]`
+  - `accessToken` - Client calls this API if it already has an access token,
+    skygear will try to login directly instead of going through the OAuth
+    flow.
+- `-[SKYContainer.auth unlinkOAuthProvider:(NSString*)providerID completion:(void(^)(NSError*, SKYUser*))]`
 - `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
   NSDictionary*))]`
   - Return all AuthResult
@@ -186,24 +211,17 @@ All function are under `skygear.auth`
 - `-[SKYContainer.auth getOAuthTokenWithOAuthProvider:(NSString*)providerID,
   completion:(void(^)(NSError*, NSDictionary*))]`
 
-
-### Platform specific APIs
-
-- `-[SKYContainer.auth loginWithFacebook:(NSDictionary*)options]` and `-[SKYContainer loginWithGoogle:(NSDictionary*)options]`
-  - `options`
-    - scope
-    - version - FB Client SDK only
-    - cookiePolicy - Google Client SDK only
-    - use3rdPartyClient - whether to use 3rd party client, e.g. Facebook iOS SDK. Default `false`
-  - Returns the user logged in via delegate.
-
 ## Android
 
-- `container.auth().loginWithOAuthProvider(providerID, options, new
+- `container.auth().loginOAuthProvider(providerID, options, new
   OAuthResponseHandler())`
-- `container.auth().linkWithOAuthProvider(providerID, options, new
+- `container.auth().loginOAuthProviderWithAccessToken(providerID, accessToken, new
   OAuthResponseHandler())`
-- `container.auth().unlinkWithOAuthProvider(providerID, new
+- `container.auth().linkOAuthProvider(providerID, options, new
+  OAuthResponseHandler())`
+- `container.auth().linkOAuthProviderWithAccessToken(providerID, accessToken, new
+  OAuthResponseHandler())`
+- `container.auth().unlinkOAuthProvider(providerID, new
   OAuthResponseHandler())`
 - `container.auth().getOAuthToken(providerID, new
   OAuthResponseHandler())`
@@ -240,11 +258,17 @@ Add SSO section, for each predefined provider:
 
 ## Environment variables
 
-- `AUTO_LINK_PROVIDER`, boolean
+- `AUTO_LINK_PROVIDER_KEYS`
 - `SSO_{PROVIDER}_ENABLED`
+    - boolean to determine if provider is enabled
 - `SSO_{PROVIDER}_CLIENT_ID`
+    - provider client id
 - `SSO_{PROVIDER}_CLIENT_SECRET`
+    - provider client secret
 - `SSO_{PROVIDER}_SCOPE`
+    - default scope if sdk has not provided
+- `SSO_{PROVIDER}_ALLOWED_REDIRECT_URLS`
+    - if set, only whitelist redirect urls could be used after authorization flow
 
 ## Implementation
 
