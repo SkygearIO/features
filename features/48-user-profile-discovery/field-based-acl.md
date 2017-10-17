@@ -52,7 +52,67 @@ resolve order will be:
 1. **Any Users**: any logged-in users
 1. **Public**: any users with correct API key
 
-## Base ACL
+## How ACE is matched and resolved to Base ACL
+
+Field-based ACL is allow-base matching. The allow based matching tuples are
+`Class` and `Field`, aka resource. When a ACL is being evaluate, it will try
+to match in following order:
+
+1. Exact match `Class:Field`
+2. Class `Class:*`
+3. Default `*:*`
+
+Once it match, the look up will stop.
+
+If user is querying `Note.content`.
+- Find all ACE with `class` equal to `note` and `field` equal to `content`.
+  - If one one or more ACE is found
+    - Check the user on `Role` and `Permission` with the matched ACE.
+    - If no permission is grant, the field will not return. Permission will not
+      grant. Matching will stop.
+  - If no ACE is found
+    - Try to match any ace with `class` equal to `note` and `field` equal `*` 
+      - If one one or more ACE is found
+        - Check the user on `Role` and `Permission` with the matched ACE.
+        - If no permission is grant, the field will not return. Permission will not
+          grant. Matching will stop.
+      - If no ACE is found
+         - Try to match any ace with `class` equal to `*` and `field` equal `*` 
+         - Check the user on `Role` and `Permission` with the matched ACE.
+
+#### Example
+
+When a user `Rick` is querying a record `Notes` with `content` field.
+
+
+Example 1:
+| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
+|-------|--------|----------------|-------------|----------------|
+| Note  | content| Role:Employee  | ReadWrite   | Queryable      |
+| Note  | content| AnyUser        | Read        | Queryable      |
+| Note  | *      | Public         | ReadWrite   | Queryable      |
+| *     | *      | Public         | ReadWrite   | Queryable      |
+
+Only following ACE will be effective:
+
+| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
+| Note  | content| Role:Employee  | ReadWrite   | Queryable      |
+| Note  | content| AnyUser  | Read        | Queryable      |
+
+Example 2:
+
+
+| Class | Field  | UserRole | AccessLevel | DiscoveryLevel |
+|-------|--------|----------|-------------|----------------|
+| Note  | *      | Public   | ReadWrite   | Queryable      |
+| *     | *      | Public   | ReadWrite   | Queryable      |
+
+Only this ACE will be effective:
+
+| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
+| Note  | *      | Public   | ReadWrite   | Queryable      |
+
+### Base ACL
 
 Since the field-based ACL is allow-based, the following entities would be the
 base case of the ACL. The base ACL will be used when no field-based ACE is
