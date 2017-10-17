@@ -59,9 +59,9 @@ base case of the ACL. The base ACL will be used when no field-based ACE is
 found for a specific operation. Developers can define their ACE to avoid
 falling onto the base ACL.
 
-| Class | UserRole | Field | AccessLevel | DiscoveryLevel |
-|-------|----------|-------|-------------|----------------|
-| *     | Public   | *     | ReadWrite   | Queryable      |
+| Class | Field | UserRole | AccessLevel | DiscoveryLevel |
+|-------|-------|----------|-------------|----------------|
+| *     | *     | Public   | ReadWrite   | Queryable      |
 
 ## Work together with record-based ACL
 
@@ -156,30 +156,30 @@ skygear.publicDB.save([record1, record2])
 
 Use Case 1: Make gender field of user record private to every one except owner
 
-| Class | UserRole | Field  | AccessLevel | DiscoveryLevel |
-|-------|----------|--------|-------------|----------------|
-| *     | Public   | *      | ReadWrite   | Queryable      |
-| User  | AnyUser  | gender | NoAccess    | NotQueryable   |
-| User  | Owner    | gender | ReadWrite   | Queryable      |
+| Class | Field  | UserRole | AccessLevel | DiscoveryLevel |
+|-------|--------|----------|-------------|----------------|
+| *     | *      | Public   | ReadWrite   | Queryable      |
+| User  | gender | AnyUser  | NoAccess    | NotQueryable   |
+| User  | gender | Owner    | ReadWrite   | Queryable      |
 
 Use Case 2: Make gender field of user record private to every one, readable
 and queryable to stared users and updatable to owner
 
-| Class |  UserRole      | Field  | AccessLevel | DiscoveryLevel |
-|-------|----------------|--------|-------------|----------------|
-| *     | Public         | *      | ReadWrite   | Queryable      |
-| User  | AnyUser        | gender | NoAccess    | NotQueryable   |
-| User  | UserSet:stared | gender | ReadOnly    | Queryable      |
-| User  | Owner          | gender | ReadWrite   | Queryable      |
+| Class | Field  |  UserRole      | AccessLevel | DiscoveryLevel |
+|-------|--------|----------------|-------------|----------------|
+| *     | *      | Public         | ReadWrite   | Queryable      |
+| User  | gender | AnyUser        | NoAccess    | NotQueryable   |
+| User  | gender | UserSet:stared | ReadOnly    | Queryable      |
+| User  | gender | Owner          | ReadWrite   | Queryable      |
 
 Use Case 3: Make a slug field of photo record, updatable to owner but only
 discoverable by others
 
-| Class |  UserRole   | Field | AccessLevel | DiscoveryLevel |
-|-------|-------------|-------|-------------|----------------|
-| *     | Public      | *     | ReadWrite   | Queryable      |
-| Photo | AnyUser     | slug  | Readable    | Discoverable   |
-| Photo | Owner       | slug  | ReadWrite   | Queryable      |
+| Class | Field |  UserRole   | AccessLevel | DiscoveryLevel |
+|-------|-------|-------------|-------------|----------------|
+| *     | *     | Public      | ReadWrite   | Queryable      |
+| Photo | slug  | AnyUser     | Readable    | Discoverable   |
+| Photo | slug  | Owner       | ReadWrite   | Queryable      |
 
 # Changes on API at skygear-server
 
