@@ -26,18 +26,13 @@ The field-based accessibility is divided into 3 levels:
 The field-based ACL is an array of field-based Access Control Entities (ACE).
 Each field-based ACE model will contains:
 
-- `RecordType`: the record type the entity belongs to, or `*` which implies all
-  record types
+- `RecordType`: the record type the entity belongs to, or `*` which applies
+  when no other ACE matches the record type
+- `Field`: the record field the entity apply to, or `*` which applies
+  when no other ACE matches the record type and record field
 - `UserRole`: the user role the entity apply to
-- `Field`: the record field the entity apply to, or `*` which implies all
-  record fields
 - `AccessLevel`: the accessibility level the entity defines
 - `DiscoveryLevel`: the discovery level the entity defines
-
-By defining field-based ACL, the permission of users performing actions on a
-record field is defined. A user would have permission to perform an action on a
-record field if any ACEs grant the permission of the role that the user belongs
-to, i.e. allow-based policy.
 
 ## User Roles
 
@@ -52,65 +47,79 @@ resolve order will be:
 1. **Any Users**: any logged-in users
 1. **Public**: any users with correct API key
 
-## How ACE is matched and resolved to Base ACL
+## ACE matching and resolve order
 
-Field-based ACL is allow-base matching. The allow based matching tuples are
-`Class` and `Field`, aka resource. When a ACL is being evaluate, it will try
-to match in following order:
+Field-based ACL is allow-based matching. The allow-based matching tuples are
+`RecordType` and `Field`. The ACEs are matched in the following order:
 
-1. Exact match `Class:Field`
-2. Class `Class:*`
-3. Default `*:*`
+1. All ACEs having the same RecordType and Field as the record
+2. All ACEs having the same RecordType as the record and Field is `*`
+3. All ACEs having RecordType `*` and Field `*`
 
-Once it match, the look up will stop.
+When there are ACEs matching the record, the look up will stop. All matching
+ACEs are evaluated in the resolve order defined by User Roles. 
 
-If user is querying `Note.content`.
-- Find all ACE with `class` equal to `note` and `field` equal to `content`.
-  - If one one or more ACE is found
+In this example, suppose a user is querying `Note.content`:
+
+- Find all ACE with `recordType` equal to `Note` and `field` equal to
+  `content`.
+  - If one or more ACE is found,
     - Check the user on `Role` and `Permission` with the matched ACE.
-    - If no permission is grant, the field will not return. Permission will not
-      grant. Matching will stop.
-  - If no ACE is found
-    - Try to match any ace with `class` equal to `note` and `field` equal `*` 
-      - If one one or more ACE is found
-        - Check the user on `Role` and `Permission` with the matched ACE.
-        - If no permission is grant, the field will not return. Permission will not
-          grant. Matching will stop.
-      - If no ACE is found
-         - Try to match any ace with `class` equal to `*` and `field` equal `*` 
-         - Check the user on `Role` and `Permission` with the matched ACE.
+    - If no permission is granted, the ACE is not returned. Permission will
+      not be granted. Matching will stop.
+  - If no ACE is found, continue to next step.
+- Find all ACE with `recordType` equal to `Note` and `field` equal to `*`.
+  - If one or more ACE is found,
+    - Check the user on `Role` and `Permission` with the matched ACE.
+    - If no permission is granted, the ACE is not returned. Permission will
+      not be granted. Matching will stop.
+  - If no ACE is found, continue to next step.
+- Find all ACE with `recordType` equal to `*` and `field` equal `*` .
+  - Check the user on `Role` and `Permission` with the matched ACE.
+  - If no ACE is found, no permission is granted.
 
 #### Example
 
-When a user `Rick` is querying a record `Notes` with `content` field.
-
+When a user `Rick` is querying a record type `Note` with `content` field:
 
 Example 1:
-| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
-|-------|--------|----------------|-------------|----------------|
-| Note  | content| Role:Employee  | ReadWrite   | Queryable      |
-| Note  | content| AnyUser        | Read        | Queryable      |
-| Note  | *      | Public         | ReadWrite   | Queryable      |
-| *     | *      | Public         | ReadWrite   | Queryable      |
 
-Only following ACE will be effective:
+| RecordType | Field   | UserRole      | AccessLevel | DiscoveryLevel |
+|------------|---------|---------------|-------------|----------------|
+| Note       | content | Role:Employee | ReadWrite   | Queryable      |
+| Note       | content | AnyUser       | Read        | Queryable      |
+| Note       | *       | Public        | ReadWrite   | Queryable      |
+| *          | *       | Public        | ReadWrite   | Queryable      |
 
-| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
-| Note  | content| Role:Employee  | ReadWrite   | Queryable      |
-| Note  | content| AnyUser  | Read        | Queryable      |
+Only following ACEs will be effective:
+
+| RecordType | Field   | UserRole      | AccessLevel | DiscoveryLevel |
+|------------|---------|---------------|-------------|----------------|
+| Note       | content | Role:Employee | ReadWrite   | Queryable      |
+| Note       | content | AnyUser       | Read        | Queryable      |
+
+If `Rick` has `Employee` role, the access level is `ReadWrite`. If he doesn't
+have the role, the access level is `Read`.
+
+For a user that is not logged in (i.e. user role is `Public`), the user will
+have `NoAccess`, because no matching ACEs grant access.
 
 Example 2:
 
-
-| Class | Field  | UserRole | AccessLevel | DiscoveryLevel |
-|-------|--------|----------|-------------|----------------|
-| Note  | *      | Public   | ReadWrite   | Queryable      |
-| *     | *      | Public   | ReadWrite   | Queryable      |
+| RecordType | Field  | UserRole | AccessLevel | DiscoveryLevel |
+|------------|--------|----------|-------------|----------------|
+| Note       | *      | Public   | ReadWrite   | Queryable      |
+| *          | *      | Public   | Read        | Queryable      |
 
 Only this ACE will be effective:
 
-| Class | Field  | UserRole       | AccessLevel | DiscoveryLevel |
-| Note  | *      | Public   | ReadWrite   | Queryable      |
+| RecordType | Field | UserRole | AccessLevel | DiscoveryLevel |
+|------------|-------|----------|-------------|----------------|
+| Note       | *     | Public   | ReadWrite   | Queryable      |
+
+Since the `Public` user role applies to all users, the AccessLevel is
+`ReadWrite`. The `*:*` ACE will not applies because matching stopped
+when `Note:*` ACE matches.
 
 ### Base ACL
 
@@ -119,9 +128,9 @@ base case of the ACL. The base ACL will be used when no field-based ACE is
 found for a specific operation. Developers can define their ACE to avoid
 falling onto the base ACL.
 
-| Class | Field | UserRole | AccessLevel | DiscoveryLevel |
-|-------|-------|----------|-------------|----------------|
-| *     | *     | Public   | ReadWrite   | Queryable      |
+| RecordType | Field | UserRole | AccessLevel | DiscoveryLevel |
+|------------|-------|----------|-------------|----------------|
+| *          | *     | Public   | ReadWrite   | Queryable      |
 
 ## Work together with record-based ACL
 
@@ -216,30 +225,30 @@ skygear.publicDB.save([record1, record2])
 
 Use Case 1: Make gender field of user record private to every one except owner
 
-| Class | Field  | UserRole | AccessLevel | DiscoveryLevel |
-|-------|--------|----------|-------------|----------------|
-| *     | *      | Public   | ReadWrite   | Queryable      |
-| User  | gender | AnyUser  | NoAccess    | NotQueryable   |
-| User  | gender | Owner    | ReadWrite   | Queryable      |
+| RecordType | Field  | UserRole | AccessLevel | DiscoveryLevel |
+|------------|--------|----------|-------------|----------------|
+| *          | *      | Public   | ReadWrite   | Queryable      |
+| User       | gender | AnyUser  | NoAccess    | NotQueryable   |
+| User       | gender | Owner    | ReadWrite   | Queryable      |
 
 Use Case 2: Make gender field of user record private to every one, readable
 and queryable to stared users and updatable to owner
 
-| Class | Field  |  UserRole      | AccessLevel | DiscoveryLevel |
-|-------|--------|----------------|-------------|----------------|
-| *     | *      | Public         | ReadWrite   | Queryable      |
-| User  | gender | AnyUser        | NoAccess    | NotQueryable   |
-| User  | gender | UserSet:stared | ReadOnly    | Queryable      |
-| User  | gender | Owner          | ReadWrite   | Queryable      |
+| RecordType | Field  |  UserRole      | AccessLevel | DiscoveryLevel |
+|------------|--------|----------------|-------------|----------------|
+| *          | *      | Public         | ReadWrite   | Queryable      |
+| User       | gender | AnyUser        | NoAccess    | NotQueryable   |
+| User       | gender | UserSet:stared | ReadOnly    | Queryable      |
+| User       | gender | Owner          | ReadWrite   | Queryable      |
 
 Use Case 3: Make a slug field of photo record, updatable to owner but only
 discoverable by others
 
-| Class | Field |  UserRole   | AccessLevel | DiscoveryLevel |
-|-------|-------|-------------|-------------|----------------|
-| *     | *     | Public      | ReadWrite   | Queryable      |
-| Photo | slug  | AnyUser     | Readable    | Discoverable   |
-| Photo | slug  | Owner       | ReadWrite   | Queryable      |
+| RecordType | Field |  UserRole   | AccessLevel | DiscoveryLevel |
+|------------|-------|-------------|-------------|----------------|
+| *          | *     | Public      | ReadWrite   | Queryable      |
+| Photo      | slug  | AnyUser     | Readable    | Discoverable   |
+| Photo      | slug  | Owner       | ReadWrite   | Queryable      |
 
 # Changes on API at skygear-server
 
