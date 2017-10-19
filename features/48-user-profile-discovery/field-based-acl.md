@@ -76,7 +76,14 @@ In this example, suppose a user is querying `Note.content`:
   - If no ACE is found, continue to next step.
 - Find all ACE with `recordType` equal to `*` and `field` equal `*` .
   - Check the user on `Role` and `Permission` with the matched ACE.
-  - If no ACE is found, no permission is granted.
+  - If no ACE is found, permission is always granted.
+
+When there is no matching ACEs, there is no field ACL effective on the access
+permission of the record type and record field, so in the last step of the
+matching, the permission is granted. In other words, granting permission is
+the default behavior when no ACE is configured.
+If there exists one ACE matching the record, permission
+is only granted when permitted by user roles and permission settings.
 
 #### Example
 
