@@ -47,6 +47,13 @@ resolve order will be:
 1. **Any Users**: any logged-in users
 1. **Public**: any users with correct API key
 
+The **Owner** user role and **Dynamic User Set** user role depends on the
+record data. For example, the owner of a record can only be determined after
+the record is queried from the database. Since it is not possible to evaluate
+permission for these user roles before records are queried from database,
+discovery levels are ignored for these user roles. In other words, discovery
+levels set to these user roles have no effect on permission evaluation.
+
 ## ACE matching and resolve order
 
 Field-based ACL is allow-based matching. The allow-based matching tuples are
