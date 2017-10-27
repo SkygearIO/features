@@ -149,19 +149,19 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
 });
 ```
 
-- `getOAuthTokens(providerID)`
-  - Calls skygear-server `user:oauth_tokens`, `user:set_oauth_token`
-  - Return a promise of authResult
+- `getOAuthProviderProfiles(providerID)`
+  - Get the provider user profiles
+  - Use case: Allow user to determine connected provider and get the profile object
 
 ```js
-  skygear.auth.getOAuthTokens('com.example').then(function(authResult) {
+  skygear.auth.getOAuthProviderProfiles('com.example').then(function(authResult) {
     /*
     {
-      "access_token": "...",
-      "token_type": "bearer",
-      "expires_at": 1495052619,
-      "scope": ["email", "friends"],
-      "refresh_token": "...."
+      "facebook" : {
+        "id": "1234567",
+        "name": "skygear",
+        ...
+      }
     }
     */
   });
@@ -201,15 +201,8 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
     skygear will try to login directly instead of going through the OAuth
     flow.
 - `-[SKYContainer.auth unlinkOAuthProvider:(NSString*)providerID completion:(void(^)(NSError*, SKYUser*))]`
-- `-[SKYContainer.auth getOAuthTokensWithCompletion:(void(^)(NSError*,
+- `-[SKYContainer.auth getOAuthProviderProfiles:(void(^)(NSError*,
   NSDictionary*))]`
-  - Return all AuthResult
-
-        [container.auth getOAuthTokensWithCompletion:^(NSDictionary *authResult){
-        //tokens['com.facebook'] is FB's access token }];
-
-- `-[SKYContainer.auth getOAuthTokenWithOAuthProvider:(NSString*)providerID,
-  completion:(void(^)(NSError*, NSDictionary*))]`
 
 ## Android
 
@@ -223,7 +216,7 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
   OAuthResponseHandler())`
 - `container.auth().unlinkOAuthProvider(providerID, new
   OAuthResponseHandler())`
-- `container.auth().getOAuthToken(providerID, new
+- `container.auth().getOAuthProviderProfiles(providerID, new
   OAuthResponseHandler())`
 
 OAuthResponseHandler Interface
@@ -274,8 +267,8 @@ Add SSO section, for each predefined provider:
     - return `{"authorized_urls": {array of authorized urls}}`
     - used by js sdk to post message among different window
 - New lambda `sso/provider_profiles`
+    - Get the provider user profiles
     - return object which key is provider name, value is `profile` object
-    - use case: Allow user to determine connected provider and get the profile object
 
 
 ## Environment variables
