@@ -443,19 +443,17 @@ def handle_google_profile_response(response):
   - login or link user
   - Return the user
 
-### Functions for working with 3rd party services after auth
+### Functions for working with 3rd party services after auth (TBD)
 
-- New method `container.getOAuthTokens()`
-  - Return a dictionary of OAuth tokens of the current user
-  - Call `skygear-server` `user:oauth_tokens` `user:set_oauth_token`
-  - Pseudo code
+It is not handled in this stage. The access token in server is usually short live
+and the token extension flow is different among major providers.
+E.g. facebook has its own flow for requesting long-live token, which is not in
+the oauth flow.
 
-        container.getOAuthTokens('com.facebook').access_token
+Further design is needed.
 
-- New method `container.refreshToken(providerID)`
-  - A convenient method that refreshs access_token if needed, and if possible.
-  - Updates database after refresh
-  - Returns the new token
+refs: https://developers.facebook.com/docs/facebook-login/access-tokens/expiration-and-extension
+
 
 # Database Scheme
 
@@ -503,7 +501,7 @@ JS, iOS and Android should follow this flow:
 
 ![OAuth flow](./oauth_flow.png)
 
-### For devices with limited capability
+### For devices with limited capability (TBD)
 
 1. Fetch code and URL from Google / Facebook
 2. Return the above data to the developer, expect the URL and should to be shown to user
