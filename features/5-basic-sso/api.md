@@ -235,13 +235,13 @@ OAuthResponseHandler.onAuthSuccess(SKYUser user);
 
 # Changes on API at skygear-server
 
-- New handler `auth:provider:login` for plugin, master key required
+- New handler `sso:oauth:login` for plugin, master key required
     - login user only if user exists
-- New handler `auth:provider:signup` for plugin, master key required
+- New handler `sso:oauth:signup` for plugin, master key required
     - create new user with provided auth data and profile
-- New handler `auth:provider:link` for plugin, master key required
+- New handler `sso:oauth:link` for plugin, master key required
     - link user with provided auth data and user id
-- New handler `auth:provider:unlink` for plugin, master key required
+- New handler `sso:oauth:unlink` for plugin, master key required
     - unlink user with provider name and user id
 
 # Changes on Portal
@@ -270,11 +270,18 @@ Add SSO section, for each predefined provider:
     - handle access token api for link (user_required)
 - New lambda `/sso/{provider}/unlink`
     - unlink provider (user_required)
+- New lambda `sso/config`
+    - return `{"authorized_urls": {array of authorized urls}}`
+    - used by js sdk to post message among different window
+- New lambda `sso/provider_profiles`
+    - return object which key is provider name, value is `profile` object
+    - use case: Allow user to determine connected provider and get the profile object
+
 
 ## Environment variables
 
 - `SSO_STATE_JWT_SECRET`
-    - JWT secret for encoding the state data in auth_url
+    - JWT secret for encoding the state data in auth_url, use master key if empty
 - `SSO_AUTO_LINK_PROVIDER_KEYS`
     - same format as `AUTH_RECORD_KEYS`, if it is set will auto link user with the provided auth records key
 - `SSO_ALLOWED_CALLBACK_URLS`
@@ -412,7 +419,7 @@ def handle_google_profile_response(response):
 
 ### APIs for auth flow
 
-- New lambda `sso/{provider}/signup_auth_url` and `sso/{provider}/link_auth_url`
+- New lambda `sso/{provider}/login_auth_url` and `sso/{provider}/link_auth_url`
   - Accepts a provider id and options
   - Return an url for auth
   - Example pseudo return value
@@ -420,19 +427,19 @@ def handle_google_profile_response(response):
         https://www.facebook.com/v2.9/dialog/oauth?
         client_id={app-id}
         &redirect_uri=http%3A%2F%2Fskygear.dev%2Foauth%2Fhandle_code%3Fprovider%3Dcom.facebook%26user_id%3D123
-        &state=
+        &state={jwt encoded state}
 
 - New lambda `sso/{provider}/auth_handler`
   - A handler that accepts code from 3rd party service
   - Exchange code with access token
   - Create or link user if needed
-  - Calling skygear `auth:provider:login`, `auth:provider:signup` or `auth:provider:link` to login or link user
+  - Plugin will call skygear-server `sso:oauth:login`, `sso:oauth:signup` or `sso:oauth:link` to login or link user
   - Pass the user back to client
   - Redirect user to provided callback_url with base64 encoded result, example:
         https://app.myapp.com/?results=eyJyZXN1bHQiOiAiT0sifQ%3D%3D#
 
 - New lambda `sso/{provider}/login` and `sso/{provider}/link`
-  - Accepts a provider id, and access token
+  - Accepts access token
   - login or link user
   - Return the user
 
@@ -452,30 +459,20 @@ def handle_google_profile_response(response):
 
 # Database Scheme
 
-No changes.
-Since we are going to use the existing auth provider to handle auth data, I
-expect those related data to be saved in `_user` table's `auth` column. There
-is no specific format for the data.
+New `_sso_oauth` table managed by skygear-server
 
-I am proposing the following format for data in the auth column.
-
-- Data from OAuth providers will be saved with a "oauth." prefix in id
-- The data inside will be almost the same as the [OAuth Access Token Response](https://tools.ietf.org/html/rfc6749#section-4.2.2), e.g.
-  - `access_token`
-  - `token_type`
-  - `expires_at`, calculated from `expires_in`, an absolute timestamp
-  - `refresh_token`
-
-```
-      {
-        "oauth.com.facebook": {
-          "access_token": "...",
-          "token_type": "bearer",
-          "expires_at": 1495052619,
-          "refresh_token": "...."
-        }
-      }
-```
+- user_id (text): user reference
+- provider (text): provider name, e.g. google, facebook
+- principle_id (text): 3rd party provider user id to identify user
+- token_response (jsonb):
+    - in oauth flow, the token exchange response will store here.
+    So it will contain access_token, expires_in, token_type, refresh_token
+    (optional) which depends on 3rd response.
+    - in login with access token case (get token by 3 party SDK), token_response
+    will only contain access_token
+- profile (jsonb): raw profile object from 3 party SDK
+- _created_at (timestamp)
+- _updated_at (timestamp)
 
 # Others Supplement Information
 
