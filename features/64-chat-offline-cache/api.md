@@ -31,25 +31,25 @@ implemented by Skygear or the developers themselves, and
 
 ### Data Fetching
 
-1. Client App decides to fetch new data from remote server, so it calls API of Skygear Chat Container
-2. Skygear Chat Container calls API of Skygear Chat plugin to fetch data
-3. Skygear Chat Plugin gets results from DB or Skygear Server, and then it returns results
+- (1) Client App decides to fetch new data from remote server, so it calls API of Skygear Chat Container
+- (2) Skygear Chat Container calls API of Skygear Chat plugin to fetch data
+- (3) Skygear Chat Plugin gets results from DB or Skygear Server, and then it returns results
 to Skygear Chat Container
-4. Skygear Chat Container returns result to Client App
+- (4) Skygear Chat Container returns result to Client App
 
 ### Data Update (including save and delete)
 
-1. Client App decides to update data to remote server, so it calls API of Skygear Chat Container
-2. Skygear Chat Container calls API of Skygear Chat Plugin to update data
-3. Skygear Chat Plugin update data to DB or Skygear Server, and it returns the result to Skygear Chat Container
-4. Skygear Chat Container returns the result to Client App
+- (1) Client App decides to update data to remote server, so it calls API of Skygear Chat Container
+- (2) Skygear Chat Container calls API of Skygear Chat Plugin to update data
+- (3) Skygear Chat Plugin update data to DB or Skygear Server, and it returns the result to Skygear Chat Container
+- (4) Skygear Chat Container returns the result to Client App
 
 ### Data Subscription
 
-1. Client App decides to listen for data changes from remote server, so it calls API of Skygear Chat Container
-2. Skygear Chat Container calls API of Skygear Chat Plugin to subscribe data
-3. When data changes remotely, Skygear Chat Plugin publish the event to Skygear Chat Container
-4. Skygear Chat Container notifies Client App for the update
+- (1) Client App decides to listen for data changes from remote server, so it calls API of Skygear Chat Container
+- (2) Skygear Chat Container calls API of Skygear Chat Plugin to subscribe data
+- (3) When data changes remotely, Skygear Chat Plugin publish the event to Skygear Chat Container
+- (4) Skygear Chat Container notifies Client App for the update
 
 ## Proxy Container with Local Store
 
@@ -73,38 +73,38 @@ to Skygear Chat Container
 
 ### Data Fetching
 
-1. Client App decides to fetch new data from remote server, so it calls API of Skygear Chat Proxy Container
-2. The Proxy Container gets result from Local Store
-3. Local Store returns results to Proxy Container
-4. Proxy Container returns results to Client App
-5. Proxy Container calls API of Skygear Chat Container to fetch data
-6. Skygear Chat Container calls API of Skygear Chat plugin to fetch data
-7. Skygear Chat Plugin returns result to Skygear Chat Container
-8. Skygear Chat Container returns result to Proxy Container
-9. Proxy Container merge the remote results to Local Store
-10. Proxy Container notifies Client App for the update through **subscription callback**
+- (1) Client App decides to fetch new data from remote server, so it calls API of Skygear Chat Proxy Container
+- (2) The Proxy Container gets result from Local Store
+- (3) Local Store returns results to Proxy Container
+- (4) Proxy Container returns results to Client App
+- (5) Proxy Container calls API of Skygear Chat Container to fetch data
+- (6) Skygear Chat Container calls API of Skygear Chat plugin to fetch data
+- (7) Skygear Chat Plugin returns result to Skygear Chat Container
+- (8) Skygear Chat Container returns result to Proxy Container
+- (9) Proxy Container merge the remote results to Local Store
+- (10) Proxy Container notifies Client App for the update through **subscription callback**
 
 ### Data Update (including save and delete)
 
-1. Client decides to update data to remote server, so it calls API of Skygear Chat Proxy Container
-2. Proxy Container merge the new data to Local Store
-4. Proxy Container returns an immediate result to Client App
-5. Proxy Container calls API of Skygear Chat Container to update data
-6. Skygear Container calls API of Skygear Chat Plugin to update data
-7. Skygear Chat Plugin update data to DB or Skygear Server, and it returns the result to Skygear Chat Container
-8. Skygear Chat Container returns the result to Proxy container
-9. Proxy Container merge remote result to Local Store
-10. Proxy Container notifies Client App for the update through **subscription callback**
+- (1) Client decides to update data to remote server, so it calls API of Skygear Chat Proxy Container
+- (2) Proxy Container merge the new data to Local Store
+- (4) Proxy Container returns an immediate result to Client App
+- (5) Proxy Container calls API of Skygear Chat Container to update data
+- (6) Skygear Container calls API of Skygear Chat Plugin to update data
+- (7) Skygear Chat Plugin update data to DB or Skygear Server, and it returns the result to Skygear Chat Container
+- (8) Skygear Chat Container returns the result to Proxy container
+- (9) Proxy Container merge remote result to Local Store
+- (10) Proxy Container notifies Client App for the update through **subscription callback**
 
 ### Data Subscription
 
-1. Client App decides to listen for data changes from remote server, so it calls API of Proxy Container
-5. Proxy Container calls API of Skygear Chat Container to subscribe data
-6. Skygear Chat Container calls API of Skygear Chat Plugin to subscribe data
-7. When data changes remotely, Skygear Chat Plugin publish the event to Skygear Chat Container
-8. Skygear Chat Container notifies Proxy Container for the update
-9. Proxy Container merge the update to Local Store
-10. Skygear Chat Container notifies Client App for the update
+- (1) Client App decides to listen for data changes from remote server, so it calls API of Proxy Container
+- (5) Proxy Container calls API of Skygear Chat Container to subscribe data
+- (6) Skygear Chat Container calls API of Skygear Chat Plugin to subscribe data
+- (7) When data changes remotely, Skygear Chat Plugin publish the event to Skygear Chat Container
+- (8) Skygear Chat Container notifies Proxy Container for the update
+- (9) Proxy Container merge the update to Local Store
+- (10) Skygear Chat Container notifies Client App for the update
 
 # API Interface
 
