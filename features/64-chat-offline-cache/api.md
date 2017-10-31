@@ -92,11 +92,37 @@ This could be quite complicated, so we may provide scroll view delegate or handl
 
 ### Server
 
-Add a `previous_message` to `message` table, to determine if two given messages are subsequent messages.
+Add a `previous_message` column to `message` table, to determine if two given messages are subsequent messages.
 
-Deleted messages are also returned in fetch API, but the content of the message would be empty. This is to keep the whole message list complete.
+Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete.
 
 ### SDK
+
+- Make use of `syncingToServer`, `alreadySyncToServer` and `fail` (found in iOS but not in JS and Android) to cache and restore unsent message.
+
+- add `sendDate` to `message` record for sorting.
+
+- Add cached callback to create message API.
+
+The cachedCallback is expected to call immediately after adding to cache store.
+
+```
+func createMessage(/* content params */, cachedCallback?)
+
+// Promise
+skygearChat.createMessage(/* ... */, (message) => {
+    // insert the new message in UI
+  })
+  .then((message) => {
+    // update the message
+  });
+
+// Non-promise
+skygearChat.createMessage(/* ... */, func (message) => {
+  // check `syncingToServer`, `alreadySyncToServer` and `fail` of the message
+  // to insert or update message in UI
+})
+```
 
 - Add cached callback to fetch messages and fetch conversations API.
 
@@ -114,12 +140,12 @@ const successCallback = (conversations, cached = false) => {
 };
 
 skygearChat
-  .fetchConversations(successCallback)
+  .getConversations(successCallback)
   .then(successCallback, errorCallback);
 
 // no-cache version
 skygearChat
-  .fetchConversation()
+  .getConversations()
   .then(successCallback, errorCallback);
 ```
 
@@ -132,12 +158,12 @@ const successCallback = (messages, cached = false) => {
 };
 
 skygearChat
-  .fetchMessages(conversation, beforeMessage, limit, order, successCallback)
+  .getMessages(conversation, beforeMessage, limit, order, successCallback)
   .then(successCallback, errorCallback);
 
 // no-cache version
 skygearChat
-  .fetchMessages(conversation, beforeMessage, limit, order)
+  .getMessages(conversation, beforeMessage, limit, order)
   .then(successCallback, errorCallback);
 ```
 
@@ -165,7 +191,7 @@ func merge(conversationDeltas: [ConversationDelta], toList: [Conversation]) -> [
 func merge(messages: [Message], toList: [Message]) -> [Message]
 func merge(messageDeltas: [MessageDelta], toList: [Message]) -> [Message]
 
-func findBoundaries(ofMessageList: [Message]) -> [(Int, Int)]
+private func findBoundaries(ofMessageList: [Message]) -> [(Int, Int)]
 ```
 
 - Add a managed message list for user to use directly
@@ -175,17 +201,17 @@ The ManagedMessageList is a default implementation provided by Skygear, its unde
 ```
 class ManagedMessageList {
 
-  constructor(conversation: Conversation,
+  constructor(container: SkygearContainer,
+              conversation: Conversation,
               delegate: ManagedMessageListDelegate)
 
   - fetchLimit: Int = 100
   - useCache: Boolean = true
-  - subscribeNewMessages: Boolean = true
   - syncOnReconnect: Boolean = true
 
-  func online() // expected to call when enter view and pubsub connected
+  func subscribeNewMessages() // expected to call when enter view
 
-  func offline() // expected to call when leave view and pubsub disconnected
+  func unsubscribeNewMessages() // expected to call when leave view
 
   func messageCount() -> Int
 
@@ -217,7 +243,6 @@ interface ManagedMessageListDelegate {
 
 When
 - enter conversation list
-- come offline and online again when in conversation list
 
 ```
 skygearChat.subscribeConversations(completion: func (conversationDeltas) {
@@ -245,7 +270,6 @@ skygearChat.fetchConversations(completion: func (conversations, cached = false) 
 
 When
 - enter conversation
-- come offline and online again when in conversation
 
 ```
 let conversation = this.conversation
@@ -328,21 +352,11 @@ skygearChat.fetchMessages(conversation: conversation,
 #### Enter conversation
 
 ```
-this.messageList = new ManagedMessageList(conversation: this.conversation,
+this.messageList = new ManagedMessageList(container: skygear.defaultContainer(),
+                                          conversation: this.conversation,
                                           delegate: this)
 
-if (skygearChat.pubsub.isConnected) {
-  this.messageList.online()
-}
-
-skygearChat.pubsub.onConnect(func () {
-  this.messageList.online()
-})
-
-skygearChat.pubsub.onDisconnect(func () {
-  this.messageList.offline()
-})
-
+this.messageList.subscribeNewMessages()
 
 // implement ManagedMessageListDelegate
 func managedMessageListDidChange(messageDeltas: [MessageDelta]) {
@@ -369,5 +383,5 @@ func cellForRow(index: Int) -> Cell {
 #### Leave conversation
 
 ```
-this.messageList.offline()
+this.messageList.unsubscribeNewMessages()
 ```
