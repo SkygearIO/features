@@ -92,7 +92,9 @@ This could be quite complicated, so we may provide scroll view delegate or handl
 
 ### Server
 
-- Add a per conversation sequence to `message` table, to determine distance between two given messages.
+Add a `previous_message` to `message` table, to determine if two given messages are subsequent messages.
+
+Deleted messages are also returned in fetch API, but the content of the message would be empty. This is to keep the whole message list complete.
 
 ### SDK
 
