@@ -21,86 +21,129 @@ The interface for each language may be different.
 getResource(params, callback, cachedCallback?)
 ```
 
+Resource includes conversation and message.
+
 The cachedCallback should be optional, thus compatible to the old API interace.
 
 After client app receives result from both callback, client app need to resolve a single result for display. Skygear Chat Container would provide some utility functions to help client app resolve two callback result.
 
-### Resolve result
+### Expected UI Display / Common Use Case
 
-There are two scenarios, and solutions would be provided by SDK. If client app requires custom resolve logic, they need to implement themselves.
+Client App is expected to keep a single list of messages for display in table. And they are required to keep track to the newest and oldest fetched messages to determine when to fetch result from server.
 
-#### 1
+Client App should replace old message with new message if the same message id is found.
 
-```
----
- ^
- | older cached result
- | ---
- v  ^
---- |
-    | newly fetched result
-    v
-   ---
-```
+Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App is expected to skip these message in UI display.
 
-Solution:
+We may provide a high level API **ManagedMessageList** to handle this for the developer.
 
-- Newly fetched result is appended to the older cached result
-- For overlapped records, the newer one is taken
+# Sample Code for Message List, with ManagedMessageList
 
-#### 2
+*All below UI update, I use `this.tableView.reloadTable()`. It is up to client app to decide how to update the UI*
+
+#### Enter conversation
 
 ```
----
- ^
- | older cached result
- v
----
-(a gap bewtween two sets of result)
----
- ^
- | newly fetched result
- v
----
+this.stickToBottom = true | false
+this.messageList = new ManagedMessageList(container: skygear.defaultContainer(),
+                                          conversation: this.conversation,
+                                          delegate: this)
+
+this.messageList.fetchLatestMessages()
+this.messageList.startSubscribing()
+
+// implement ManagedMessageListDelegate
+func managedMessageListDidChange(messageDeltas: [MessageDelta]) {
+  this.tableView.reloadTable()
+  if (this.stickToBottom) {
+    this.tableView.scrollToBottom()
+  }
+}
 ```
 
-Solution:
-
-- Newly fetched result is appended to the older cached result
-
-**How to fill the gap?**
-
-The utility functions we provide should be able to tell developers where the boundaries of the message list are.
+#### Render table
 
 ```
-let boundaries = skygearChat.findBoundaries(messagelist)
+func numberOfCells() -> Int {
+  return this.messageList.messageCount()
+}
 
-// if no gap in the message list
-// boundaries == [[messageA, messageZ]]
+func cellForRow(index: Int) -> Cell {
+  let message = this.messageList.messageAt(index)
+
+  let cell = /* render cell with message */
+
+  return cell
+}
+```
+
+#### Edit actions
+
+```
+// the message would added to the internal list
+// and update upon server response
 //
-// app should load messages newer than messageA and older than messageZ
+// user only needs to handle messageListDidChange
+this.messageList.createMessage(/* message content params */)
 
-// else
-// boundaries == [[messageA, messageD], [messageG, messageZ]]
-//
-// app should load messages newer than messageA or messageG, and older than messageD or messageZ
+this.messageList.updateMessage(/* message content params */)
+
+this.messageList.deleteMessage(message)
 ```
 
-This could be quite complicated, so we may provide scroll view delegate or handler implementation to handle this logic for the developer.
+#### Leave conversation
+
+```
+this.messageList.stopSubscribing()
+```
+
+# Sample Code for Conversation List
+
+### In conversation list
+
+#### Start subscribing conversation changes
+
+When
+- enter conversation list
+
+```
+skygearChat.subscribeConversations(completion: func (conversationDeltas) {
+  this.conversations = applyDelta(conversationDeltas, toList: this.conversations)
+  this.tableView.reloadTable()
+})
+```
+
+#### Fetch and update table
+
+When
+- enter conversation list
+
+```
+skygearChat.fetchConversations(completion: func (conversations, cached = false) {
+  this.conversations = conversations
+  this.tableView.reloadTable()
+})
+```
 
 # Changes Required
 
 ### Server
 
+#### Schema Change
+
 Add a `previous_message` column to `message` table, to determine if two given messages are subsequent messages.
 
 Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete.
+
+#### API Change
+
+fetchMessages API should also return the ID of one newer message. So the client can tell if the API call has fetched the latest message already. Togther with `previous_message`, the client can also determine if it needs to fetch older message.
 
 ### SDK
 
 - Make use of `syncingToServer`, `alreadySyncToServer` and `fail` (found in iOS but not in JS and Android) to cache and restore unsent message.
 
-- add `sendDate` to `message` record for sorting.
+- Add `sendDate` to `message` record for sorting.
 
 - Add cached callback to create message API.
 
@@ -184,19 +227,7 @@ skygearChat.fetchMessages(func (messages, cached = false) {
 })
 ```
 
-- Add utility functions for handling result returned by chat container
-
-```
-func merge(conversationDeltas: [ConversationDelta], toList: [Conversation]) -> [Conversation]
-func merge(messages: [Message], toList: [Message]) -> [Message]
-func merge(messageDeltas: [MessageDelta], toList: [Message]) -> [Message]
-
-private func findBoundaries(ofMessageList: [Message]) -> [(Int, Int)]
-```
-
 - Add a managed message list for user to use directly
-
-The ManagedMessageList is a default implementation provided by Skygear, its underlying implementation is just using the above new API and utility functions.
 
 ```
 class ManagedMessageList {
@@ -209,19 +240,49 @@ class ManagedMessageList {
   - useCache: Boolean = true
   - syncOnReconnect: Boolean = true
 
-  func subscribeNewMessages() // expected to call when enter view
+  func startSubscribing() // expected to call when enter view
 
-  func unsubscribeNewMessages() // expected to call when leave view
+  func stopSubscribing() // expected to call when leave view
 
   func messageCount() -> Int
 
   func messageAt(position: Int) -> Message
 
+  func fetchLatestMessages() -> Void
+
+  // message edit api
+  func createMessage(body: ...) -> Void
+  func editMessage(body: ...) -> Void
+  func deleteMessage(message: Message) -> Void
+  func markDeliveredMessages(messages: [Message])
+
+  func fetchReceiptsWithMessage(message: Message)
+
+  protected func handleFetchedMessages(messages: [Message]) -> Void
+  protected func handleCachedMessages(messages: [Message]) -> Void
+
+  // handle pubsub change
+  protected func handleMessageChanges(messageDeltas: [MessageDelta]) -> Void
+
+  // for UI display
+  - protected messages: [Message]
+
+  // to determine when to fetch messages, may need to consider gap between messages
+  // consider a client app may stay on previous message position
+  // and have a skip to latest button
+  // while the current position and the latest message has a gap larger than fetch limit
+  //
+  // if useCache = false
+  // messages == fetchedMessages
+  - protected fetchedMessages: [Message]
+
   /**
    * scrollViewDelegateMethods
    *
    * the list will determine when to fetch messages by checking current first
-   * and last visible cell
+   * and last visible message
+   *
+   * the implementation would call fetchMessages automatically
    */
 
 }
@@ -233,155 +294,47 @@ interface ManagedMessageListDelegate {
 }
 ```
 
-# Example
+- Add cache store to skygear chat
 
-*All below UI update, I use `this.tableView.reloadTable()`. It is up to client app to decide how to update the UI*
+There should be a common cache logic layer and cache implementation.
 
-### In conversation list
+#### Cache implementation
 
-#### Start subscribing conversation changes
+Skygear may provide cache implementation for each platform.
 
-When
-- enter conversation list
-
-```
-skygearChat.subscribeConversations(completion: func (conversationDeltas) {
-  this.conversations = skygearChat.applyDelta(conversationDeltas, toList: this.conversations)
-  this.tableView.reloadTable()
-})
-```
-
-#### Fetch and update table
-
-When
-- enter conversation list
-- come offline and online again when in conversation list
+- iOS: Core Data
+- Android: SQLite
+- JS: localforage
+- iOS + Android: Realm
 
 ```
-skygearChat.fetchConversations(completion: func (conversations, cached = false) {
-  this.conversations = conversations
-  this.tableView.reloadTable()
-})
+func set(conversation: Conversation, forID: String) -> Void
+func set(conversation: Conversation, message: Message, forID: String) -> Void
+
+// if not implementated, the common cache logic needs to get all and filter the messages
+func fetchMessage(conversation: Conversation, before/afterMessageID: String, limit: Int, order: String) -> [Message]
 ```
 
-### In conversation OR app come back online inside conversation
+#### Common cache logic
 
-#### Start subscribing message changes
+The cache logic needs to implement the interface of the API that support cacheCallback or update the cache.
 
-When
-- enter conversation
-
-```
-let conversation = this.conversation
-
-skygearChat.subscribeMessages(conversation: conversation,
-                              handler: func (messageDeltas) {
-                                this.messages = skygearChat.applyDelta(messageDelta, toList: this.messages)
-                                this.tableView.reloadTable()
-                              })
-```
-
-#### Fetch latest messages and update table
-
-When
-- enter conversation and try to skip to latest message
+interface for converation list
 
 ```
-let conversation = this.conversation
-let beforeMessage = nil // fetch latest message
-let limit = 100
-let order = .descending // latest come first
-
-skygearChat.fetchMessages(conversation: conversation,
-                          beforeMessage: beforeMessage,
-                          limit: limit,
-                          order: order,
-                          completion: func (messages, cached = false) {
-                            this.messages = skygearChat.merge(messages, toList: this.messages)
-                            this.tableView.reloadTable()
-                          })
+func saveConversation(conversation: Conversation) -> Void
+func deleteConversation(conversation: Conversation) -> Void
+func fetchConversations() -> [Conversation]
+func leaveConversation(conversation: Conversation) -> Void
 ```
 
-#### Fetch newer messages and update table
-
-When
-- enter conversation and try to stay at last message position and load newer message from that point
-- come offline and online again when in conversation
-- load newer messages when scroll to bottom
+interface for message list
 
 ```
-let conversation = this.conversation
-let afterMessage = this.latestMessage
-let limit = 100
-let order = .descending // latest come first
-
-skygearChat.fetchMessages(conversation: conversation,
-                          afterMessage: afterMessage,
-                          limit: limit,
-                          order: order,
-                          completion: func (messages, cached = false) {
-                            this.latestMessage = messages[0]
-                            this.messages = skygearChat.merge(messages, toList: this.messages)
-                            this.tableView.reloadTable()
-                          })
-```
-
-#### Fetch older messages and update table
-
-- load older messages when scroll to top
-
-```
-let conversation = this.conversation
-let beforeMessage = this.firstMessage
-let limit = 100
-let order = .descending // latest come first
-
-skygearChat.fetchMessages(conversation: conversation,
-                          beforeMessage: firstMessage,
-                          limit: limit,
-                          order: order,
-                          completion: func (messages, cached = false) {
-                            this.latestMessage = messages[0]
-                            this.messages = skygearChat.merge(messages, toList: this.messages)
-                            this.tableView.reloadTable()
-                          })
-```
-
-### With ManagedMessageList
-
-#### Enter conversation
-
-```
-this.messageList = new ManagedMessageList(container: skygear.defaultContainer(),
-                                          conversation: this.conversation,
-                                          delegate: this)
-
-this.messageList.subscribeNewMessages()
-
-// implement ManagedMessageListDelegate
-func managedMessageListDidChange(messageDeltas: [MessageDelta]) {
-  this.tableView.reloadTable()
-}
-```
-
-#### Render table
-
-```
-func numberOfCells() -> Int {
-  return this.messageList.messageCount()
-}
-
-func cellForRow(index: Int) -> Cell {
-  let message = this.messageList.messageAt(index)
-
-  let cell = /* render cell with message */
-
-  return cell
-}
-```
-
-#### Leave conversation
-
-```
-this.messageList.unsubscribeNewMessages()
+func createMessage(conversation: Conversation, body: ...) -> Void
+func editMessage(conversation: Conversation, body: ...) -> Void
+func deleteMessage(conversation: Conversation, message: Message) -> Void
+func fetchMessage(conversation: Conversation, before/afterMessage: Message, limit: Int, order: String) -> [Message]
+func markDeliveredMessages(messages: [Message])
+func fetchReceiptsWithMessage(message: Message)
 ```
