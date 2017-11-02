@@ -25,77 +25,15 @@ Resource includes conversation and message.
 
 The cachedCallback should be optional, thus compatible to the old API interace.
 
-After client app receives result from both callback, client app need to resolve a single result for display. Skygear Chat Container would provide some utility functions to help client app resolve two callback result.
-
 ### Expected UI Display / Common Use Case
 
 Client App is expected to keep a single list of messages for display in table. And they are required to keep track to the newest and oldest fetched messages to determine when to fetch result from server.
 
 Client App should replace old message with new message if the same message id is found.
 
-Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App is expected to skip these message in UI display.
+Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App is expected to skip these messages in UI display.
 
-We may provide a high level API **ManagedMessageList** to handle this for the developer.
-
-# Sample Code for Message List, with ManagedMessageList
-
-*All below UI update, I use `this.tableView.reloadTable()`. It is up to client app to decide how to update the UI*
-
-#### Enter conversation
-
-```
-this.stickToBottom = true | false
-this.messageList = new ManagedMessageList(container: skygear.defaultContainer(),
-                                          conversation: this.conversation,
-                                          delegate: this)
-
-this.messageList.fetchLatestMessages()
-this.messageList.startSubscribing()
-
-// implement ManagedMessageListDelegate
-func managedMessageListDidChange(messageDeltas: [MessageDelta]) {
-  this.tableView.reloadTable()
-  if (this.stickToBottom) {
-    this.tableView.scrollToBottom()
-  }
-}
-```
-
-#### Render table
-
-```
-func numberOfCells() -> Int {
-  return this.messageList.messageCount()
-}
-
-func cellForRow(index: Int) -> Cell {
-  let message = this.messageList.messageAt(index)
-
-  let cell = /* render cell with message */
-
-  return cell
-}
-```
-
-#### Edit actions
-
-```
-// the message would added to the internal list
-// and update upon server response
-//
-// user only needs to handle messageListDidChange
-this.messageList.createMessage(/* message content params */)
-
-this.messageList.updateMessage(/* message content params */)
-
-this.messageList.deleteMessage(message)
-```
-
-#### Leave conversation
-
-```
-this.messageList.stopSubscribing()
-```
+The conversation view in UI Kit would use the cached version of chat API. Thus, developer should be able to use this new feature easily.
 
 # Sample Code for Conversation List
 
@@ -108,8 +46,14 @@ When
 
 ```
 skygearChat.subscribeConversations(completion: func (conversationDeltas) {
-  this.conversations = applyDelta(conversationDeltas, toList: this.conversations)
-  this.tableView.reloadTable()
+  skygearChat.fetchConversations(completion: func(conversations, cached = false) {
+    if (cached) {
+      return
+    }
+
+    this.conversations = conversations
+    this.tableView.reloadTable()
+  })
 })
 ```
 
@@ -127,6 +71,8 @@ skygearChat.fetchConversations(completion: func (conversations, cached = false) 
 
 # Changes Required
 
+Please also see [fetch_message_after_time.md](./fetch_message_after_time.md)
+
 ### Server
 
 #### Schema Change
@@ -135,9 +81,21 @@ Add a `previous_message` column to `message` table, to determine if two given me
 
 Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete.
 
-#### API Change
+#### API
 
-fetchMessages API should also return the ID of one newer message. So the client can tell if the API call has fetched the latest message already. Togther with `previous_message`, the client can also determine if it needs to fetch older message.
+Use message instead of time as the query reference in fetchMessages API, this can avoid missing messages when there are multiple messages which have the same timestamp.
+
+old:
+
+```
+fetchMessages(conversation_id, limit, before_time?, order?)
+```
+
+new:
+
+```
+fetchMessages(conversation_id, limit, before_message?, order?)
+```
 
 ### SDK
 
@@ -160,7 +118,7 @@ skygearChat.createMessage(/* ... */, (message) => {
     // update the message
   });
 
-// Non-promise
+// Non-Promise
 skygearChat.createMessage(/* ... */, func (message) => {
   // check `syncingToServer`, `alreadySyncToServer` and `fail` of the message
   // to insert or update message in UI
@@ -172,7 +130,6 @@ skygearChat.createMessage(/* ... */, func (message) => {
 ```
 func fetchConversations(cachedCallback?)
 func fetchMessages(conversation, beforeMessage, limit, order, cachedCallback?)
-func fetchMessages(conversation, afterMessage, limit, order, cachedCallback?)
 ```
 
 #### JS
@@ -227,80 +184,13 @@ skygearChat.fetchMessages(func (messages, cached = false) {
 })
 ```
 
-- Add a managed message list for user to use directly
-
-```
-class ManagedMessageList {
-
-  constructor(container: SkygearContainer,
-              conversation: Conversation,
-              delegate: ManagedMessageListDelegate)
-
-  - fetchLimit: Int = 100
-  - useCache: Boolean = true
-  - syncOnReconnect: Boolean = true
-
-  func startSubscribing() // expected to call when enter view
-
-  func stopSubscribing() // expected to call when leave view
-
-  func messageCount() -> Int
-
-  func messageAt(position: Int) -> Message
-
-  func fetchLatestMessages() -> Void
-
-  // message edit api
-  func createMessage(body: ...) -> Void
-  func editMessage(body: ...) -> Void
-  func deleteMessage(message: Message) -> Void
-  func markDeliveredMessages(messages: [Message])
-
-  func fetchReceiptsWithMessage(message: Message)
-
-  protected func handleFetchedMessages(messages: [Message]) -> Void
-  protected func handleCachedMessages(messages: [Message]) -> Void
-
-  // handle pubsub change
-  protected func handleMessageChanges(messageDeltas: [MessageDelta]) -> Void
-
-  // for UI display
-  - protected messages: [Message]
-
-  // to determine when to fetch messages, may need to consider gap between messages
-  // consider a client app may stay on previous message position
-  // and have a skip to latest button
-  // while the current position and the latest message has a gap larger than fetch limit
-  //
-  // if useCache = false
-  // messages == fetchedMessages
-  - protected fetchedMessages: [Message]
-
-  /**
-   * scrollViewDelegateMethods
-   *
-   * the list will determine when to fetch messages by checking current first
-   * and last visible message
-   *
-   * the implementation would call fetchMessages automatically
-   */
-
-}
-
-interface ManagedMessageListDelegate {
-
-  func managedMessageListDidChange(messageDeltas: [MessageDelta])
-
-}
-```
-
 - Add cache store to skygear chat
 
 There should be a common cache logic layer and cache implementation.
 
 #### Cache implementation
 
-Skygear may provide cache implementation for each platform.
+Skygear may provide cache implementation for each platform, and provide functions / classes to integrate with the app existing persistant store.
 
 - iOS: Core Data
 - Android: SQLite
@@ -310,6 +200,7 @@ Skygear may provide cache implementation for each platform.
 ```
 func set(conversation: Conversation, forID: String) -> Void
 func set(conversation: Conversation, message: Message, forID: String) -> Void
+func purgeAll() -> Void
 
 // if not implementated, the common cache logic needs to get all and filter the messages
 func fetchMessage(conversation: Conversation, before/afterMessageID: String, limit: Int, order: String) -> [Message]
@@ -318,6 +209,8 @@ func fetchMessage(conversation: Conversation, before/afterMessageID: String, lim
 #### Common cache logic
 
 The cache logic needs to implement the interface of the API that support cacheCallback or update the cache.
+
+For security reason, the cache should live with a user session only. When a user logout, the cache should be erased.
 
 interface for converation list
 
@@ -334,7 +227,7 @@ interface for message list
 func createMessage(conversation: Conversation, body: ...) -> Void
 func editMessage(conversation: Conversation, body: ...) -> Void
 func deleteMessage(conversation: Conversation, message: Message) -> Void
-func fetchMessage(conversation: Conversation, before/afterMessage: Message, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, before: Message, limit: Int, order: String) -> [Message]
 func markDeliveredMessages(messages: [Message])
 func fetchReceiptsWithMessage(message: Message)
 ```
