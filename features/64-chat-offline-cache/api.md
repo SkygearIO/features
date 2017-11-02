@@ -33,7 +33,16 @@ Client App should replace old message with new message if the same message id is
 
 Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App is expected to skip these messages in UI display.
 
-The conversation view in UI Kit would use the cached version of chat API. Thus, developer should be able to use this new feature easily.
+The conversation view controller in UI Kit would use the cached version of chat API. Thus, developer should be able to use this new feature easily.
+
+The controller should have the following behaviour:
+
+- keep a cursor pointing to a message or the latest message, set a window size of how many messages should be kept in memory
+- when moving the cursor around (scrolling around or jumping around), it should erase messages outside the window and fetch messages newly entered the window
+- fetch the messages to fill the window when enter view, if the cursor is not set, it would stick to the latest message
+- subscribe to new messages, but only append to bottom if the window is on the latest message side
+- display, allow resend, cancel pending sent message, i.e. send by user but not responded by server yet
+- sync latest messages on reconnect if the window is on the latest message side
 
 # Sample Code for Conversation List
 
