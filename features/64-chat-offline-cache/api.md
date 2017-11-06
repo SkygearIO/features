@@ -27,11 +27,11 @@ The cachedCallback should be optional, thus compatible to the old API interace.
 
 ### Expected UI Display / Common Use Case
 
-Client App is expected to keep a single list of messages for display in table. And they are required to keep track to the newest and oldest fetched messages to determine when to fetch result from server.
+Client App is expected to keep a single list of messages for display in table. And user scroll beyond the list, they would need to call API to fetch messages.
 
 Client App should replace old message with new message if the same message id is found.
 
-Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App is expected to skip these messages in UI display.
+Deleted messages are also returned in fetch API, with empty content and marked as deleted. This is to keep the whole message list complete. Client App may or may not skip these messages in UI display.
 
 The conversation view controller in UI Kit would use the cached version of chat API. Thus, developer should be able to use this new feature easily.
 
@@ -75,6 +75,72 @@ When
 skygearChat.fetchConversations(completion: func (conversations, cached = false) {
   this.conversations = conversations
   this.tableView.reloadTable()
+})
+```
+
+### In message list
+
+#### Subscribe messages
+
+When
+- enter message list
+
+```
+skygearChat.subscribeMessages(conversation, func (messageDeltas) {
+  // Merge delta to current list
+
+  // Apply the delta to UI one by one
+  // OR
+  // Reload the UI once
+})
+```
+
+When pubsub disconnect and reconnect, messages in between are not fetched automatically. Client app may fetch latest messages when pubsub reconnected.
+
+```
+let latestFetchedMessage: Message;
+
+skygear.pubsub.onDisconnect(func () {
+  this.latestFetchedMessage = this.messages.first // OR this.messages.last
+})
+
+skygear.pubsub.onConnect(func () {
+  let afterMessage = this.latestFetchedMessage
+  skygearChat.fetchMessages(conversation, afterMessage, limit, oreder, /* Update UI */)
+})
+```
+
+#### Fetch messages
+
+When
+- enter message list
+- load messages when scroll to top of the list
+
+```
+skygearChat.fetchMessages(conversation, beforeMessage / afterMessage, limit, order, func (messageDeltas, cached = false) {
+  // Merge delta to current list
+
+  // Apply the delta to UI one by one
+  // OR
+  // Reload the UI once
+})
+```
+
+### Create messages
+
+```
+// Promise
+skygearChat.createMessage(/* ... */, (message) => {
+    // insert the new message in UI
+  })
+  .then((message) => {
+    // update the message
+  });
+
+// Non-promise
+skygearChat.createMessage(/* ... */, func (message) => {
+  // check `syncingToServer`, `alreadySyncToServer` and `fail` of the message
+  // to insert or update message in UI
 })
 ```
 
