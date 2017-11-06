@@ -146,7 +146,7 @@ skygearChat.createMessage(/* ... */, func (message) => {
 
 # Changes Required
 
-Please also see [fetch_message_after_time.md](./fetch_message_after_time.md)
+Please also see [fetch_message_after_message.md](./fetch_message_after_message.md)
 
 ### Server
 
