@@ -13,15 +13,15 @@ This feature enables developer to send customized push notification via cloud fu
   * after\_conversation\_created
   * after\_conversation\_deleted
   * after\_conversation\_updated
-  * after\_user_entered\_conversation
-  * after\_user_leave\_conversation
+  * after\_users\_entered\_conversation
+  * after\_users\_leave\_conversation
 
 In addition, the current JS push notification code snippet is too verbose and can be simplified.
 
 ### Task
-- Refactor JS SDK Push Notification Function so that it can be called by developer with less code.  
-	- Original Code: 
-	
+- Refactor JS SDK Push Notification Function so that it can be called by developer with less code.
+	- Original Code:
+
 	```javascript
 	var skygear = require('skygear');
 	skygear.push.sendToDevice(
@@ -47,12 +47,12 @@ In addition, the current JS push notification code snippet is too verbose and ca
 	);
 	```
 
-	- new Code: 
+	- new Code:
 
 	```javascript
 	var skygear = require('skygear');
-	skygear.push.sendToDevice(
-	  ['2aa4af2a-699a-4e43-8d67-7598757fc7ed'],
+	skygear.push.sendToUser(
+	  [userBen, userRick],
 	  {
          'title': title,
          'body': message
@@ -68,8 +68,7 @@ In addition, the current JS push notification code snippet is too verbose and ca
 
 ```javascript
 skygearChat.afterMessageSent((message, conversation) => {
-  var userIds = conversation.participants.map(p => p.user.key.recordID);
-  skygear.push.sendToUser(userIds, {'title': 'Title', 'body': 'Hello World'})
+  skygear.push.sendToUser(conversation.participants, {'title': 'Title', 'body': 'Hello World'})
 })
 ```
 
@@ -94,8 +93,8 @@ def after_messange_send_handler(message, conversation):
 	- `skygearChat.afterConversationCreated((conversation) => {})`
 	- `skygearChat.afterConversationUpdated((conversation) => {})`
 	- `skygearChat.afterConversationDeleted((conversation) => {})`
-	- `skygearChat.afterUserAddedToConversation((conversation) => {})`
-	- `skygearChat.afterUserRemovedFromConversation((conversation) => {})`
+	- `skygearChat.afterUsersAddedToConversation((conversation, users) => {})`
+	- `skygearChat.afterUsersRemovedFromConversation((conversation, users) => {})`
 
 - Conversation
   - `@chat.after_message_sent`
@@ -105,8 +104,8 @@ def after_messange_send_handler(message, conversation):
   - `@chat.after_conversation_created`
   - `@chat.after_conversation_updated`
   - `@chat.after_conversation_deleted`
-  - `@chat.after_user_added_to_conversation`
-  - `@chat.after_user_removed_from_conversation`
+  - `@chat.after_users_added_to_conversation`
+  - `@chat.after_users_removed_from_conversation`
 
 ## Implementation Details
 
@@ -127,7 +126,7 @@ export function afterMessageSent(callback) {
 ### Changes on Plugin (Hook Wrapper)
 - Wrapper of op wrapper
 
-- Example: 
+- Example:
 
 ```python
 def after_message_sent(*args, **kwargs):
