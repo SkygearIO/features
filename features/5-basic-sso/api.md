@@ -149,12 +149,12 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
 });
 ```
 
-- `getOAuthProviderProfiles(providerID)`
+- `getOAuthProviderProfiles()`
   - Get the provider user profiles
   - Use case: Allow user to determine connected provider and get the profile object
 
 ```js
-  skygear.auth.getOAuthProviderProfiles('com.example').then(function(authResult) {
+  skygear.auth.getOAuthProviderProfiles().then(function(authResult) {
     /*
     {
       "facebook" : {
@@ -216,7 +216,7 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
   OAuthResponseHandler())`
 - `container.auth().unlinkOAuthProvider(providerID, new
   OAuthResponseHandler())`
-- `container.auth().getOAuthProviderProfiles(providerID, new
+- `container.auth().getOAuthProviderProfiles(new
   OAuthResponseHandler())`
 
 OAuthResponseHandler Interface
