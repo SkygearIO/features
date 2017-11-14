@@ -86,15 +86,15 @@ def after_messange_send_handler(message, conversation):
 ### List of APIs
 
 - Javascript
-	- `skygearChat.afterMessageSent((message, conversation) => {})`
-	- `skygearChat.afterMessageUpdated((message, conversation) => {})`
-	- `skygearChat.afterMessageDeleted((message, conversation) => {})`
-	- `skygearChat.typingStarted((conversation, events) => {})`
-	- `skygearChat.afterConversationCreated((conversation) => {})`
-	- `skygearChat.afterConversationUpdated((conversation) => {})`
-	- `skygearChat.afterConversationDeleted((conversation) => {})`
-	- `skygearChat.afterUsersAddedToConversation((conversation, users) => {})`
-	- `skygearChat.afterUsersRemovedFromConversation((conversation, users) => {})`
+	- `skygearChat.afterMessageSent((message, conversation, participants) => {})`
+	- `skygearChat.afterMessageUpdated((message, conversation, participants) => {})`
+	- `skygearChat.afterMessageDeleted((message, conversation, participants) => {})`
+	- `skygearChat.typingStarted((conversation, participants, events) => {})`
+	- `skygearChat.afterConversationCreated((conversation, participants) => {})`
+	- `skygearChat.afterConversationUpdated((conversation, participants) => {})`
+	- `skygearChat.afterConversationDeleted((conversation, participants) => {})`
+	- `skygearChat.afterUsersAddedToConversation((conversation, participants, users) => {})`
+	- `skygearChat.afterUsersRemovedFromConversation((conversation, participants, users) => {})`
 
 - Conversation
   - `@chat.after_message_sent`
