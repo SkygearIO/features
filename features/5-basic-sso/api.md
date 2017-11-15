@@ -149,12 +149,12 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
 });
 ```
 
-- `getOAuthProviderProfiles(providerID)`
+- `getOAuthProviderProfiles()`
   - Get the provider user profiles
   - Use case: Allow user to determine connected provider and get the profile object
 
 ```js
-  skygear.auth.getOAuthProviderProfiles('com.example').then(function(authResult) {
+  skygear.auth.getOAuthProviderProfiles().then(function(authResult) {
     /*
     {
       "facebook" : {
@@ -216,7 +216,7 @@ skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
   OAuthResponseHandler())`
 - `container.auth().unlinkOAuthProvider(providerID, new
   OAuthResponseHandler())`
-- `container.auth().getOAuthProviderProfiles(providerID, new
+- `container.auth().getOAuthProviderProfiles(new
   OAuthResponseHandler())`
 
 OAuthResponseHandler Interface
@@ -367,8 +367,20 @@ class BaseOAuthProvider:
     def process_refresh_token_response(self, response_data):
         return response_data
 
-    def process_protected_request(self, url, headers, data):
+    def process_protected_request(self, token_response, url, headers, data):
+        """
+        Default implementation is to get the access_token from token_response
+        and add the token to the authorization header
+        """
         return url, headers, data
+
+    def process_principal_id(self, userinfo):
+        return userinfo['id']
+
+    def process_userinfo(self, userinfo):
+        return {
+            'email': userinfo.get('email')
+        }
 
 ```
 
@@ -384,6 +396,7 @@ Refs: [requests-oauthlib](https://github.com/requests/requests-oauthlib)
 - process_access_token_response
 - process_refresh_token_response
 - process_protected_request
+- process_principal_id
 - process_userinfo
 
 ### Customization
