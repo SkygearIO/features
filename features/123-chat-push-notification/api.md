@@ -49,11 +49,8 @@ Main Payload is a collection of payloads.
 |body|string|message body|null|
 |title|string|message title|null|
 |subtitle|string|message subtitle|null|
-|sound|string|message sound|null|
-|title\_loc\_key|string|key to localized string|null|
-|title\_loc\_args|list of string|arguments of string replacement of title\_loc\_key|null|
 |priority|string|priority of message|"normal"|
-|expiry|int|time to live in seconds| 2419200 (4 weeks)|
+|ttl|int|time to live in seconds| 2419200 (4 weeks)|
 
 
 ### Custom Payload
@@ -65,13 +62,40 @@ Main Payload is a collection of payloads.
 |android\_body\_loc\_key\_args|string| |null|
 |android\_led\_color|string| |null|
 |android\_icon|string| |null|
+|android_sound|string|message sound|null|
 |ios\_badge|integer| |null|
 |ios\_content\_available|boolean| |null|
 |ios\_mutable\_content|boolean| |null|
 |ios\_launch\_image|string| |null|
 |ios\_category|string| |null|
+|ios_sound|string|message sound|null|
+|android_title\_loc\_key|string|key to localized string|null|
+|android_title\_loc\_args|list of string|arguments of string replacement of title\_loc\_key|null|
+|ios_title\_loc\_key|string|key to localized string|null|
+|ios_title\_loc\_args|list of string|arguments of string replacement of title\_loc\_key|null|
+|ios\_action\_loc\_key|string|key to action|null|
+|ios\_loc\_key|string|key to message string in Localizable.strings|null|
+|ios\_loc\_args|string|Variable string values to appear in place of the format specifiers in loc-key.|null|
 
+#### Example Push Notification Payload
 
+```json
+{
+  "message": {
+    "title": "Hello Rick",
+    "body": "Ditto",
+    "ttl": 99999
+  },
+  "custom": {
+    "android_sound": "wakeup.mp3",
+    "android_icon": "icon-1",
+    "ios_sound": "wakeup.m4a",
+    "ios_badge": 1,
+    "ios_launch_image": "launch.png",
+    "ios_category": "general"
+  }
+}
+```
 
 ## Implementation Details
 
@@ -100,6 +124,7 @@ function sendToUser(users, {
 
 2. SDK supports `users` in either list of user ids and list of user objects.
 3. SDK (in Android and iOS) should have payload builder class for auto complete.
+
 
 ### Changes on API at skygear-server
 
