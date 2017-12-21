@@ -78,13 +78,13 @@ All function are under `skygear.auth`
   });
 ```
 
-- `loginOAuthProviderWithAcessToken(providerID, accessToken)`
+- `loginOAuthProviderWithAccessToken(providerID, accessToken)`
   - `accessToken` - Client calls this API if it already has an access token,
     skygear will try to login directly instead of going through the OAuth
     flow.
 
 ```js
-skygear.auth.loginOAuthProviderWithAcessToken('com.facebook', {
+skygear.auth.loginOAuthProviderWithAccessToken('com.facebook', {
   scope: []
 }).then(function(skygearUser) {
 
@@ -134,13 +134,13 @@ skygear.auth.loginOAuthProviderWithAcessToken('com.facebook', {
   });
 ```
 
-- `linkOAuthProviderWithAcessToken(providerID, accessToken)`
+- `linkOAuthProviderWithAccessToken(providerID, accessToken)`
   - `accessToken` - Client calls this API if it already has an access token,
     skygear will try to login directly instead of going through the OAuth
     flow.
 
 ```js
-skygear.auth.linkOAuthProviderWithAcessToken('facebook', {
+skygear.auth.linkOAuthProviderWithAccessToken('facebook', {
   scope: []
 }).then(function(skygearUser) {
 
