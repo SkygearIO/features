@@ -118,6 +118,32 @@ payload = {
 JWT.encode payload, custom_token_secret, "HS256"
 ```
 
+**Java**
+
+- Install [jjwt](https://github.com/jwtk/jjwt)
+
+```java
+String customTokenSecret = "CUSTOM_TOKEN_SECRET from portal";
+String encodedSecret = new String(Base64.encode(customTokenSecret.getBytes(), Base64.DEFAULT));
+String userId = "User id of your server";
+Date now = new Date();
+Date expiration = new Date(now.getTime() + 60 * 60 * 1000);
+
+Claims claims = Jwts.claims()
+        .setSubject(userId)
+        .setIssuedAt(now)
+        .setExpiration(expiration);
+Map<String, String> profile = new HashMap<>();
+profile.put("email", "user@skygear.io");
+profile.put("username", "user");
+claims.put("skyprofile", profile);
+
+String token = Jwts.builder()
+        .setClaims(claims)
+        .signWith(SignatureAlgorithm.HS256, encodedSecret)
+        .compact();
+```
+
 ### List of APIs (Client)
 
 **JS**
