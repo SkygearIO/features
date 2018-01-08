@@ -15,7 +15,8 @@ Supported Push Notification Platform:
 ## Task
 
 1. Define new payload format
-2. Update skygear server to support new payload.
+2. Update Skygear server to support new payload.
+3. Update Skygear SDK to support new payload.
 
 ## New Payload
 
@@ -25,22 +26,46 @@ The following is the proposed payload.
 
 Main Payload is a collection of payloads.
 
+- Payload `platform` contains platform specific information.
+
+- Payload `message` contains push notification shared among platforms so that developers do not need to include the same key-value in different payloads.
+
+- Payload `data` contains custom data definied by developers
+
+
 |key | type |description           |default|
 |----|------|----------------------|-------|
 |platform|dict|See platform payload|null|
 |message|dict|See message payload|null|
 |data|dict|Custom dictionary by developer|null|
-|custom|dict|See custom payload|null|
-|dry\_run|boolean|dry run only if true|false|
-
 
 
 ### Platform Payload
 
-|key | type |description|default|
-|----|------|-----------|-------|
-|android|boolean|send to android device if true|true|
-|ios|boolean|send to android device if true|true|
+|key|type|description|default|
+|---|----|-----------|-------|
+|android|dict|Contains android specific settings| null|
+|ios|dict|Contains iOS specific settings|null|
+
+* Each dictionary can have `enable` flag, if it is `false`, push notification will be disabled. For example,
+
+```json
+{
+  "message": {
+    "title": "Hello Rick",
+    "subtitle": "Rick is working at ourksy."
+    "priority": "normal",
+    "body": "Ditto",
+    "ttl": 99999
+  },
+  "platform": {
+    "android": {
+      "enabled": false
+    }
+  }
+}
+```
+In the above JSON, android devices will not receive a push message as GCM is disabled.
 
 ### Message Payload
 
@@ -49,51 +74,147 @@ Main Payload is a collection of payloads.
 |body|string|message body|null|
 |title|string|message title|null|
 |subtitle|string|message subtitle|null|
-|priority|string|priority of message|"normal"|
+|priority|string|priority of message, "normal" or "high"|"normal"|
 |ttl|int|time to live in seconds| 2419200 (4 weeks)|
 
+* `priority` in GCM is "normal" and "high", which are 5 and 10 in iOS respectively.
 
-### Custom Payload
-|key|type|description|default|
-|---|----|-----------|-------|
-|android\_channel\_id|string| |null|
-|android\_click\_action|string| |null|
-|android\_body\_loc\_key\_action|string| |null|
-|android\_body\_loc\_key\_args|string| |null|
-|android\_led\_color|string| |null|
-|android\_icon|string| |null|
-|android_sound|string|message sound|null|
-|ios\_badge|integer| |null|
-|ios\_content\_available|boolean| |null|
-|ios\_mutable\_content|boolean| |null|
-|ios\_launch\_image|string| |null|
-|ios\_category|string| |null|
-|ios_sound|string|message sound|null|
-|android_title\_loc\_key|string|key to localized string|null|
-|android_title\_loc\_args|list of string|arguments of string replacement of title\_loc\_key|null|
-|ios_title\_loc\_key|string|key to localized string|null|
-|ios_title\_loc\_args|list of string|arguments of string replacement of title\_loc\_key|null|
-|ios\_action\_loc\_key|string|key to action|null|
-|ios\_loc\_key|string|key to message string in Localizable.strings|null|
-|ios\_loc\_args|string|Variable string values to appear in place of the format specifiers in loc-key.|null|
+* `priority` and `ttl` need to be sent in HTTP header in APNS, not in payload.
 
-#### Example Push Notification Payload
+#### Example Skygear Push Notification Payload
 
 ```json
 {
   "message": {
     "title": "Hello Rick",
+    "subtitle": "Rick is working at ourksy."
+    "priority": "normal",
     "body": "Ditto",
     "ttl": 99999
   },
-  "custom": {
-    "android_sound": "wakeup.mp3",
-    "android_icon": "icon-1",
-    "ios_sound": "wakeup.m4a",
-    "ios_badge": 1,
-    "ios_launch_image": "launch.png",
-    "ios_category": "general"
+  "platform": {
+    "ios": {
+      "alert" : {
+        "action-loc-key" : "PLAY"
+      }
+      "badge" : 5
+    },
+    "android": {
+      "collapse_key" : "demo",
+      "notification": {
+        "icon": "a.png"
+      }
+    }
+  },
+  "data": {
+    "for": "bar",
+    "source": ["alice", "bob"] 
   }
+}
+```
+
+### Generating GCM Payload from Skygear Push Notification Payload
+
+1. Generate Basic GCM Payload from `message` payload.
+
+```json
+{
+ "notification": {
+   "title": "Hello Rick",
+   "body": "Ditto",
+   "subtitle": "Rick is working at ourksy.",
+  },
+  "time_to_live": 99999,
+  "priority": "normal"
+}
+```
+
+2. Inject `data` payload
+
+```json
+{
+ "notification": {
+   "title": "Hello Rick",
+   "body": "Ditto",
+   "subtitle": "Rick is working at ourksy.",
+  },
+  "time_to_live": 99999,
+  "priority": "normal",
+  "data": {
+    "for": "bar",
+    "source": ["alice", "bob"] 
+  }
+}
+```
+
+3. Merge with `android` dict in `platform`
+
+```json
+{
+ "notification": {
+   "title": "Hello Rick",
+   "body": "Ditto",
+   "subtitle": "Rick is working at ourksy.",
+   "icon": "a.png"
+  },
+  "collapse_key" : "demo",
+  "time_to_live": 99999,
+  "priority": "normal",
+  "data": {
+    "for": "bar",
+    "source": ["alice", "bob"] 
+  }
+}
+```
+
+
+### Generating APNS Payload from Skygear Push Notification Payload
+
+1. Generate Basic APNS Payload from `mesage` payload.
+
+```json
+{
+  "aps" : {
+    "alert" : {
+      "title" : "Hello Rick",
+      "body" : "Bob wants to play poker",
+      "subtitle" : "Rick is working at ourksy."
+    }
+  }
+}
+```
+
+2. Inject `data` payload
+
+```json
+{
+  "aps" : {
+    "alert" : {
+      "title" : "Hello Rick",
+      "body" : "Bob wants to play poker",
+      "subtitle" : "Rick is working at ourksy."
+    }
+  },
+  "for": "bar",
+  "source": ["alice", "bob"] 
+}
+```
+
+3. Merge with `iOS` dict in `platform`
+
+```json
+{
+  "aps" : {
+    "alert" : {
+      "title" : "Hello Rick",
+      "body" : "Bob wants to play poker",
+      "subtitle" : "Rick is working at ourksy.",
+      "action-loc-key" : "PLAY"
+    },
+    "badge" : 5
+  },
+  "for": "bar",
+  "source": ["alice", "bob"] 
 }
 ```
 
@@ -112,6 +233,7 @@ function sendToUser(users, payload)
 ```
 
 Sample Call:
+
 ```javascript
 
 function sendToUser(users, {
@@ -128,6 +250,7 @@ function sendToUser(users, {
 
 ### Changes on API at skygear-server
 
-1. Backward Comptabile? (support old payload)
-2. Send push notification message according to payload
-3. Server response remains unchanged.
+1. Backward Comptabile, Skygear server needs to support both the existing and the new payload. 
+2. Server server response remains unchanged.
+3. Generate GCM payload and APNS payload accordingly.
+4. Send `apns-priority` and `apns-priority` when sending iOS push notification (https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html)
