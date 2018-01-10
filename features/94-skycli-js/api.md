@@ -71,18 +71,39 @@ First to look up at current working directory, then home directory
 
 ## Project configuration look up
 
-```
-skygear.json
-```
-
-Init by `skycli init`.
-
+We have project configuration file `skygear.json` for containing deployment
+target of the project. The `skygear.json` is created by `skycli init`.
 
 ### Format
 
-TBC
+```
+{
+  "version": 1,
+  "app": "tellchima"
+}
+```
 
 - Able to have multiple deployment target with a default.
+
+### Per folder skyignore file
+
+We have a per folder `.skyignore` configuration. The format is following the
+popular `.gitignore`. A `.skyignore` will be created by `skycli init` during
+the project init phase. `skycli init` provides a default `.skyignore` as
+follow:
+
+```
+.git
+```
+
+### Example `.skyignore` for JS project
+
+```
+.git
+node_modules
+test/
+*.log
+```
 
 ## Example of login flow
 
