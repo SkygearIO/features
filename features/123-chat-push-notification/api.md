@@ -51,18 +51,18 @@ Main Payload is a collection of payloads.
 
 ```json
 {
-  "message": {
-    "title": "Hello Rick",
-    "subtitle": "Rick is working at ourksy."
-    "priority": "normal",
-    "body": "Ditto",
-    "ttl": 99999
-  },
-  "platform": {
-    "android": {
-      "enabled": false
-    }
-  }
+	"message": {
+		"title": "Hello Rick",
+		"subtitle": "Rick is working at ourksy.",
+		"priority": "normal",
+		"body": "Ditto",
+		"ttl": 99999
+	},
+	"platform": {
+		"android": {
+			"enabled": false
+		}
+	}
 }
 ```
 In the above JSON, android devices will not receive a push message as GCM is disabled.
@@ -85,31 +85,31 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
-  "message": {
-    "title": "Hello Rick",
-    "subtitle": "Rick is working at ourksy."
-    "priority": "normal",
-    "body": "Ditto",
-    "ttl": 99999
-  },
-  "platform": {
-    "ios": {
-      "alert" : {
-        "action-loc-key" : "PLAY"
-      }
-      "badge" : 5
-    },
-    "android": {
-      "collapse_key" : "demo",
-      "notification": {
-        "icon": "a.png"
-      }
-    }
-  },
-  "data": {
-    "for": "bar",
-    "source": ["alice", "bob"] 
-  }
+	"message": {
+		"title": "Hello Rick",
+		"subtitle": "Rick is working at ourksy.",
+		"priority": "normal",
+		"body": "Ditto",
+		"ttl": 99999
+	},
+	"platform": {
+		"ios": {
+			"alert": {
+				"action-loc-key": "PLAY"
+			},
+			"badge": 5
+		},
+		"android": {
+			"collapse_key": "demo",
+			"notification": {
+				"icon": "a.png"
+			}
+		}
+	},
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
 }
 ```
 
@@ -119,13 +119,13 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
- "notification": {
-   "title": "Hello Rick",
-   "body": "Ditto",
-   "subtitle": "Rick is working at ourksy.",
-  },
-  "time_to_live": 99999,
-  "priority": "normal"
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy."
+	},
+	"time_to_live": 99999,
+	"priority": "normal"
 }
 ```
 
@@ -133,17 +133,17 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
- "notification": {
-   "title": "Hello Rick",
-   "body": "Ditto",
-   "subtitle": "Rick is working at ourksy.",
-  },
-  "time_to_live": 99999,
-  "priority": "normal",
-  "data": {
-    "for": "bar",
-    "source": ["alice", "bob"] 
-  }
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy."
+	},
+	"time_to_live": 99999,
+	"priority": "normal",
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
 }
 ```
 
@@ -151,19 +151,19 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
- "notification": {
-   "title": "Hello Rick",
-   "body": "Ditto",
-   "subtitle": "Rick is working at ourksy.",
-   "icon": "a.png"
-  },
-  "collapse_key" : "demo",
-  "time_to_live": 99999,
-  "priority": "normal",
-  "data": {
-    "for": "bar",
-    "source": ["alice", "bob"] 
-  }
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy.",
+		"icon": "a.png"
+	},
+	"collapse_key": "demo",
+	"time_to_live": 99999,
+	"priority": "normal",
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
 }
 ```
 
@@ -174,13 +174,13 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
-  "aps" : {
-    "alert" : {
-      "title" : "Hello Rick",
-      "body" : "Bob wants to play poker",
-      "subtitle" : "Rick is working at ourksy."
-    }
-  }
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy."
+		}
+	}
 }
 ```
 
@@ -188,15 +188,15 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
-  "aps" : {
-    "alert" : {
-      "title" : "Hello Rick",
-      "body" : "Bob wants to play poker",
-      "subtitle" : "Rick is working at ourksy."
-    }
-  },
-  "for": "bar",
-  "source": ["alice", "bob"] 
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy."
+		}
+	},
+	"for": "bar",
+	"source": ["alice", "bob"]
 }
 ```
 
@@ -204,17 +204,17 @@ In the above JSON, android devices will not receive a push message as GCM is dis
 
 ```json
 {
-  "aps" : {
-    "alert" : {
-      "title" : "Hello Rick",
-      "body" : "Bob wants to play poker",
-      "subtitle" : "Rick is working at ourksy.",
-      "action-loc-key" : "PLAY"
-    },
-    "badge" : 5
-  },
-  "for": "bar",
-  "source": ["alice", "bob"] 
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy.",
+			"action-loc-key": "PLAY"
+		},
+		"badge": 5
+	},
+	"for": "bar",
+	"source": ["alice", "bob"]
 }
 ```
 
