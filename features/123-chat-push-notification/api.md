@@ -1,158 +1,256 @@
-# Push Notification in Chat
+# Push Notification API
 ## Feature Overview
 
-This feature enables developer to send customized push notification via cloud function deployment. The approach is to provide hooks in chat conversation including
+This features simplifies calling push notification API in both cloud function and client app via
 
-* Messages
-  * after\_message\_sent
-  * after\_message\_updated
-  * after\_message\_deleted
-* Typing
-  * typing\_started
-* Conversation
-  * after\_conversation\_created
-  * after\_conversation\_deleted
-  * after\_conversation\_updated
-  * after\_users\_entered\_conversation
-  * after\_users\_leave\_conversation
+1. Unifiying common parameters across platform and
+2. Provide custom parameter for specific platform
 
-In addition, the current JS push notification code snippet is too verbose and can be simplified.
 
-### Task
-- Refactor JS SDK Push Notification Function so that it can be called by developer with less code.
-  - Original Code:
+Supported Push Notification Platform:
 
-  ```javascript
-  var skygear = require('skygear');
-  skygear.push.sendToDevice(
-    ['2aa4af2a-699a-4e43-8d67-7598757fc7ed'], // Device IDs
-    {
-      'apns': {
-          'aps': {
-              'alert': {
-                  'title': title,
-                  'body': message,
-              }
-          },
-          'from': 'skygear',
-          'operation': 'notification',
-      },
-      'gcm': {
-           'notification': {
-                'title': title,
-                'body': message,
-            }
-      },
-    }
-  );
-  ```
+1. Android
+2. iOS
 
-  - new Code:
+## Task
 
-  ```javascript
-  var skygear = require('skygear');
-  skygear.push.sendToUser(
-    [userBen, userRick],
-    {
-         'title': title,
-         'body': message
-    }
-  );
-  ```
-- Create chat hook annotation in chat SDK
-- Enable chat plugin to call pre-defined hook
+1. Define new payload format
+2. Update Skygear server to support new payload.
+3. Update Skygear SDK to support new payload.
 
-### Sample Codes
+## New Payload
 
-- Sample Javascript Cloud Function
+The following is the proposed payload.
 
-```javascript
-skygearChat.afterMessageSent((message, conversation) => {
-  skygear.push.sendToUser(conversation.participants, {'title': 'Title', 'body': 'Hello World'})
-})
+### Main Payload
+
+Main Payload is a collection of payloads.
+
+- Payload `platform` contains platform specific information.
+
+- Payload `message` contains push notification shared among platforms so that developers do not need to include the same key-value in different payloads.
+
+- Payload `data` contains custom data definied by developers
+
+
+|key | type |description           |default|
+|----|------|----------------------|-------|
+|platform|dict|See platform payload|null|
+|message|dict|See message payload|null|
+|data|dict|Custom dictionary by developer|null|
+
+
+### Platform Payload
+
+|key|type|description|default|
+|---|----|-----------|-------|
+|android|dict|Contains android specific settings| null|
+|ios|dict|Contains iOS specific settings|null|
+
+* Each dictionary can have `enable` flag, if it is `false`, push notification will be disabled. For example,
+
+```json
+{
+	"message": {
+		"title": "Hello Rick",
+		"subtitle": "Rick is working at ourksy.",
+		"priority": "normal",
+		"body": "Ditto",
+		"ttl": 99999
+	},
+	"platform": {
+		"android": {
+			"enabled": false
+		}
+	}
+}
+```
+In the above JSON, android devices will not receive a push message as GCM is disabled.
+
+### Message Payload
+
+|key|type|description|default|
+|---|----|-----------|-------|
+|body|string|message body|null|
+|title|string|message title|null|
+|subtitle|string|message subtitle|null|
+|priority|string|priority of message, "normal" or "high"|"normal"|
+|ttl|int|time to live in seconds| 2419200 (4 weeks)|
+
+* `priority` in GCM is "normal" and "high", which are 5 and 10 in iOS respectively.
+
+* `priority` and `ttl` need to be sent in HTTP header in APNS, not in payload.
+
+#### Example Skygear Push Notification Payload
+
+```json
+{
+	"message": {
+		"title": "Hello Rick",
+		"subtitle": "Rick is working at ourksy.",
+		"priority": "normal",
+		"body": "Ditto",
+		"ttl": 99999
+	},
+	"platform": {
+		"ios": {
+			"alert": {
+				"action-loc-key": "PLAY"
+			},
+			"badge": 5
+		},
+		"android": {
+			"collapse_key": "demo",
+			"notification": {
+				"icon": "a.png"
+			}
+		}
+	},
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
+}
 ```
 
-- Python Cloud Function
+### Generating GCM Payload from Skygear Push Notification Payload
 
-```python
+1. Generate Basic GCM Payload from `message` payload.
 
-@chat.after_message_sent
-def after_messange_send_handler(message, conversation):
-   user_ids = [p.id.key for p in conversation.participants]
-   notification = {...}
-  skygear.action.push_users(container, user_ids, notification)
+```json
+{
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy."
+	},
+	"time_to_live": 99999,
+	"priority": "normal"
+}
 ```
 
-### List of APIs
+2. Inject `data` payload
 
-- Javascript
-  - `skygearChat.afterMessageSent((message, conversation, participants) => {})`
-  - `skygearChat.afterMessageUpdated((message, conversation, participants) => {})`
-  - `skygearChat.afterMessageDeleted((message, conversation, participants) => {})`
-  - `skygearChat.typingStarted((conversation, participants, events) => {})`
-  - `skygearChat.afterConversationCreated((conversation, participants) => {})`
-  - `skygearChat.afterConversationUpdated((conversation, participants) => {})`
-  - `skygearChat.afterConversationDeleted((conversation, participants) => {})`
-  - `skygearChat.afterUsersAddedToConversation((conversation, participants, users) => {})`
-  - `skygearChat.afterUsersRemovedFromConversation((conversation, participants, users) => {})`
+```json
+{
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy."
+	},
+	"time_to_live": 99999,
+	"priority": "normal",
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
+}
+```
 
-- Conversation
-  - `@chat.after_message_sent`
-  - `@chat.after_message_updated`
-  - `@chat.after_message_deleted`
-  - `@chat.typing_started`
-  - `@chat.after_conversation_created`
-  - `@chat.after_conversation_updated`
-  - `@chat.after_conversation_deleted`
-  - `@chat.after_users_added_to_conversation`
-  - `@chat.after_users_removed_from_conversation`
+3. Merge with `android` dict in `platform`
+
+```json
+{
+	"notification": {
+		"title": "Hello Rick",
+		"body": "Ditto",
+		"subtitle": "Rick is working at ourksy.",
+		"icon": "a.png"
+	},
+	"collapse_key": "demo",
+	"time_to_live": 99999,
+	"priority": "normal",
+	"data": {
+		"for": "bar",
+		"source": ["alice", "bob"]
+	}
+}
+```
+
+
+### Generating APNS Payload from Skygear Push Notification Payload
+
+1. Generate Basic APNS Payload from `mesage` payload.
+
+```json
+{
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy."
+		}
+	}
+}
+```
+
+2. Inject `data` payload
+
+```json
+{
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy."
+		}
+	},
+	"for": "bar",
+	"source": ["alice", "bob"]
+}
+```
+
+3. Merge with `iOS` dict in `platform`
+
+```json
+{
+	"aps": {
+		"alert": {
+			"title": "Hello Rick",
+			"body": "Bob wants to play poker",
+			"subtitle": "Rick is working at ourksy.",
+			"action-loc-key": "PLAY"
+		},
+		"badge": 5
+	},
+	"for": "bar",
+	"source": ["alice", "bob"]
+}
+```
 
 ## Implementation Details
 
 
-### Changes on JS SDK
-- Example:
+
+### Changes on SDK
+1. SDK needs to provide with simple interface for minimal push notification.
+
+
+Sample Interface:
 
 ```javascript
-export function afterMessageSent(callback) {
-  registry.registerHandler('chat:after_message_sent', (req) => {
-    var conversation = blahblahblah ;
-    var message = blahblahblah;
-    callback(message, conversation);
-  }, {});
-}
+function sendToUser(users, payload)
 ```
 
-### Changes on Plugin (Hook Wrapper)
-- Wrapper of op wrapper
+Sample Call:
 
-- Example:
+```javascript
 
-```python
-def after_message_sent(*args, **kwargs):
-    def chat_op(func):
-        _registry.register_op('chat:after_message_sent', func, *args, **kwargs)
-        return func
-    return chat_op
+function sendToUser(users, {
+  'message': {
+    'title': 'Hello World',
+    'body': 'Hello from oursky.'
+  }
+});
 ```
 
+2. SDK supports `users` in either list of user ids and list of user objects.
+3. SDK (in Android and iOS) should have payload builder class for auto complete.
 
-### Changes on Plugin (Database Operation)
-- Send message to call specific hook after database operation
-- Example:
-
-``` python
-container.send_action('chat:after_conversation_hook', {'roles': message, 'conversation': conversation} )
-```
 
 ### Changes on API at skygear-server
 
-Nil
-
-### Database Schema
-
-Nil
-
-### Migration
-
-Nil
+1. Backward Comptabile, Skygear server needs to support both the existing and the new payload. 
+2. Server server response remains unchanged.
+3. Generate GCM payload and APNS payload accordingly.
+4. Send `apns-priority` and `apns-priority` when sending iOS push notification (https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingwithAPNs.html)
