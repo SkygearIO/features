@@ -117,7 +117,7 @@ When
 - load messages when scroll to top of the list
 
 ```
-skygearChat.fetchMessages(conversation, limit, beforeDate, order, func (messageDeltas, cached = false) {
+skygearChat.fetchMessages(conversation, limit, before_time, order, func (messageDeltas, cached = false) {
   // Merge delta to current list
 
   // Apply the delta to UI one by one
@@ -179,15 +179,19 @@ Deleted messages are also returned in fetch API, with empty content and marked a
 
 #### API
 
-Use message instead of time as the query reference in fetchMessages API, this can avoid missing messages when there are multiple messages which have the same timestamp.
+Using the fetchMessages API, it is possible to fetch messages by using
+`before_time` or `before_message`. Using `before_message` has the benefit
+of duplicated message returning if messages are sent at the same moment in
+time. Using `before_time` allows the developer to fetch messages in a certain
+time range.
 
-old:
+Query by time:
 
 ```
 fetchMessages(conversation_id, limit, before_time?, order?)
 ```
 
-new:
+Query by message:
 
 ```
 fetchMessages(conversation_id, limit, before_message?, order?)
@@ -345,7 +349,7 @@ func set(conversation: Conversation, message: Message, forID: String) -> Void
 func purgeAll() -> Void
 
 // if not implementated, the common cache logic needs to get all and filter the messages
-func fetchMessage(conversation: Conversation, before/afterMessageID: String, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, before_message: String, limit: Int, order: String) -> [Message]
 ```
 
 #### Common cache logic
