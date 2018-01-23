@@ -49,14 +49,14 @@ When signing up:
 ```javascript
 skygear.auth.signupWithEmail("johndoe@example.com", "password")
 .then((user) => {
-  console.log(user.verified); // false
+  console.log(skygear.auth.verified); // false
 });
 ```
 
 ```javascript
 skygear.auth.signupWithPhone("johndoe@example.com", "password")
 .then((user) => {
-  console.log(user.verified); // false
+  console.log(skygear.auth.verified); // false
 });
 ```
 
@@ -65,7 +65,7 @@ To check if the user is verified:
 ```javascript
 skygear.auth.whoAmI()
 .then((user) => {
-  console.log(user.verified); // false
+  console.log(skygear.auth.verified); // false
 });
 ```
 
@@ -92,7 +92,8 @@ When verifying:
 ```javascript
 skygear.auth.verifyEmail('31DF2310FAA1')
 .then(() => {
-  // email sent
+  console.log(skygear.auth.verified); // true
+  console.log(skygear.auth.verifiedRecordKeys); // ['email']
 });
 ```
 
@@ -103,7 +104,7 @@ skygear.someAction()
 .then(() => {
   // the promise is rejected and this function is not called
 }, (err) => {
-  console.log(err.name); // UserNotVerified
+  console.log(err.name); // VerificationRequired
 });
 ```
 
