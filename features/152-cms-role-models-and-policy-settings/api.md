@@ -12,13 +12,36 @@
 
 ## Requirements
 
-### Update cms client UI
+The whole feature is divided into two parts.
+
+- Stage 1
+  - UI level
+  - The web interface would show only what the current user allow to see.
+- Stage 2
+  - Define access control policies for resources.
+- Stage 2.1
+  - API level
+  - Solution 1: skygear-content-manager plugin implementation
+  - Solution 2: skygear-server implementation
+
+Rationale:
+
+- Changes in Stage 1 are small and straight-forward.
+- Stage 2 is the security feature implementation.
+- Some offline discussion:
+  - We forsee that both solutions are big changes to the existing system, and the required time is similar.
+  - Most team members prefer solution 2, because it has more benefits. But the change to the existing system seems too broad, so we think that this needs more discussion.
+  - (details below)
+
+### Update cms client UI (Stage 1)
 
 - Server will provide API for assigning user to a role.
   - Each user belongs to a role only.
 - Server will provide API for getting cms config for current user.
 
-### Update cms server
+### Define policies (Stage 2)
+
+The detail of this part (esp. the resource definition) is just a draft, since the implementation vary for different solution. See stage 2.1.
 
 - Define the model of a policy.
   - Resource
@@ -60,6 +83,35 @@
       - resource:records:user::username
   - Push notifications
     - resource:push
-- Server will read and parse a file which contains a list of policies.
+
+### Update cms plugin (Stage 2.1 - solution 1 / 2)
+
+- The resource of the policies is defined by the cms config file, so server will also read the cms config file.
+- Server will read a file which contains a list of policies.
 - Modify '/cms-api/' to deny request based on the policies
   - Evaluation time depends on the resource of a policy.
+
+good:
+- scoped implementation
+
+bad:
+- performance issue
+- the policy-based access control looks more powerful than the existing access control in skygear-server
+
+### Update skygear server (Stage 2.1 - solution 2 / 2)
+
+- Skygear server can resolve policy
+  - at route level
+  - at handler level (for subresource)
+- Namespaced roles to avoid overloading the roles in different context.
+- Generates access token for different roles (to permit different policies)
+
+good:
+- policies can also work on exisiting api
+  - e.g. everyone can send push to everyone now
+- maintainance
+  - more test case on skygear-server
+
+bad:
+- definition of subresource can be complicated
+- hard to explain when working with the existing ACL in record API
