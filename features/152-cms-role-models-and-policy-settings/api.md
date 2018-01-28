@@ -27,6 +27,25 @@ The whole feature is divided into two parts.
   - CMS user-roles are defined in a separate table.
 - Server will provide API for getting cms config for current user.
 
+#### New `cms-config.yaml` format
+
+Since each role has different config, it is easier to split the single cms file to smaller files.
+
+##### Example
+
+`{CMS_CONFIG_FILE_URL}/cms-config.yaml`
+
+```
+roleA:
+  config: ./a.yaml
+roleB:
+  config: ./b.yaml
+```
+
+When a user log in as roleA and the client request for cms config, server would return the content of `{CMS_CONFIG_FILE_URL}/a.yaml`. And server would return `{CMS_CONFIG_FILE_URL}/b.yaml` if user is of roleB.
+
+The format of `{CMS_CONFIG_FILE_URL}/a.yaml` and `{CMS_CONFIG_FILE_URL}/b.yaml` is the same as current config file.
+
 ### Define policies (Stage 2)
 
 - Define the model of a policy.
