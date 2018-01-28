@@ -57,6 +57,10 @@ The following columns will be added to `_auth` table.
 * `disabled_reason` (string)
 * `disabled_expiry` (datetime)
 
+### Audit Events
+
+The server should generate audit events when the user is enabled or disabled.
+
 ## SDK
 
 ### APIs
