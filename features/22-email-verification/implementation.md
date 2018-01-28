@@ -11,14 +11,26 @@ verify by email and verify by SMS
 
 #### Request
 
+* `verify_key` (string)
+  The auth key, either `email` or `phone`.
+
 * `user_id` (string, optional)
   The user to verify. If the request is authenticated with access token
   only the current user is accepted. If request is authenticated with master key
-  any user is accepted. Default to current user.
-* `verify_record_key` (string, `email` or `phone`)
-  The auth record key that requires verification.
+  any user is accepted. Default to current user. If the request is not
+  authenticated, the user will be looked up from `verify_data`.
+
+* `verify_data` (string, optional)
+  The auth key value, should be email if `verify_key` is `email` or phone
+  if `verify_key` is `phone`.
+  If not specified, the current email or phone is used.
+
 * `code` (string)
   The verification code.
+
+* `update_data` (boolean)
+  Whether the user's auth key is modified when the user is successfully
+  verified.
 
 #### Response
 
@@ -35,7 +47,7 @@ Example:
     "access_token": "eyJhbGciOiJIUzI1Ni.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikp.TJVA95OrM7E2c",
     "last_login_at": "2017-07-23T19:30:24Z",
     "verified": true,
-    "verified_data": {
+    "verified_record_keys": {
         "email": true
     }
 }
@@ -43,28 +55,29 @@ Example:
 
 If code is invalid, `InvalidArgument` error is returned.
 
-If the user is already verified for the `verify_record_key`, `Duplicated` error is
-returned.
-
-### `auth:verify:resend`
+### `auth:verify:send`
 
 #### Overview
 
 #### Request
 
+* `verify_key` (string)
+  The auth key, either `email` or `phone`.
+
 * `user_id` (string, optional)
   The user to verify. If the request is authenticated with access token
   only the current user is accepted. If request is authenticated with master key
-  any user is accepted. Default to current user.
-* `verify_record_key` (string, `email` or `phone`)
-  The auth record key field that requires verification.
+  any user is accepted. Default to current user. If the request is not
+  authenticated, the user will be looked up from `verify_data`.
+
+* `verify_data` (string, optional)
+  The auth key value, should be email if `verify_key` is `email` or phone
+  if `verify_key` is `phone`.
+  If not specified, the current email or phone is used.
 
 #### Response
 
-The API returns Status OK for successful resend.
-
-If the user is already verified for the `verify_record_key`, `Duplicated` error is
-returned.
+The API returns Status OK when sent successfully.
 
 ### `auth:*` that returns an authResponse
 
@@ -74,7 +87,7 @@ to include the following fields:
 * `verified` (boolean)
   If the user is verified with one of the keys, this returns true.
 
-* `verified_record_keys` (array, string)
+* `verified_record_keys` (object, string: any)
   Returns which piece of auth record key is verified.
 
 APIs that include authResponse are (but not limited to):
@@ -104,27 +117,59 @@ supply `verify_required` in registration info.
 
 ### Database
 
-The following columns to be added to `_auth`:
+The following columns are to be added to `_auth`:
 
 * `verified` (boolean)
-* `verified_keys` (JSON)
+  Indicates whether the user is verified
+
+* `verified_keys` (JSON, string: any)
+  Indicates which record key is marked as verified
+
+New table `_auth_challenge` for storing verification code.
+
+* auth_id (string)
+  The ID of the user who requested the challenge.
+
+* record_key (string)
+  The record key of the information that requires verification.
+
+* record_value (string)
+  The value for the record key that requires verification.
+
+* code (string)
+  The verification challenge.
+
+* consumed (boolean)
+  Whether the challenge is challenge. A consumed challenge cannot be
+  reused.
+
+* created_at (datetime)
+  The date/time when the challenge is created.
+
+* expire_at (datetime, optional)
+  The date/time when the challenge will expire.
 
 ### Configuration
 
-* `VERIFY_ENABLED` (boolean)
-  Whether verification is enabled. The verification API is only enabled if this is true.
-
-* `VERIFY_RECORD_KEYS` (array, string)
-  Which piece of auth record key is required for verification. Can be `email`,
-  `phone` or both. The specified auth record key must also exist in the
+* `VERIFY_KEYS` (array, string)
+  Which piece of auth record key is enabled for verification. Can be `email`,
+  `phone` or `email,phone`. The specified auth record key must also exist in the
   `AUTH_RECORD_KEYS`.
 
-* `VERIFY_CODE_FORMAT`: (string)
-  The verification code format. Can be `numeric` or `complex`.
+* `VERIFY_REQUIRED` (boolean)
+  Whether verification is required. When this is true, verification email/SMS
+  will be sent upon signup. The user must be verified before they can call
+  other APIs.
 
-* `VERIFY_KEY_EMAIL`, `VERIFY_KEY_PHONE`
+* `VERIFY_CRITERIA` (string, optional, default `any`)
+  Either `any` or `all`. If `any`, the user is verified if any auth keys
+  are verified. If `all`, the user is verified if all auth keys are verified.
 
-  * `_ENABLED` (boolean)
+* `VERIFY_KEYS_EMAIL`, `VERIFY_KEYS_PHONE`
+
+  * `_REQUIRED` (boolean)
+
+  * `_CODE_FORMAT` (string), `numeric` or `complex`
 
   * `_PROVIDER` (string, the provider of the verification)
     For email, it can be `smtp`. For phone, it can be SMS gateways.
@@ -139,8 +184,7 @@ The AuthContainer should add these properties which should be updated
 upon receiving auth response from the server.
 
 * `verified` (boolean) whether the user is verified
-* `verifiedRecordKeys` (array, string) which piece of information is verified
-
+* `verifiedRecordKeys` (object, string: any) which piece of information is verified
 
 ### APIs
 
@@ -148,18 +192,16 @@ upon receiving auth response from the server.
 
 ```
 skygear.auth.signupWithPhone("+85221559299", "passw0rd")
-skygear.auth.loginWithPhone("+85221559299", "passw0rd")
-skygear.auth.verifyPhone('123456')
-skygear.auth.resendVerifyPhone()
+skygear.auth.sendPhoneVerification('+85221559299')
+skygear.auth.verifyPhone('+85221559299', '123456')
 ```
 
 #### Email
 
 ```
 skygear.auth.signupWithEmail("johndoe@example.com", "passw0rd")
-skygear.auth.loginWithEmail("johndoe@example.com", "passw0rd")
-skygear.auth.verifyEmail('123456')
-skygear.auth.resendVerifyEmail()
+skygear.auth.sendEmailVerification('johndoe@example.com')
+skygear.auth.verifyEmail('johndoe@example.com', '123456')
 ```
 
 
@@ -167,3 +209,12 @@ skygear.auth.resendVerifyEmail()
 
 Handler and Lambda will be allowed to register a handler or a lambda
 that requires user to be verified.
+
+```python
+@skygear.handler(name, verify_required=True)
+def do_something(request):
+    pass
+```
+
+
+

@@ -11,6 +11,7 @@ The use case and requirement apply to verify-by-email and verify-by-sms.
 * The developer may want to deny unverified user from accessing any server API except auth related ones.
 
 ## Requirements
+
 * Server will have configuration options for:
 	* enable/disable email verification (boolean)
 	* enable/disable SMS verification (boolean)
@@ -22,14 +23,39 @@ The use case and requirement apply to verify-by-email and verify-by-sms.
 * Server will add API for sending/resending verification email
 	* when called by an admin or with master key, the API can send verification email to any unverified user, this is designed for cloud code use
 	* when called by non-admin unverified user, this API resends the verification email, this is designed for app use
-* The email is sent via SMTP protocol that is configurable. The SMS is sent via a SMS gateway that is configurable.
-* Server  will add API for checking email verification code
+* Server will add API for checking email verification code
 * Server will add a request preprocessor to check if the user is verified and return an error (if verification is required).
 * Signup/login API to return verification status of a user
 * Signup API to send verification email if verification is enabled.
 * JS, iOS and Android SDK to add API for resending verification email and checking verification code.
 
+### Criteria for Verifying a User
+
+The developer is able to specify which information is required to be verified
+in order for a user to become verified. For example, an app that requests for
+email and phone may require either or both email and phone is verified before
+the user become verified.
+
+### Verification Code Persistence and Consumption
+
+For each verification email/SMS, the code should be randomly generated and
+the code will persist into the database. Each code has an associated expiry time
+and can only be used once.
+
+### Modify Authentication Keys
+
+When modifying authentication keys (auth record keys, i.e. email or phone) using
+the Record DB API, the user may become unverified. API will be provided so that
+the app can decide whether to update the email or phone upon verification.
+
+### SMS and Email Provider
+
+SMS and email are sent via a provider, which is extensible in server code only.
+Email provider will support SMTP initially and SMS will support Twilio and
+Nexmo. Provider is configurable.
+
 ## Sample usage
+
 Flow:
 
 1. The user install an app.
@@ -47,14 +73,14 @@ Flow:
 When signing up:
 
 ```javascript
+// email
 skygear.auth.signupWithEmail("johndoe@example.com", "password")
 .then((user) => {
   console.log(skygear.auth.verified); // false
 });
-```
 
-```javascript
-skygear.auth.signupWithPhone("johndoe@example.com", "password")
+// phone
+skygear.auth.signupWithPhone("+85221559299", "password")
 .then((user) => {
   console.log(skygear.auth.verified); // false
 });
@@ -69,44 +95,72 @@ skygear.auth.whoAmI()
 });
 ```
 
-When resending verification email:
+If the email/SMS is not received by the user, the app can request
+for verification again.
 
 ```javascript
-skygear.auth.resendEmailVerification()
+// email
+skygear.auth.sendEmailVerification('johndoe@example.com')
 .then(() => {
   // email sent
 });
-```
 
-When resending verification SMS:
-
-```javascript
-skygear.auth.resendSMSVerification()
+// SMS
+skygear.auth.sendPhoneVerification('+85221559299')
 .then(() => {
-  // email sent
+  // SMS sent
 });
 ```
 
-When verifying:
+To check for verification:
 
 ```javascript
-skygear.auth.verifyEmail('31DF2310FAA1')
+// verify email 
+skygear.auth.verifyEmail('johndoe@example.com', '31DF2310FAA1')
 .then(() => {
   console.log(skygear.auth.verified); // true
-  console.log(skygear.auth.verifiedRecordKeys); // ['email']
+  console.log(skygear.auth.verifiedRecordKeys.keys()); // ['email']
 });
+
+// verify and update email
+skygear.auth.verifyEmail('hello@example.com', '31DF2310FAA1', true)
+.then((user) => {
+  console.log(user.email) // 'hello@example.com'
+}
 ```
 
-If verification is required and the use is not verified:
+If verification is required and the user is not verified:
 
 ```javascript
 skygear.someAction()
 .then(() => {
-  // the promise is rejected and this function is not called
+  // the promise is rejected and this callback is not called
 }, (err) => {
-  console.log(err.name); // VerificationRequired
+  console.log(err.name); // 'VerificationRequired'
 });
 ```
 
+## Future extension
 
+The following section describe how the verify by Email/SMS API will be
+extended to work with other use cases.
 
+These use cases will be covered by future specifications.
+
+### Login with Email/SMS
+
+The flow for logging in with Email/SMS will be accomplished by
+first requesting a verification, and then use the code to login.
+
+The app should call `sendEmailVerification()` (or equivalent API for SMS),
+and then use the obtained code to call `loginWithEmailAndVerifyCode()`, the
+latter of which is a wrapper around `verifyEmail()` above. The SDK should call
+the same or similar underlying server actions.
+
+### Reset Password
+
+The flow for reset password is accomplished by first requestign a verification
+and then using the code to reset the password.
+
+The app should call `sendEmailVerification()` (or equivalent API for SMS),
+and then use the obtained code to call `resetPassword()`.
