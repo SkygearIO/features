@@ -28,7 +28,7 @@ To disable user account:
 var user = 'EA04BEBD-1BFD-4FDD-A7D8-615F007A3B32';
 var reason = 'Account disabled because of TOS violation.';
 var now = new Date();
-var expiry = new Date(now.getTime() + 60*5); // 4 mintues
+var expiry = new Date(now.getTime() + 60*5); // 5 mintues
 skygear.auth.disableUser(user, reason, expire)
 .then(() => {
   // user is disabled
