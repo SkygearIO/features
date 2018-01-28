@@ -140,6 +140,10 @@ skygear.someAction()
 });
 ```
 
+## Portal UI
+
+(to be expanded)
+
 ## Future extension
 
 The following section describe how the verify by Email/SMS API will be
