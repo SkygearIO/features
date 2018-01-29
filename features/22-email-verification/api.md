@@ -45,8 +45,7 @@ and can only be used once.
 ### Modify Authentication Keys
 
 When modifying authentication keys (auth record keys, i.e. email or phone) using
-the Record DB API, the user may become unverified. API will be provided so that
-the app can decide whether to update the email or phone upon verification.
+the Record DB API, the user may become unverified. 
 
 ### SMS and Email Provider
 
@@ -121,12 +120,6 @@ skygear.auth.verifyEmail('johndoe@example.com', '31DF2310FAA1')
   console.log(skygear.auth.verified); // true
   console.log(skygear.auth.verifiedRecordKeys.keys()); // ['email']
 });
-
-// verify and update email
-skygear.auth.verifyEmail('hello@example.com', '31DF2310FAA1', true)
-.then((user) => {
-  console.log(user.email) // 'hello@example.com'
-}
 ```
 
 If verification is required and the user is not verified:

@@ -28,10 +28,6 @@ verify by email and verify by SMS
 * `code` (string)
   The verification code.
 
-* `update_data` (boolean)
-  Whether the user's auth key is modified when the user is successfully
-  verified.
-
 #### Response
 
 If verification is a success, a `authResponse` is returned.
