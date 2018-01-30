@@ -11,19 +11,7 @@ verify by email and verify by SMS
 
 #### Request
 
-* `verify_key` (string)
-  The auth key, either `email` or `phone`.
-
-* `user_id` (string, optional)
-  The user to verify. If the request is authenticated with access token
-  only the current user is accepted. If request is authenticated with master key
-  any user is accepted. Default to current user. If the request is not
-  authenticated, the user will be looked up from `verify_data`.
-
-* `verify_data` (string, optional)
-  The auth key value, should be email if `verify_key` is `email` or phone
-  if `verify_key` is `phone`.
-  If not specified, the current email or phone is used.
+The request should be authenticated with an access token.
 
 * `code` (string)
   The verification code.
@@ -60,16 +48,10 @@ If code is invalid, `InvalidArgument` error is returned.
 * `verify_key` (string)
   The auth key, either `email` or `phone`.
 
-* `user_id` (string, optional)
-  The user to verify. If the request is authenticated with access token
-  only the current user is accepted. If request is authenticated with master key
-  any user is accepted. Default to current user. If the request is not
-  authenticated, the user will be looked up from `verify_data`.
-
-* `verify_data` (string, optional)
-  The auth key value, should be email if `verify_key` is `email` or phone
-  if `verify_key` is `phone`.
-  If not specified, the current email or phone is used.
+The request should be authenticated with an access token or a master key.
+If an access token is provided, the current user is the user contained
+in the access token. If authenticated with master key, the current user
+is the user specified by `_as_user_id`.
 
 #### Response
 
@@ -91,6 +73,10 @@ APIs that include authResponse are (but not limited to):
 * `auth:login`
 * `auth:signup`
 * `me`
+* `sso:oauth:login`
+* `sso:oauth:signup`
+* `sso:custom_token:login`
+ 
 
 #### Signup
 
@@ -203,14 +189,5 @@ skygear.auth.verifyEmail('123456')
 
 ## Plugin
 
-Handler and Lambda will be allowed to register a handler or a lambda
-that requires user to be verified.
-
-```python
-@skygear.handler(name, verify_required=True)
-def do_something(request):
-    pass
-```
-
-
-
+The verified flag can be checked from the `current_context` (python)
+or context param (JavaScript).
