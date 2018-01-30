@@ -99,13 +99,13 @@ for verification again.
 
 ```javascript
 // email
-skygear.auth.sendEmailVerification('johndoe@example.com')
+skygear.auth.sendEmailVerification()
 .then(() => {
   // email sent
 });
 
 // SMS
-skygear.auth.sendPhoneVerification('+85221559299')
+skygear.auth.sendPhoneVerification()
 .then(() => {
   // SMS sent
 });
@@ -115,7 +115,7 @@ To check for verification:
 
 ```javascript
 // verify email 
-skygear.auth.verifyEmail('johndoe@example.com', '31DF2310FAA1')
+skygear.auth.verifyEmail('31DF2310FAA1')
 .then(() => {
   console.log(skygear.auth.verified); // true
   console.log(skygear.auth.verifiedRecordKeys.keys()); // ['email']
@@ -136,28 +136,3 @@ skygear.someAction()
 ## Portal UI
 
 (to be expanded)
-
-## Future extension
-
-The following section describe how the verify by Email/SMS API will be
-extended to work with other use cases.
-
-These use cases will be covered by future specifications.
-
-### Login with Email/SMS
-
-The flow for logging in with Email/SMS will be accomplished by
-first requesting a verification, and then use the code to login.
-
-The app should call `sendEmailVerification()` (or equivalent API for SMS),
-and then use the obtained code to call `loginWithEmailAndVerifyCode()`, the
-latter of which is a wrapper around `verifyEmail()` above. The SDK should call
-the same or similar underlying server actions.
-
-### Reset Password
-
-The flow for reset password is accomplished by first requestign a verification
-and then using the code to reset the password.
-
-The app should call `sendEmailVerification()` (or equivalent API for SMS),
-and then use the obtained code to call `resetPassword()`.

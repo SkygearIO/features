@@ -188,16 +188,16 @@ upon receiving auth response from the server.
 
 ```
 skygear.auth.signupWithPhone("+85221559299", "passw0rd")
-skygear.auth.sendPhoneVerification('+85221559299')
-skygear.auth.verifyPhone('+85221559299', '123456')
+skygear.auth.sendPhoneVerification()
+skygear.auth.verifyPhone('123456')
 ```
 
 #### Email
 
 ```
 skygear.auth.signupWithEmail("johndoe@example.com", "passw0rd")
-skygear.auth.sendEmailVerification('johndoe@example.com')
-skygear.auth.verifyEmail('johndoe@example.com', '123456')
+skygear.auth.sendEmailVerification()
+skygear.auth.verifyEmail('123456')
 ```
 
 
