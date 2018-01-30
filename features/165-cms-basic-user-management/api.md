@@ -28,7 +28,7 @@ In the user management page can:
 The table would be like:
 
 |`id`|username|email|CMS access|actions|
-|---|---|---|---|
+|---|---|---|---|---|
 |user1|i am your father|iamyourfather@oursky.com|✔|{Change Password}|
 |user2|i am your brother|iamyourbrother@oursky.com||{Change Password}|
 
