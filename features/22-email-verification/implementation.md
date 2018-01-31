@@ -28,25 +28,13 @@ This API marks the specified user as unverified.
 
 The API returns Status OK when sent successfully.
 
-## Plugin (Python)
+### `auth:*` that returns an authResponse
 
-### `user:verify_code`
+For all API that returns an authResponse, the API has to be modified
+to include the following fields:
 
-#### Overview
-
-#### Request
-
-The request should be authenticated with an access token.
-
-* `record_key` (string)
-  The record key to verify.
-
-* `code` (string)
-  The verification code.
-
-#### Response
-
-If verification is a success, a `authResponse` is returned.
+* `verified` (boolean)
+  If the user is verified with one of the keys, this returns true.
 
 Example:
 
@@ -62,34 +50,6 @@ Example:
 }
 ```
 
-If code is invalid, `InvalidArgument` error is returned.
-
-### `user:verify_request`
-
-#### Overview
-
-#### Request
-
-* `record_key` (string)
-  The record key to verify.
-
-The request should be authenticated with an access token or a master key.
-If an access token is provided, the current user is the user contained
-in the access token. If authenticated with master key, the current user
-is the user specified by `_as_user_id`.
-
-#### Response
-
-The API returns Status OK when sent successfully.
-
-### `auth:*` that returns an authResponse
-
-For all API that returns an authResponse, the API has to be modified
-to include the following fields:
-
-* `verified` (boolean)
-  If the user is verified with one of the keys, this returns true.
-
 APIs that include authResponse are (but not limited to):
 
 * `auth:login`
@@ -98,16 +58,6 @@ APIs that include authResponse are (but not limited to):
 * `sso:oauth:login`
 * `sso:oauth:signup`
 * `sso:custom_token:login`
- 
-
-#### Signup
-
-When signing up, the user should have `verified=false`, even if verification
-is not enabled.
-
-#### Response
-
-See `user:verify_code` above.
 
 ### `VerificationRequired` preprocessor
 
@@ -147,6 +97,56 @@ New table `_auth_verify` for storing verification code.
 
 * expire_at (datetime, optional)
   The date/time when the challenge will expire.
+
+
+## Plugin (Python)
+
+### `user:verify_code`
+
+#### Overview
+
+#### Request
+
+The request should be authenticated with an access token.
+
+* `record_key` (string)
+  The record key to verify.
+
+* `code` (string)
+  The verification code.
+
+#### Response
+
+The API returns Status OK when sent successfully.
+
+If code is invalid, `InvalidArgument` error is returned.
+
+### `user:verify_request`
+
+#### Overview
+
+#### Request
+
+* `record_key` (string)
+  The record key to verify.
+
+The request should be authenticated with an access token or a master key.
+If an access token is provided, the current user is the user contained
+in the access token. If authenticated with master key, the current user
+is the user specified by `_as_user_id`.
+
+#### Response
+
+The API returns Status OK when sent successfully.
+
+#### Response
+
+See `user:verify_code` above.
+
+### Current Context
+
+The verified flag can be checked from the `current_context` (python)
+or context param (JavaScript).
 
 ### Configuration
 
@@ -197,8 +197,3 @@ skygear.auth.requestVerification(recordField: string)
 skygear.auth.verifyWithCode(recordField: string, code: string)
 ```
 
-
-## Plugin
-
-The verified flag can be checked from the `current_context` (python)
-or context param (JavaScript).
