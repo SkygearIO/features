@@ -1,17 +1,45 @@
-# Implementation for verify by email and SMS
+# Implementation for user data verification
 
 ## Server
 
-The server (core) will implement the following set of APIs to support
-verify by email and verify by SMS
+### `user:verify_user`
 
-### `auth:verify:check`
+This API marks the specified user as verified.
+
+#### Request
+
+* `user_id` (string)
+  The User ID of the user to be marked as verified.
+
+#### Response
+
+The API returns Status OK when sent successfully.
+
+### `user:unverify_user`
+
+This API marks the specified user as unverified.
+
+#### Request
+
+* `user_id` (string)
+  The User ID of the user to be marked as unverified.
+
+#### Response
+
+The API returns Status OK when sent successfully.
+
+## Plugin (Python)
+
+### `user:verify_code`
 
 #### Overview
 
 #### Request
 
 The request should be authenticated with an access token.
+
+* `record_key` (string)
+  The record key to verify.
 
 * `code` (string)
   The verification code.
@@ -30,23 +58,20 @@ Example:
     },
     "access_token": "eyJhbGciOiJIUzI1Ni.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6Ikp.TJVA95OrM7E2c",
     "last_login_at": "2017-07-23T19:30:24Z",
-    "verified": true,
-    "verified_record_keys": {
-        "email": true
-    }
+    "verified": true
 }
 ```
 
 If code is invalid, `InvalidArgument` error is returned.
 
-### `auth:verify:send`
+### `user:verify_request`
 
 #### Overview
 
 #### Request
 
-* `verify_key` (string)
-  The auth key, either `email` or `phone`.
+* `record_key` (string)
+  The record key to verify.
 
 The request should be authenticated with an access token or a master key.
 If an access token is provided, the current user is the user contained
@@ -65,9 +90,6 @@ to include the following fields:
 * `verified` (boolean)
   If the user is verified with one of the keys, this returns true.
 
-* `verified_record_keys` (object, string: any)
-  Returns which piece of auth record key is verified.
-
 APIs that include authResponse are (but not limited to):
 
 * `auth:login`
@@ -85,7 +107,7 @@ is not enabled.
 
 #### Response
 
-See `auth:verify:check` above.
+See `user:verify_code` above.
 
 ### `VerificationRequired` preprocessor
 
@@ -93,9 +115,7 @@ If verification is required, this preprocessor will reject user request
 if the user is not verified. A new error code with `VerificationRequired`
 is returned if the user is not verified.
 
-This preprocessor is to be added to all handlers that may require verification.
-This preprocessor is also inserted to plugin handlers and lambdas that
-supply `verify_required` in registration info.
+This preprocessor is to be added to all non-auth handlers 
 
 ### Database
 
@@ -104,10 +124,7 @@ The following columns are to be added to `_auth`:
 * `verified` (boolean)
   Indicates whether the user is verified
 
-* `verified_keys` (JSON, string: any)
-  Indicates which record key is marked as verified
-
-New table `_auth_challenge` for storing verification code.
+New table `_auth_verify` for storing verification code.
 
 * auth_id (string)
   The ID of the user who requested the challenge.
@@ -134,9 +151,17 @@ New table `_auth_challenge` for storing verification code.
 ### Configuration
 
 * `VERIFY_KEYS` (array, string)
-  Which piece of auth record key is enabled for verification. Can be `email`,
-  `phone` or `email,phone`. The specified auth record key must also exist in the
-  `AUTH_RECORD_KEYS`.
+  Which record key is enabled for verification. Can be any record keys on the
+  `user` record.
+
+* `VERIFY_AUTO_UPDATE` (boolean)
+  Whether the user verified flag is automatically updated.
+
+* `VERIFY_AUTO_SEND_SIGNUP` (boolean)
+  Whether verification link/code is sent on signup.
+
+* `VERIFY_AUTO_SEND_UPDATE` (boolean)
+  Whether verification link/code is sent on record update.
 
 * `VERIFY_REQUIRED` (boolean)
   Whether verification is required. When this is true, verification email/SMS
@@ -147,9 +172,7 @@ New table `_auth_challenge` for storing verification code.
   Either `any` or `all`. If `any`, the user is verified if any auth keys
   are verified. If `all`, the user is verified if all auth keys are verified.
 
-* `VERIFY_KEYS_EMAIL`, `VERIFY_KEYS_PHONE`
-
-  * `_REQUIRED` (boolean)
+* `VERIFY_KEYS_<key_name>`
 
   * `_CODE_FORMAT` (string), `numeric` or `complex`
 
@@ -166,24 +189,12 @@ The AuthContainer should add these properties which should be updated
 upon receiving auth response from the server.
 
 * `verified` (boolean) whether the user is verified
-* `verifiedRecordKeys` (object, string: any) which piece of information is verified
 
 ### APIs
 
-#### Phone
-
 ```
-skygear.auth.signupWithPhone("+85221559299", "passw0rd")
-skygear.auth.sendPhoneVerification()
-skygear.auth.verifyPhone('123456')
-```
-
-#### Email
-
-```
-skygear.auth.signupWithEmail("johndoe@example.com", "passw0rd")
-skygear.auth.sendEmailVerification()
-skygear.auth.verifyEmail('123456')
+skygear.auth.requestVerification(recordField: string)
+skygear.auth.verifyWithCode(recordField: string, code: string)
 ```
 
 

@@ -1,85 +1,139 @@
-# Verify by email
-The use case and requirement apply to verify-by-email and verify-by-sms.
+# Email and Phone Verification
 
 ## Use cases
-* App may request the user to verify the email address/phone number upon signup.
-* The app need will send an email/SMS to the user with the email address/phone number provided when logging in. The app will want to customize the content of the email/SMS.
-* Both email/SMS verification supports verify by a verification code or by a verification link.
-	* For verification code, the user will type the verification code from the email address/SMS an enter it to the app to complete verification.
-	* For verification link, the user will be redirected to a webpage, which automatically send the code to the server to complete verification.
-* The App is able to check the verification status of the user using the SDK and cloud function so that it can display other info and/or disable features.
-* The developer may want to deny unverified user from accessing any server API except auth related ones.
+
+* App collects email and phone number from user. There is a need for
+  verifying the email and phone number so that:
+  * the app can verify that the user is who they say they are
+  * the app can show other users that the information provided by the user
+    is verified
+  * the app can send messages to verified email address and phone number without
+    sending to the unverified ones
+* App may request the user to verify the data upon signup, or it may request
+  the user to verify the data when updating the user profile. This is
+  configurable and application-specific.
+* App may require the user to verify data before accessing other server
+  resources. This is configurable and application-specific.
+* App may customize the behavior for verifying user data.
+* When verifying, user is asked to check their email or phone to receive
+  a verification link or verification code. The user will click the link or
+  enter the code in order to get verified for the user data.
+* User may request the verification link or code to be resent.
+* App may toggle the verification status of any user through cloud code or SDKs.
 
 ## Requirements
 
-* Server will have configuration options for:
-	* enable/disable email verification (boolean)
-	* enable/disable SMS verification (boolean)
-	* set verification as required/optional (boolean)
-	* smtp server settings
-	* SMS gateway settings
-	* email template
-	* SMS template
-* Server will add API for sending/resending verification email
-	* when called by an admin or with master key, the API can send verification email to any unverified user, this is designed for cloud code use
-	* when called by non-admin unverified user, this API resends the verification email, this is designed for app use
-* Server will add API for checking email verification code
-* Server will add a request preprocessor to check if the user is verified and return an error (if verification is required).
-* Signup/login API to return verification status of a user
-* Signup API to send verification email if verification is enabled.
-* JS, iOS and Android SDK to add API for resending verification email and checking verification code.
+### User Verified Flag
+
+Each user will have a flag that indicates whether the user is already
+verified. This flag is internal to Skygear for authentication and access
+control purpose.
+
+The Server will implements new actions to support toggling the user verified
+flag. SDKs will add support for calling the new actions to toggle the user
+verified flag.
+
+The flag can also be configured to automatically updated when user data changes.
+
+The flag is readable for the current user.
+
+### Supported Verifiable User Data
+
+The server will support verifying these user data:
+
+* Email address: By sending a email to the email address through SMTP.
+* Phone number: By sending a SMS to the phone number through a SMS gateway. Only
+  supporting Twilio and Nexmo for the time being.
+
+### Storing User Data and Data Verified Flag
+
+User data (i.e. email address and phone number) that requires verification
+must be saved in user profile (i.e. in Record DB under `user` record type).
+The field name for the user data is configurable.
+
+Data verified flag (i.e. whether the email address or phone number is 
+verified) will be saved in the user profile, alongside the user data
+to be verified. This allows the app to use Record DB API to query the data
+verified flag in order to display the information to user.
 
 ### Criteria for Verifying a User
 
-The developer is able to specify which information is required to be verified
+The developer is able to specify which user data is required to be verified
 in order for a user to become verified. For example, an app that requests for
 email and phone may require either or both email and phone is verified before
 the user become verified.
 
-### Verification Code Persistence and Consumption
+### Configuration
 
-For each verification email/SMS, the code should be randomly generated and
-the code will persist into the database. Each code has an associated expiry time
-and can only be used once.
+The following is configurable:
 
-### Modify Authentication Keys
+* which user data field supports verification
+* for each user data field:
+  * provider
+  * settings for the provider
+    * for email: SMTP server settings, username and password
+    * for phone: access token or keys
+  * templates
+* whether the user verified flag automatically updated
+* which user data is/are required for a user verified flag to be toggled on
+* whether non-auth API is blocked for unverified user
+* whether verification link/code is sent automatically upon signup
+* whether verification link/code is sent automatically upon updates
 
-When modifying authentication keys (auth record keys, i.e. email or phone) using
-the Record DB API, the user may become unverified. 
+### Extendsible Verification Provider
 
-### SMS and Email Provider
+A few provider will be provided to verify user data. Provider is configurable
+via environment variable. The provider should be extensible so that developer
+having custom user data can provide their own provider. The provider is
+extensible in python cloud code only.
 
-SMS and email are sent via a provider, which is extensible in server code only.
-Email provider will support SMTP initially and SMS will support Twilio and
-Nexmo. Provider is configurable.
+### Verification Link/Code Persistence and Consumption
+
+Each verification link and code is to be randomly generated and persisted to
+the database. Each code has an associated expiry time
+and can only be used once. If there are multiple verification links and codes
+generated for the same user, all of them should be usable.
 
 ## Sample usage
 
-Flow:
+### To verify user data:
 
-1. The user install an app.
-2. The user sign up using email address (same for phone number) and a password.
-3. The server responds with user data, which indicates if verification is required and that the user is unverified.
-4. If verification is required:
-	1. Show UI for verification.
-	2. If the app expects the user to enter a code, allow the user to enter the code and call the check verification code API.
-	3. If the app expects the user to click verification link, refresh `whoAmI` API to check if the user is verified.
-	4. The UI may request for resending verification.
-5. If verification is not required.
-	1. Show UI for verification.
-	2. Allows user to skip verification and dismiss the verification UI.
+1. User click on the link, enter code.
+2. Email address or phone number is marked as verified.
+3. If all required user data field is verified, the user is marked as verified.
+4. The App can check verification status through API.
+
+### When signing up
+
+1. User enter email address and phone number through signup API.
+2. If server is set to automatically send verify link/code, verification
+   email/SMS is sent. If not, app can request verification through API.
+3. Verify user data (see above).
+
+### When updating
+
+1. User update email address or phone number through record API.
+2. The email address or phone number is marked as unverified.
+3. If some required user data field is unverified, the user is marked as
+   unverified.
+4. If server is set to automatically send verify link/code, verification
+   email/SMS is sent. If not, app can request verification through API.
+5. Verify user data (see above).
+
+### If user verified flag is not automatically updated.
+
+1. User update email address or phone number through record API.
+2. The email address or phone number is marked as unverified.
+3. User verified flag is not updated.
+4. Developer write cloud function to toggle the user verified flag through API.
+
+## Sample APIs
 
 When signing up:
 
 ```javascript
 // email
 skygear.auth.signupWithEmail("johndoe@example.com", "password")
-.then((user) => {
-  console.log(skygear.auth.verified); // false
-});
-
-// phone
-skygear.auth.signupWithPhone("+85221559299", "password")
 .then((user) => {
   console.log(skygear.auth.verified); // false
 });
@@ -94,18 +148,21 @@ skygear.auth.whoAmI()
 });
 ```
 
-If the email/SMS is not received by the user, the app can request
-for verification again.
+The app can request verification again:
 
 ```javascript
 // email
-skygear.auth.sendEmailVerification()
+skygear.auth.requestVerification('email')
 .then(() => {
   // email sent
 });
+```
 
-// SMS
-skygear.auth.sendPhoneVerification()
+The app can request verification on other fields of user table:
+
+```javascript
+// email
+skygear.auth.requestVerification('emergency_phone')
 .then(() => {
   // SMS sent
 });
@@ -115,10 +172,10 @@ To check for verification:
 
 ```javascript
 // verify email 
-skygear.auth.verifyEmail('31DF2310FAA1')
-.then(() => {
+skygear.auth.verifyWithCode('email', '31DF2310FAA1')
+.then((user) => {
   console.log(skygear.auth.verified); // true
-  console.log(skygear.auth.verifiedRecordKeys.keys()); // ['email']
+  console.log(user.email_verified); // true
 });
 ```
 
