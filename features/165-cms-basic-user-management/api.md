@@ -40,27 +40,26 @@ There will be a `Change Password` button in actions column for each user, which 
 
 ### User role management
 
-*feature issue 152 is not considered in this section*
+- Pass the cms role to client
+  - python generated html: pass from plugin env
+  - `skygearCMS.start({ adminRole: 'Admin' })`
 
-- CMS Plugin add API
-  - cms-access:get
-    - input (json):
-      - user_ids: []string
-        - ids of the user you want to check for cms access
-    - output (json):
-      - [user_id]: boolean
-  - cms-access:allow
-    - input (json):
-      - user_id: string
-        - id of the user that will have cms access
-    - output (json):
-      - error
-  - cms-access:deny
-    - input (json):
-      - user_id: string
-        - id of the user that will no longer have cms access
-    - output (json):
-      - error
+#### Display CMS access
+
+```
+skygear.auth.fetchUserRole((userRoles) => {
+  // check against cms admin role
+  // reflect on user table
+})
+```
+
+#### Check or uncheck CMS access
+
+```
+skygear.auth.assignUserRole(user, cmsAdminRole);
+// or
+skygear.auth.revokeUserRole(user, cmsAdminRole);
+```
 
 ### Change Password
 
