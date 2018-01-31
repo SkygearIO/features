@@ -35,14 +35,35 @@ records:
           reference_handling: {use-first|throw-error} (Naming TBD, details see below)
           identifer: {field.name|_id}
           fields:
-            - {field}
+            # normal fields
+            - name:
+              label: (default to name)
+
+            # reference
+            - name:
+              label: (default to name)
+              reference_target:
+              reference_field_name:
 
         # Export
         - type: export
           name: {export-name}
           label: {export-display-name}
           fields:
-            - {field}
+            # normal fields
+            - name:
+              label: (default to name)
+              format: (Optional)
+
+            # reference fields
+            - name:
+              label: (default to name)
+              format: (Optional)
+              reference_target:
+              reference_field_name:
+              reference_back_reference: (Required for one-to-many with id in referenced record type)
+              reference_via_association_records: (Required for many-to-many)
+
         - type: export
           name: {export-name}
           label: {export-display-name}
@@ -62,6 +83,105 @@ Keys:
 - export-display-name
   - export button text
   - export page(s) title
+
+#### Field serialisation and deserialisation
+
+Operation:
+- Import: String value -(serialisation)-> typed data -(save)-> Skygear server
+- Export: String value <-(deserialisation)- typed data <-(query)- Skygear server
+
+In import / export field config, there is no need to specify the type. Instead, server needs to know how to transform between skygear data and string.
+
+##### Type-Format mapping
+
+Server perform (de)serialisation based on a format, and for each Skygear data type, there is a list of supported format.
+
+<table>
+  <thead>
+    <tr>
+      <th>Skygear Types</th>
+      <th>Format</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>String</td>
+      <td>String</td>
+    </tr>
+    <tr>
+      <td>Number</td>
+      <td>Number</td>
+    </tr>
+    <tr>
+      <td>Boolean</td>
+      <td>
+        <ul>
+          <li>True/False (Default)</li>
+          <li>Yes/No</li>
+          <li>1/0</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>JSON</td>
+      <td>JSON</td>
+    </tr>
+    <tr>
+      <td>Datetime</td>
+      <td>
+        <ul>
+          <li>YYYY-MM-DD hh:mm:ss (Default)</li>
+          <li>DD-MM-YYYY</li>
+          <li>MM-DD-YYYY</li>
+          <li>...</li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td>Location</td>
+      <td>
+        <ul>
+          <li>lat-lng Coordinate (Default)</li>
+          <li>Address Input?</li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+##### Import
+
+###### Auto detect format
+
+**See section below for datetime serialisation**
+
+Given skygear server db schema and string value, in most cases, except datetime, server can detect the format and serialise it to an object that is ready for saving to Skygear server.
+
+##### Export
+
+###### Case 1: format unspecified, i.e. default format
+
+If the format is not specified in field config, server would deserialise the data with a default format of the data type.
+
+###### Case 2: format specified
+
+If the format is specified in field config, there may be a chance that the format does not match the type of data queried from Skygear server.
+
+Server can detect the error as early as parsing the configuration by fetching the schema from Skygear server.
+
+##### Datetime format
+
+Since there are too many possible format for datetime, for simplicity, server would not detect the format for import. Instead it would use a default format, or specified format in field config to serialise the data.
+
+##### Format for export with `for_import`
+
+The expected behaviour of export and import for this case should be:
+- cms user can should be able to follow the format exported data and update the data
+- if the value is unchanged after export, importing should not change the data in server
+
+If format is not specified in import field config, format for export is the default format of the data type.
+
+Otherwise, the export format should be the same as the import format.
 
 #### Example
 
@@ -86,16 +206,13 @@ records:
           label: Import Users
           name: import-users
           fields:
-            - type: _id
+            - name: _id
             - name: name
-              type: String
             - name: email
-              type: String
             - name: country
-              type: Reference
               label: Country
-              target: country
-              displayFieldName: _id
+              reference_target: country
+              reference_field_name: _id
             - name: self_info
               type: JSON
               label: Self information
@@ -103,14 +220,12 @@ records:
           name: export-users
           label: Export Users
           fields:
-            - type: _updated_at
+            - name: _updated_at
             - name: email
-              type: String
             - name: country
-              type: Reference
-              label: Country
-              target: country
-              displayFieldName: _id
+              label: Country Name
+              reference_target: country
+              reference_field_name: name
         - type: export
           name: export-users-for-import
           label: Export Users For Import
@@ -129,11 +244,11 @@ records:
           label: Import Users
           name: import-users
           fields:
-            - type: _id
+            - name: _id
             - name: name
-              type: String
             - name: email
-              type: String
+            - name: birthday
+              format: MMDDYYYY
         - type: export
           name: export-users-for-import
           label: Export Users For Import
@@ -152,37 +267,39 @@ records:
           label: Import Users
           name: import-users
           fields:
-            - type: _id
+            - name: _id
             - name: name
-              type: String
             - name: email
-              type: String
+            - name: birthday
+              format: MMDDYYYY
         - type: export
           name: export-users-for-import
           label: Export Users For Import
           fields:
-            - type: _id
+            - name: _id
             - name: name
-              type: String
             - name: email
-              type: String
+            - name: birthday
+              format: MMDDYYYY
 ```
 
 ### Import-specific
 
 #### Types
 
-Accepted:
+The type means the one fetched from skygear server.
+
+Supported types:
 - `_id`
 - String
 - Number
 - Boolean
 - JSON
-- Datetime (ISO 8601 date time format, not configurable)
-- Location (format TBD, but not configurable)
+- Datetime
+- Location
 - Reference
 
-Not accepted:
+Unsupported types:
 - `_created_at` and `_updated_at`
 - Asset
 
@@ -205,7 +322,7 @@ The import API would iterate through items in the file and save them to server. 
 
 If there are multiple items that share the same identifier, only one of them are effectively saved to the server.
 
-#### Custom identifer for Record
+#### Custom identifier for Record
 
 `_id` is the unique identifier for skygear records but this is most likely not human readable.
 
@@ -234,6 +351,7 @@ Developer can use another key as the identifer of the foreign record type. Chang
 
 Spec:
 - There can only be one field item for the same target in the same import config. And that field item would be the identifier of the foreign record type.
+  - Changing field value of a referenced record is NOT supported.
 - The field may or may not have unique constraints in the database.
 - The following key must not present in the same field config:
   - `back_reference`
@@ -267,18 +385,20 @@ This behaviour is the same for custom identifier for record.
 
 #### Types
 
-Accepted:
+The type means the one fetched from skygear server.
+
+Supported types:
 - `_id`
-- `_created_at` and `_updated_at` (ISO 8601 date time format, not configurable)
+- `_created_at` and `_updated_at`
 - String
 - Number
 - Boolean
 - JSON
-- Datetime (ISO 8601 date time format, not configurable)
-- Location (format TBD, but not configurable)
+- Datetime
+- Location
 - Reference
 
-Not accepted:
+Unsupported types:
 - Asset
 
 #### NULL value handling
