@@ -143,6 +143,27 @@ The API returns Status OK when sent successfully.
 
 See `user:verify_code` above.
 
+### Verification Provider
+
+Verification Provider provides an interface for requesting verification. The
+verification provider is responsible
+for generating and sending the verification code/link.
+
+The code/link is inserted to the database by a component outside of the
+provider, this component is responsible for checking if the code/link is
+valid.
+
+Provider should take these parameters:
+
+* user record
+* auth info
+* record key to verify
+* record value to verify
+
+Provider should return these parameters:
+
+* verification code
+
 ### Current Context
 
 The verified flag can be checked from the `current_context` (python)
