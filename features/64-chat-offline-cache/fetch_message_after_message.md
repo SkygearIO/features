@@ -26,18 +26,18 @@ An app may jump to a specific message when:
 
 ### Server
 
-- Also accept param `afterMessage` in fetchMessages API
+- Also accept param `afterMessage` in fetchMessagesAfter API
 
-- fetchMessages API should also return the ID of one newer message. So the client can tell if the API call has fetched the latest message already. Togther with `previous_message`, the client can also determine if it needs to fetch older message.
+- fetchMessagesAfter API should also return the ID of one newer message. So the client can tell if the API call has fetched the latest message already. Togther with `previous_message`, the client can also determine if it needs to fetch older message.
 
 ### SDK
 
-- Add fetchMessages API for accepting param `afterMessage`
+- Add fetchMessagesAfter API for accepting param `afterMessage`
 
 ```
 // Promise
-func fetchMessages(conversation, afterMessage, limit, order) -> Promise
+func fetchMessagesAfter(conversation, afterMessage, limit, order) -> Promise
 
 // Non-Promise
-func fetchMessages(conversation, afterMessage, limit, order, callback)
+func fetchMessagesAfter(conversation, afterMessage, limit, order, callback)
 ```

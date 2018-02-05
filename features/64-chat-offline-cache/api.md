@@ -106,7 +106,7 @@ skygear.pubsub.onDisconnect(func () {
 
 skygear.pubsub.onConnect(func () {
   let afterMessage = this.latestFetchedMessage
-  skygearChat.fetchMessages(conversation, afterMessage, limit, oreder, /* Update UI */)
+  skygearChat.fetchMessagesAfter(conversation, limit, afterMessage.id, order, /* Update UI */)
 })
 ```
 
@@ -117,7 +117,7 @@ When
 - load messages when scroll to top of the list
 
 ```
-skygearChat.fetchMessages(conversation, limit, before_time, order, func (messageDeltas, cached = false) {
+skygearChat.fetchMessages(conversation, limit, beforeTime, order, func (messageDeltas, cached = false) {
   // Merge delta to current list
 
   // Apply the delta to UI one by one
@@ -138,13 +138,13 @@ skygearChat.createMessage(/* ... */)
 });
 ```
 
-### Handling failed message operations
+### Handling outstanding message operations
 
 ```
 // Promise
 let addOperationType = 'add';
 let conversationId = '7d057fe2-f45a-4583-8a96-65d68a03d3ab';
-skygearChat.fetchFailedMessageOperations(addOperationType, conversationId,
+skygearChat.fetchOutstandingMessageOperations(addOperationType, conversationId,
 (operations) => {
   console.log(operation.type);    // `add`
   console.log(operation.message); // message object
@@ -163,7 +163,7 @@ skygearChat.fetchFailedMessageOperations(addOperationType, conversationId,
 ```
 
 The developer can also call `cancelMessageOperation(operation)` to remove
-the failed operation from the failed operation cache store.
+the outstadning operation from the outstanding operation cache store.
 
 # Changes Required
 
@@ -197,6 +197,12 @@ Query by message:
 fetchMessages(conversation_id, limit, before_message?, order?)
 ```
 
+A similar function is provided to query for messages sent after message/time:
+
+```
+fetchMessagesAfter(conversation_id, limit, before_message?, order?)
+```
+
 ### SDK
 
 #### Adding, deleting and editing messages
@@ -217,7 +223,7 @@ callback object / block is specified as the last parameter.
 When performing these operations, a Message Operation Object is created
 and persisted in cache store. Newly added Message Operation Object
 should have the `pending` status. Successfully completed Message Operation
-Object should be removed from cache store. Failed Message Operation Object
+Object should be removed from cache store. Outstanding Message Operation Object
 should have the `failed` status and include a failure reason.
 
 See below for message failure handling.
@@ -228,20 +234,20 @@ See below for message failure handling.
 
 ```
 func fetchConversations(cachedCallback?)
-func fetchMessages(conversation, limit, beforeDate, order, cachedCallback?)
+func fetchMessages(conversation, limit, beforeTime, order, cachedCallback?)
 ```
 
-#### Handling failed messages
+#### Handling outstanding messages
 
-Pending and failed messages will be available from this function:
+Pending and outstanding messages will be available from this function:
 
 ```
-func fetchFailedMessageOperations(operationType, conversationId);
+func fetchOutstandingMessageOperations(operationType, conversationId);
 ```
 
 On JS, this function should return a Promise. On other platforms, a
 callback object / block is specified as the last parameter. The function
-should resolve/return a list of pending and failed operations.
+should resolve/return a list of outstanding operations.
 
 Operations can be removed from the cache store with this function:
 
@@ -249,7 +255,7 @@ Operations can be removed from the cache store with this function:
 func cancelMessageOperations(operationObject);
 ```
 
-The following function will allow the developer to retry pending/failed
+The following function will allow the developer to retry outstanding
 operation:
 
 ```
@@ -289,12 +295,12 @@ const successCallback = (messages, cached = false) => {
 };
 
 skygearChat
-  .getMessages(conversation, limit, beforeDate, order, successCallback)
+  .getMessages(conversation, limit, beforeTime, order, successCallback)
   .then(successCallback, errorCallback);
 
 // no-cache version
 skygearChat
-  .getMessages(conversation, beforeMessage, limit, order)
+  .getMessages(conversation, limit, beforeMessage, order)
   .then(successCallback, errorCallback);
 ```
 
@@ -317,7 +323,7 @@ skygearChat.fetchConversations(func (conversations, cached = false) {
 ```
 let currentMessages = [];
 
-skygearChat.fetchMessages(func (messages, cached = false) {
+skygearChat.fetchMessages(conversation, func (messages, cached = false) {
   currentMessages = skygearChat.merge(currentMessages, messages);
   // display currentMessages
 })
@@ -349,7 +355,7 @@ func set(conversation: Conversation, message: Message, forID: String) -> Void
 func purgeAll() -> Void
 
 // if not implementated, the common cache logic needs to get all and filter the messages
-func fetchMessage(conversation: Conversation, before_message: String, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, limit: Int, before_message: String, order: String) -> [Message]
 ```
 
 #### Common cache logic
@@ -373,7 +379,8 @@ interface for message list
 func createMessage(conversation: Conversation, body: ...) -> Void
 func editMessage(conversation: Conversation, body: ...) -> Void
 func deleteMessage(conversation: Conversation, message: Message) -> Void
-func fetchMessage(conversation: Conversation, before: Message, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, limit: Int, before: Message, order: String) -> [Message]
+func fetchMessageAfter(conversation: Conversation, limit: Int, after: Message, order: String) -> [Message]
 func markDeliveredMessages(messages: [Message])
 func fetchReceiptsWithMessage(message: Message)
 ```
