@@ -62,7 +62,7 @@ records:
               reference_target:
               reference_field_name:
               reference_back_reference: (Required for one-to-many with id in referenced record type)
-              reference_via_association_records: (Required for many-to-many)
+              reference_via_association_record: (Required for many-to-many)
 
         - type: export
           name: {export-name}
@@ -116,9 +116,9 @@ Server perform (de)serialisation based on a format, and for each Skygear data ty
       <td>Boolean</td>
       <td>
         <ul>
-          <li>True/False (Default)</li>
-          <li>Yes/No</li>
-          <li>1/0</li>
+          <li>Long (True/False) (Default)</li>
+          <li>Short (T/F)</li>
+          <li>Number (1/0)</li>
         </ul>
       </td>
     </tr>
@@ -444,18 +444,16 @@ Config:
 records:
   A:
     (skip)
-    import:
+    export:
       - (skip)
         fields:
-          - type: _id
+          - name: _id
           - name: name
-            type: String
           - name: b_name
             label: B name
-            type: Reference
-            target: B
-            displayFieldName: name
-            via_association_record: A_has_B
+            reference_target: B
+            reference_field_name: name
+            reference_via_association_record: A_has_B
 association_records:
   A_has_B:
     fields:
