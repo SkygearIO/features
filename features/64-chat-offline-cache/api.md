@@ -106,7 +106,7 @@ skygear.pubsub.onDisconnect(func () {
 
 skygear.pubsub.onConnect(func () {
   let afterMessage = this.latestFetchedMessage
-  skygearChat.fetchMessages(conversation, afterMessage, limit, oreder, /* Update UI */)
+  skygearChat.fetchMessagesAfter(conversation, limit, afterMessage.id, order, /* Update UI */)
 })
 ```
 
@@ -117,7 +117,7 @@ When
 - load messages when scroll to top of the list
 
 ```
-skygearChat.fetchMessages(conversation, beforeMessage / afterMessage, limit, order, func (messageDeltas, cached = false) {
+skygearChat.fetchMessages(conversation, limit, beforeTime, order, func (messageDeltas, cached = false) {
   // Merge delta to current list
 
   // Apply the delta to UI one by one
@@ -129,20 +129,41 @@ skygearChat.fetchMessages(conversation, beforeMessage / afterMessage, limit, ord
 ### Create messages
 
 ```
-// Promise
-skygearChat.createMessage(/* ... */, (message) => {
-    // insert the new message in UI
-  })
-  .then((message) => {
-    // update the message
-  });
-
-// Non-promise
-skygearChat.createMessage(/* ... */, func (message) => {
-  // check `syncingToServer`, `alreadySyncToServer` and `fail` of the message
-  // to insert or update message in UI
-})
+skygearChat.createMessage(/* ... */)
+.then((message) => {
+  // The message is created on the server
+  // Update the UI to display the new message
+}, (err) => {
+  // An error occurred while creating the message
+});
 ```
+
+### Handling outstanding message operations
+
+```
+// Promise
+let addOperationType = 'add';
+let conversationId = '7d057fe2-f45a-4583-8a96-65d68a03d3ab';
+skygearChat.fetchOutstandingMessageOperations(addOperationType, conversationId,
+(operations) => {
+  console.log(operation.type);    // `add`
+  console.log(operation.message); // message object
+  console.log(operation.error);   // failure reason
+  
+  // The user should display the failed message in the UI, but they can
+  // also retry the operation.
+  skygearChat.retryMessageOperation(operation, (operation, message) => {
+    // This is the cached callback and this is immediately called
+    // Supplying a callback is optional
+  })
+  .then((operation, message) => {
+    // indicates the operation has succeeded
+  });
+});
+```
+
+The developer can also call `cancelMessageOperation(operation)` to remove
+the outstadning operation from the outstanding operation cache store.
 
 # Changes Required
 
@@ -158,54 +179,95 @@ Deleted messages are also returned in fetch API, with empty content and marked a
 
 #### API
 
-Use message instead of time as the query reference in fetchMessages API, this can avoid missing messages when there are multiple messages which have the same timestamp.
+Using the fetchMessages API, it is possible to fetch messages by using
+`before_time` or `before_message`. Using `before_message` has the benefit
+of duplicated message returning if messages are sent at the same moment in
+time. Using `before_time` allows the developer to fetch messages in a certain
+time range.
 
-old:
+Query by time:
 
 ```
 fetchMessages(conversation_id, limit, before_time?, order?)
 ```
 
-new:
+Query by message:
 
 ```
 fetchMessages(conversation_id, limit, before_message?, order?)
 ```
 
+A similar function is provided to query for messages sent after message/time:
+
+```
+fetchMessagesAfter(conversation_id, limit, before_message?, order?)
+```
+
 ### SDK
 
-- Make use of `syncingToServer`, `alreadySyncToServer` and `fail` (found in iOS but not in JS and Android) to cache and restore unsent message.
+#### Adding, deleting and editing messages
 
 - Add `sendDate` to `message` record for sorting.
 
-- Add cached callback to create message API.
-
-The cachedCallback is expected to call immediately after adding to cache store.
+The SDK should have the following functions to add, delete and edit messages:
 
 ```
-func createMessage(/* content params */, cachedCallback?)
-
-// Promise
-skygearChat.createMessage(/* ... */, (message) => {
-    // insert the new message in UI
-  })
-  .then((message) => {
-    // update the message
-  });
-
-// Non-Promise
-skygearChat.createMessage(/* ... */, func (message) => {
-  // check `syncingToServer`, `alreadySyncToServer` and `fail` of the message
-  // to insert or update message in UI
-})
+func createMessage(/* ... */)
+func editMessage(/* ... */)
+func deleteMessage(/* ... */)
 ```
+
+On JS, these functions should return a Promise. On other platforms, a
+callback object / block is specified as the last parameter.
+
+When performing these operations, a Message Operation Object is created
+and persisted in cache store. Newly added Message Operation Object
+should have the `pending` status. Successfully completed Message Operation
+Object should be removed from cache store. Outstanding Message Operation Object
+should have the `failed` status and include a failure reason.
+
+See below for message failure handling.
+
+#### Fetching messages
 
 - Add cached callback to fetch messages and fetch conversations API.
 
 ```
 func fetchConversations(cachedCallback?)
-func fetchMessages(conversation, beforeMessage, limit, order, cachedCallback?)
+func fetchMessages(conversation, limit, beforeTime, order, cachedCallback?)
 ```
+
+#### Handling outstanding messages
+
+Pending and outstanding messages will be available from this function:
+
+```
+func fetchOutstandingMessageOperations(operationType, conversationId);
+```
+
+On JS, this function should return a Promise. On other platforms, a
+callback object / block is specified as the last parameter. The function
+should resolve/return a list of outstanding operations.
+
+Operations can be removed from the cache store with this function:
+
+```
+func cancelMessageOperations(operationObject);
+```
+
+The following function will allow the developer to retry outstanding
+operation:
+
+```
+func retryMessageOperation(operationObject);
+```
+
+On JS, this function should return a Promise. On other platforms, a
+callback object / block is specified as the last parameter. The function
+should resolve/return the operation and the message object.
+
+When retrying, the operation is removed from the cache store and
+the message is added/edit/deleted through the provided APIs.
 
 #### JS
 
@@ -233,13 +295,21 @@ const successCallback = (messages, cached = false) => {
 };
 
 skygearChat
-  .getMessages(conversation, beforeMessage, limit, order, successCallback)
+  .getMessages(conversation, limit, beforeTime, order, successCallback)
   .then(successCallback, errorCallback);
 
 // no-cache version
 skygearChat
-  .getMessages(conversation, beforeMessage, limit, order)
+  .getMessages(conversation, limit, beforeMessage, order)
   .then(successCallback, errorCallback);
+```
+
+```
+skygearChat.retryMessageOperation(operationObject)
+.then((operation, message) => {
+  // The operation completed successfully
+  // `message` contains the message data after the operation has completed.
+});
 ```
 
 #### Non-JS
@@ -253,10 +323,17 @@ skygearChat.fetchConversations(func (conversations, cached = false) {
 ```
 let currentMessages = [];
 
-skygearChat.fetchMessages(func (messages, cached = false) {
+skygearChat.fetchMessages(conversation, func (messages, cached = false) {
   currentMessages = skygearChat.merge(currentMessages, messages);
   // display currentMessages
 })
+```
+
+```
+skygearChat.retryMessageOperation(operationObject, func(operation, message) => {
+  // The operation completed successfully
+  // `message` contains the message data after the operation has completed.
+});
 ```
 
 - Add cache store to skygear chat
@@ -278,7 +355,7 @@ func set(conversation: Conversation, message: Message, forID: String) -> Void
 func purgeAll() -> Void
 
 // if not implementated, the common cache logic needs to get all and filter the messages
-func fetchMessage(conversation: Conversation, before/afterMessageID: String, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, limit: Int, before_message: String, order: String) -> [Message]
 ```
 
 #### Common cache logic
@@ -302,7 +379,8 @@ interface for message list
 func createMessage(conversation: Conversation, body: ...) -> Void
 func editMessage(conversation: Conversation, body: ...) -> Void
 func deleteMessage(conversation: Conversation, message: Message) -> Void
-func fetchMessage(conversation: Conversation, before: Message, limit: Int, order: String) -> [Message]
+func fetchMessage(conversation: Conversation, limit: Int, before: Message, order: String) -> [Message]
+func fetchMessageAfter(conversation: Conversation, limit: Int, after: Message, order: String) -> [Message]
 func markDeliveredMessages(messages: [Message])
 func fetchReceiptsWithMessage(message: Message)
 ```
