@@ -190,10 +190,45 @@ or context param (JavaScript).
 
   * `_CODE_FORMAT` (string), `numeric` or `complex`
 
+  * `_SUCCESS_REDIRECT` (string) URL to redirect to when success, override `_SUCCESS_HTML_URL`
+  * `_ERROR_REDIRECT` (string) URL to redirect to when failure, override `_ERROR_HTML_URL`
+  * `_SUCCESS_HTML_URL` (string) URL HTML content template to return when success
+
+  * `_ERROR_HTML_URL` (string) URL of HTML content template to return when failure
+
   * `_PROVIDER` (string, the provider of the verification)
-    For email, it can be `smtp`. For phone, it can be SMS gateways.
+    For email, it can be `smtp`, `twilio` and `nexmo`.
 
   * `_PROVIDER_*` provider specific configuration.
+
+Here are provider specific configuration:
+
+For provider `smtp`:
+
+* `VERIFY_KEYS_<key>_PROVIDER_HOST` default to `SMTP_HOST`
+* `VERIFY_KEYS_<key>_PROVIDER_PORT` default to `SMTP_PORT`
+* `VERIFY_KEYS_<key>_PROVIDER_MODE` default to `SMTP_MODE`
+* `VERIFY_KEYS_<key>_PROVIDER_LOGIN` default to `SMTP_LOGIN`
+* `VERIFY_KEYS_<key>_PROVIDER_PASSWORD` default to `SMTP_PASSWORD`
+* `VERIFY_KEYS_<key>_PROVIDER_SENDER` default to `SMTP_SENDER`
+* `VERIFY_KEYS_<key>_PROVIDER_REPLY_TO` default to `SMTP_REPLY_TO`
+* `VERIFY_KEYS_<key>_PROVIDER_SUBJECT` email subject line
+* `VERIFY_KEYS_<key>_PROVIDER_EMAIL_TEXT_URL` email content template in plaintext
+* `VERIFY_KEYS_<key>_PROVIDER_EMAIL_HTML_URL` email content template in HTML
+
+For provider `twilio`:
+
+* `VERIFY_KEYS_<key>_PROVIDER_ACCOUNT_SID` default to `TWILIO_ACCOUNT_SID`
+* `VERIFY_KEYS_<key>_PROVIDER_AUTH_TOKEN` default to `TWILIO_AUTH_TOKEN`
+* `VERIFY_KEYS_<key>_PROVIDER_FROM` default to `TWILIO_FROM`
+* `VERIFY_KEYS_<key>_PROVIDER_SMS_TEXT_URL` message content template
+
+For provider `nexmo`:
+
+* `VERIFY_KEYS_<key>_PROVIDER_API_KEY` default to `NEXMO_API_KEY`
+* `VERIFY_KEYS_<key>_PROVIDER_API_SECRET` default to `NEXMO_API_SECRET`
+* `VERIFY_KEYS_<key>_PROVIDER_FROM` default to `NEXMO_FROM`
+* `VERIFY_KEYS_<key>_PROVIDER_SMS_TEXT_URL` message content template
 
 ## SDK
 
