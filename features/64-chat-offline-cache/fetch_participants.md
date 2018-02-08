@@ -36,35 +36,37 @@ And returns a list of user records.
 
 ```json
 {
-    "result": [{
-        "_access": null,
-        "_created_at": "2018-01-11T07:18:53.791103Z",
-        "_created_by": "23db86bd-4c92-44ee-abcd-eff0217d3207",
-        "_id": "user/23db86bd-4c92-44ee-abcd-eff0217d3207",
-        "_ownerID": "23db86bd-4c92-44ee-abcd-eff0217d3207",
-        "_type": "record",
-        "_updated_at": "2018-01-11T09:42:24.153172Z",
-        "_updated_by": "23db86bd-4c92-44ee-abcd-eff0217d3207",
-        "last_login_at": {
-            "$date": "2018-01-11T09:42:24.153172Z",
-            "$type": "date"
-        },
-        "username": "howa2"
-    }, {
-        "_access": null,
-        "_created_at": "2018-01-11T07:18:41.794667Z",
-        "_created_by": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
-        "_id": "user/6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
-        "_ownerID": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
-        "_type": "record",
-        "_updated_at": "2018-02-07T05:19:27.738244Z",
-        "_updated_by": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
-        "last_login_at": {
-            "$date": "2018-02-07T05:19:27.738244Z",
-            "$type": "date"
-        },
-        "username": "howa"
-    }]
+	"result": {
+		"participants": [{
+			"_access": null,
+			"_created_at": "2018-01-11T07:18:53.791103Z",
+			"_created_by": "23db86bd-4c92-44ee-abcd-eff0217d3207",
+			"_id": "user/23db86bd-4c92-44ee-abcd-eff0217d3207",
+			"_ownerID": "23db86bd-4c92-44ee-abcd-eff0217d3207",
+			"_type": "record",
+			"_updated_at": "2018-01-11T09:42:24.153172Z",
+			"_updated_by": "23db86bd-4c92-44ee-abcd-eff0217d3207",
+			"last_login_at": {
+				"$date": "2018-01-11T09:42:24.153172Z",
+				"$type": "date"
+			},
+			"username": "howa2"
+		}, {
+			"_access": null,
+			"_created_at": "2018-01-11T07:18:41.794667Z",
+			"_created_by": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
+			"_id": "user/6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
+			"_ownerID": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
+			"_type": "record",
+			"_updated_at": "2018-02-07T05:19:27.738244Z",
+			"_updated_by": "6a92a9db-1b84-43a4-9bc9-b0c63f996c4a",
+			"last_login_at": {
+				"$date": "2018-02-07T05:19:27.738244Z",
+				"$type": "date"
+			},
+			"username": "howa"
+		}]
+	}
 }
 ```
 Plugin queries from `user` table and returns the `result` array.
