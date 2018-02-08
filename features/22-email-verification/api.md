@@ -172,7 +172,7 @@ To check for verification:
 
 ```javascript
 // verify email 
-skygear.auth.verifyWithCode('email', '31DF2310FAA1')
+skygear.auth.verifyWithCode('31DF2310FAA1')
 .then((user) => {
   console.log(skygear.auth.verified); // true
   console.log(user.email_verified); // true

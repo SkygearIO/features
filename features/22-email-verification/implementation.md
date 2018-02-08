@@ -109,9 +109,6 @@ New table `_auth_verify` for storing verification code.
 
 The request should be authenticated with an access token.
 
-* `record_key` (string)
-  The record key to verify.
-
 * `code` (string)
   The verification code.
 
@@ -138,10 +135,6 @@ is the user specified by `_as_user_id`.
 #### Response
 
 The API returns Status OK when sent successfully.
-
-#### Response
-
-See `user:verify_code` above.
 
 ### Verification Provider
 
@@ -215,6 +208,6 @@ upon receiving auth response from the server.
 
 ```
 skygear.auth.requestVerification(recordField: string)
-skygear.auth.verifyWithCode(recordField: string, code: string)
+skygear.auth.verifyWithCode(code: string)
 ```
 
