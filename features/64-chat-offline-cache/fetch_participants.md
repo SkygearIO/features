@@ -24,11 +24,22 @@ Therefore, we need seperate APIs in chat SDK which has the following features.
 No change required
 
 ## Plugin
-- Provide a new lambda called `get_participants` which takes the `conversation_id` as the only parameter, for example,
+- Provide a new lambda called `get_participants` which takes
+    - `conversation_id`,
+    - `limit`,
+    - `offset`,
+    - `order_by` and
+    - `order`
+
+for example,
 
 ```json
 {
-  "conversation_id": "f0693c06-0bc3-11e8-ba89-0ed5f89f718b"
+  "conversation_id": "f0693c06-0bc3-11e8-ba89-0ed5f89f718b",
+  "offset": 0,
+  "limit": 2,
+  "order": "desc",
+  "order_by": "created_at"
 }
 ```
 
@@ -37,6 +48,9 @@ And returns a list of user records.
 ```json
 {
   "result": {
+    "offset": 0,
+    "limit": 2,
+    "total": 10,
     "participants": [{
       "_access": null,
       "_created_at": "2018-01-11T07:18:53.791103Z",
@@ -72,38 +86,82 @@ And returns a list of user records.
 Plugin queries from `user` table and returns the `result` array.
 Each record in `result` should be a Skygear record of user.
 
+If limit is less than or equal to 0, then all users will be fetched regardless the value of offset.
+Currently, `order_by` only supports `created_at` and `order` are either `desc` (default) or `asc`.
+
 ## SDK
 
 Add fetchParticipants API in each platform SDK. The API takes converstion ID string and callback as parameters. Platform SDK should call callback twice, one when the cache is fetched and another one when the result is fetched from plugin.
 
 ### Android
 
+#### Options Class (GetParticipantsOptions)
+```java
+public class GetParticipantsOptions {
+    public int offset;
+    public int limit;
+    public String order;
+    public String orderBy;
+}
+```
+
+#### Response Class (GetParticipantsResponse)
+```java
+public class GetParticipantsResponse {
+    public List<User> participants;
+    public int total;
+}
+```
+
+
 #### Callback
 ```java
-public interface GetParticipantsCallback extends GetCallback<List<User>> {
+public interface GetParticipantsCallback extends GetCallback<GetParticipantsResponse> {
     /**
      * Get cached result.
      *
      * @param users cached users
      */
-    void onGetCachedResult(@Nullable List<User> users);
+    void onGetCachedResult(@NonNull GetParticipantsResponse response);
 }
 ```
 #### getParticipants API
 
 ```java
-public void getParticipants(@Nonnull String conversationId, @Nullable GetParticipantsCallback callback) {
+public void getParticipants(@NonNull String conversationId, @Nullable GetParticipantsCallback callback) {
+    GetParticipantsOptions options = new GetParticipantsOptions();
+    getParticipants(conversationId, options, callback);
+}
+```
+
+
+```java
+public void getParticipants(@NonNull GetParticipantsRequest request, @NonNull GetParticipantsOptions options, @Nullable GetParticipantsCallback callback) {
     //Implementation
 }
 ```
 
 ### iOS
+
+#### Options Class (SKYChatFetchParticipantsOptions)
+```objectivec
+@interface SKYChatFetchParticipantsOptions: NSObject
+@property NSInteger offset;
+@property NSInteger limit;
+@property NSString  *order;
+@property NSString  *orderBy;
+@end
+```
+
+
 #### Callback
 ```objectivec
 typedef void (^ SKYChatFetchParticpantsCompletion)
-(NSArray<SKYRecord *> *_Nullable users,
-                       BOOL isCached,
-                       NSError *_Nullable error) {
+(
+ NSInteger total,
+ NSArray<SKYRecord *> * participants,
+ BOOL isCached,
+ NSError *_Nullable error) {
 }
 ```
 
@@ -113,12 +171,39 @@ typedef void (^ SKYChatFetchParticpantsCompletion)
                completion:(SKYChatFetchParticpantsCompletion _Nullable)completion
     /* clang-format off */ NS_SWIFT_NAME(fetchParticipants(conversationID:completion:));
 ```
+
+```objectivec
+- (void)fetchParticipants:(NSString *)conversationID
+                  options:(SKYChatFetchParticipantsOptions *)options
+               completion:(SKYChatFetchParticpantsCompletion _Nullable)completion
+    /* clang-format off */ NS_SWIFT_NAME(fetchParticipants(conversationID:options:completion:));
+```
+
 ### Javascript
+
+#### Option Class
+```javascript
+var options = {
+  limit: 10,
+  offset: 0,
+  order: 'desc',
+  order_by: 'created_at',
+};
+```
 
 #### getParticipants API
 ```javascript
-getParticipants(conversationId).then((result) => {
-  console.log(result);
+getParticipants(conversationId).then((participants, total) => {
+  console.log(participants);
+}).catch((e) => {
+  console.log(e);
 });
 ```
 
+```javascript
+getParticipants(conversationId, options).then((participants, total) => {
+  console.log(participants);
+}).catch((e) => {
+  console.log(e);
+});
+```
