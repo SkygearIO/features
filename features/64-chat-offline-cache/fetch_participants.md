@@ -1,4 +1,4 @@
-#Feature Overview
+# Feature Overview
 
 ## Objective
 Allow fetching participants' User records offline given an array of IDs.
