@@ -26,10 +26,10 @@ To disable user account:
 ```javascript
 // to disable a user account
 var user = 'EA04BEBD-1BFD-4FDD-A7D8-615F007A3B32';
-var reason = 'Account disabled because of TOS violation.';
+var message = 'Account disabled because of TOS violation.';
 var now = new Date();
 var expiry = new Date(now.getTime() + 60*5); // 5 mintues
-skygear.auth.disableUser(user, reason, expire)
+skygear.auth.disableUser(user, message, expire)
 .then(() => {
   // user is disabled
 });
@@ -54,7 +54,7 @@ skygear.auth.whoAmI()
   // the promise is rejected and this function is not called
 }, (err) => {
   console.log(err.name); // UserDisabled
-  console.log(err.info.reason); // 'Account disabled...'
+  console.log(err.info.message); // 'Account disabled...'
   console.log(err.info.expiry); // Date/time in ISO format
 });
 ```
@@ -71,5 +71,5 @@ API actions:
 _auth table:
 
 * (add) `disabled` boolean
-* (add) `disabled_reason` string
+* (add) `disabled_message` string
 * (add) `disabled_expiry` date

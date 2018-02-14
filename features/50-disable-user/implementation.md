@@ -2,27 +2,16 @@
 
 ## Server
 
-### `auth:user:disable`
+### `auth:disable:set`
 
 This action requires the use of a master key or an admin account.
 
 #### Request
 
-* `user_id` (string) the user id of the user to disable
-* `reason` (string, optional) the reason for disabling the user account
+* `auth_id` (string) the user id of the user to disable
+* `disabled` (boolean) whether the user is to be disabled
+* `message` (string, optional) the message shown to user for disabling the user account
 * `expiry` (datetime, optional) the time when the user is automatically enabled
-
-#### Response
-
-The API returns Status OK for successful request.
-
-### `auth:user:enable`
-
-This action requires the use of a master key or an admin account.
-
-#### Request
-
-* `user_id` (string) the user id of the user to disable
 
 #### Response
 
@@ -36,9 +25,9 @@ UserAuthenticator will be modified to reject disabled user with
 ```
 {
     "name": "UserDisabled",
-    "code": 99999,  // pending
+    "code": 127,
     "info": {
-        "reason": "Account disabled...",
+        "message": "Account disabled...",
         "expiry": "2017-07-23T19:30:24Z"
     }
 }
@@ -54,7 +43,7 @@ A user is disabled if the following is true:
 The following columns will be added to `_auth` table.
 
 * `disabled` (boolean) true if the user is disabled
-* `disabled_reason` (string)
+* `disabled_message` (string)
 * `disabled_expiry` (datetime)
 
 ### Audit Events
