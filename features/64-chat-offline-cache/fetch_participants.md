@@ -41,7 +41,7 @@ public Participant(Record record) {
 
 public static Participant fromRecord(Record record) {
     //...
-} 
+}
 ```
 
 #### Callback
@@ -96,9 +96,21 @@ typedef void (^ SKYChatFetchParticpantsCompletion)
 #### getParticipants API
 
 ```javascript
-getParticipants(participantIds).then((participantsMap, cached) => {
-  console.log(participants);
-}).catch((e) => {
-  console.log(e);
-});
+const successCallback = (participantsMap, cached = false) => {
+  console.log(participantsMap);
+};
+
+const errorCallback = error => {
+  console.log(error);
+};
+
+//cached version
+skygearChat
+  .getParticipants(participantIds, successCallback)
+  .then(successCallback, errorCallback);
+
+//non cached version
+skygearChat
+  .getParticipants(participantIds)
+  .then(sucessCallback, errorCallback);
 ```
