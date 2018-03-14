@@ -46,11 +46,5 @@ Feature issue with "meta" label are Meta Feature Issue. It is usually when a few
   - Add the appropriate `area/` labels for which components it is related with.
   - Add `attn/Portal` if the feature include changes from Skygear.io portal, and require UI/UX design.
 
-For the workflow labels, here are the meaning:
-
-- `workflow/spec-needed` - When someone is working on the design specification
-- `workflow/spec-review-needed` - When this issue design specification is under review
-- `workflow/design-complete` - When the design specification have been approved.
-- `workflow/WIP` - When someone is actively working on the code.
-- `workflow/code-complete` - When all PR have been merged.
-- `workflow/guides-complete` - When all guides PR have been merged.
+Add the `workflow/*` label if the feature required spec / code / guides / UI-Design are needed
+Add the `completed/*` label and remove the relevant `workflow` label when spec / code / guides / UI Design are comnpleted 
