@@ -46,5 +46,7 @@ Feature issue with "meta" label are Meta Feature Issue. It is usually when a few
   - Add the appropriate `area/` labels for which components it is related with.
   - Add `attn/Portal` if the feature include changes from Skygear.io portal, and require UI/UX design.
 
-Add the `workflow/*` label if the feature required spec / code / guides / UI-Design are needed
-Add the `completed/*` label and remove the relevant `workflow` label when spec / code / guides / UI Design are comnpleted 
+- Each feature issue might need spec / code / guides / UI design, so when a feature is planned for work, it should have the issues of:
+   - `require/*` if a feature require spec / code / guides / UI-Design
+   - `wip/*` if a feature spec / code / guides / UI-Design are WIP
+   - `completed/*` when a feature's spec / code / guides / UI-Design is completed.
