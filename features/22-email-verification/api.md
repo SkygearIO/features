@@ -26,16 +26,9 @@
 ### User Verified Flag
 
 Each user will have a flag that indicates whether the user is already
-verified. This flag is internal to Skygear for authentication and access
-control purpose.
-
-The Server will implements new actions to support toggling the user verified
-flag. SDKs will add support for calling the new actions to toggle the user
-verified flag.
+verified. This flag is saved to the user record.
 
 The flag can also be configured to automatically updated when user data changes.
-
-The flag is readable for the current user.
 
 ### Supported Verifiable User Data
 
@@ -80,7 +73,7 @@ The following is configurable:
 * whether verification link/code is sent automatically upon signup
 * whether verification link/code is sent automatically upon updates
 
-### Extendsible Verification Provider
+### Extensible Verification Provider
 
 A few provider will be provided to verify user data. Provider is configurable
 via environment variable. The provider should be extensible so that developer
@@ -172,9 +165,9 @@ To check for verification:
 
 ```javascript
 // verify email 
-skygear.auth.verifyWithCode('31DF2310FAA1')
+skygear.auth.verifyUserWithCode('31DF2310FAA1')
 .then((user) => {
-  console.log(skygear.auth.verified); // true
+  console.log(user.is_verified]); // true
   console.log(user.email_verified); // true
 });
 ```
