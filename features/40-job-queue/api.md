@@ -48,6 +48,21 @@ non-trivial because:
   developer need low-level access.
 * Difficult to provide the same level of persistence guarantee in Redis.
 
+## Life time of a job
+
+1. Cloud function call function to enqueue a job.
+2. Plugin send request to server.
+3. Server persist job information to job queue
+4. Server periodically check job queues for job waiting to dispatch.
+5. Lock the job item in the job queue.
+6. Invoke the job like a lambda function.
+7. Save job status to the job queue.
+
+If retry is enabled, the server keep invoking the lambda based on the retry
+count. The lambda is invoked until a retry limit is reached.
+
+Server will run maintenance task to clean job queue for outdated jobs.
+
 ## Sample Usage
 
 Usage will be like this:
@@ -55,7 +70,7 @@ Usage will be like this:
 ```python
 @skygear.job('user:send-email')
 def send_email(user_id):
-    # send logic
+    # send email logic
     pass
 
 @skygear.op('user:register')
@@ -67,7 +82,7 @@ def register_user(email):
                       run_at=tomorrow_datetime())
     print('job_id: ' + job.id)
 
-    # job can be cancelled
-    job.cancel()
-
+@skygear.op('user:deregister')
+def deregister_user(email):
+    cancel_job('send-email:' + email)
 ```
