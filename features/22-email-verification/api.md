@@ -167,7 +167,7 @@ To check for verification:
 // verify email 
 skygear.auth.verifyUserWithCode('31DF2310FAA1')
 .then((user) => {
-  console.log(user.is_verified]); // true
+  console.log(user.is_verified); // true
   console.log(user.email_verified); // true
 });
 ```

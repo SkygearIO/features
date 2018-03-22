@@ -31,7 +31,7 @@ The API returns Status OK when sent successfully.
 ### `auth:*` that returns an authResponse
 
 Since the verified flag is included in the user record, no special handling is
-required. The profiel will include the `is_verified` (boolean) field.
+required. The profile will include the `is_verified` (boolean) field.
 
 Example:
 
