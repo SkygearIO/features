@@ -33,6 +33,17 @@ following when accepting as parameter values or when returned.
 * array
 * dictionary
 
+### Serialization and Deserialization
+
+Serialization and Deserialization logic should share with existing
+logic implemented by record save and record fetch action. Therefore, types
+currently supported by Skygear will be supported in lambda parameters and
+return value.
+
+Since Skygear Record was not considered a data type, the protocol does
+not have support for specifying a Record object. To support using Record object
+in parameters and return value, a new `$type=record` will be implemented.
+
 ### Breaking Changes
 
 When upgrading to a version of Skygear Plugin/SDK that supports Skygear Data
@@ -53,7 +64,6 @@ should use the following method to find Data Types:
 * if the JSON object is a dictionary,
   * if contains `$type` key, the object is treated as the data type specified
     in the value
-  * if contains `_id` key, the object is a Skygear Record
   * otherwise, the object is treated as a hash map or dictionary, the content
     of the dictionary is recursively searched
 * if the JSON object is an array,
@@ -126,3 +136,57 @@ In the lack of such class, the developer will result in getting the result by:
 }
 ```
 
+The serialized parameter will look similar to this:
+
+```json
+{
+    "action": "alarms:future",
+    "args": {
+        "alarms: [
+            {
+                "$type": "record",
+                "$obj": {
+                    "_id": "alarm/c96942ae-2a5e-4d64-9d80-a3a79edc93e3",
+                    "trigger_time": {
+                        "$type": "date",
+                        "$date": "2015-04-10T17:35:20+08:00"
+                    }
+                }
+            },
+            {
+                "$type": "record",
+                "$obj": {
+                    "_id": "alarm/a2ab5286-5e7c-4d33-ade3-3aec40cfbae3",
+                    "trigger_time": {
+                        "$type": "date",
+                        "$date": "2015-04-10T17:37:20+08:00"
+                    }
+                }
+            }
+        ],
+        "date": {
+            "$type": "date",
+            "$date": "2015-04-10T17:36:20+08:00"
+        }
+    }
+}
+```
+
+The deserialized return value will look similar to this:
+
+```json
+{
+    "result: [
+        {
+            "$type": "record",
+            "$obj": {
+                "_id": "alarm/a2ab5286-5e7c-4d33-ade3-3aec40cfbae3",
+                "trigger_time": {
+                    "$type": "date",
+                    "$date": "2015-04-10T17:37:20+08:00"
+                }
+            }
+        }
+    ]
+}
+```
