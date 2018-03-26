@@ -46,15 +46,29 @@ in parameters and return value, a new `$type=record` will be implemented.
 
 ### Breaking Changes
 
-When upgrading to a version of Skygear Plugin/SDK that supports Skygear Data
-Type on lambda function, the parameter and returned values supprot Skygear Data
-Types automatically.
+When upgrading cloud function runtime (i.e. python or node), the function
+arguments will replace `$type` JSON objects with native Skygear Data Type.
+If the developer sends `$type` JSON objects from SDK, they will need to update
+code that removes manual deserialization.
 
-Since previously the code expects parameter and returned values to be JSON
-object, developer will have to update the code in order to handle the data
-types.
+For return value, both runtimes do not support data types as return value, so
+this feature will not break existing return logic.
 
-No futher declaration is needed to enable support for Skygear Data Type.
+When upgrading SDK, the return value will replace `$type` JSON objects with
+native Skygear Data Type.
+If the developer sends `$type` JSON objects from cloud function, they will need
+to update code that removes manual deserialization.
+
+For function argument, the SDKs do not support data types in function argument,
+so this feature will not break existing argument logic.
+
+In short, developer may need to modify existing code if,
+
+* they upgrade the SDK or cloud function runtime; and
+* the passed argument and/or return value contains `$type` JSON objects.
+
+Apps running on old version will work with runtimes running on new version, and
+vice versa.
 
 ### Detecting Record and Data Types
 
