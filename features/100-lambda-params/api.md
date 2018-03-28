@@ -128,27 +128,14 @@ SKYContainer *container = [SKYContainer defaultContainer];
                         @"alarms": @[ alarm1, alarm2 ],
                         @"date": [NSDate date]
                         }
-    completionHandler:^(LambdaResult *result, NSError *error) {
-                        NSArray *alarms = [result array];
+    completionHandler:^(id *result, NSError *error) {
+                        NSArray *alarms = (NSArray *)result;
                         NSLog(@"Future alarms: %@", alarms);
                        }];
 ```
 
 In the above example, the developer does not convert the Skygear Data Type
 manually. This result in clean and succinct code.
-
-Since the lambda can return a variety of data types, the result is encapsulated
-to a generic `LambdaResult` object, which the developer can obtain the result.
-In the lack of such class, the developer will result in getting the result by:
-
-```obj-c
-^(id result, NSError *error) {
-  if ([result isKindOfClass:[NSArray class]) {
-    NSArray *alarms = (NSArray *)result;
-    NSLog(@"Future alarms: %@", alarms);
-  }
-}
-```
 
 The serialized parameter will look similar to this:
 
@@ -204,3 +191,27 @@ The deserialized return value will look similar to this:
     ]
 }
 ```
+
+## Previous Discussions
+
+There was a discussion about `LambdaResult` which allows the developer to
+obtain the typed object. We decided not to implement that because of the lack of
+type safety when implementing getter via generics in Java. There is also lack of
+a consensus on how to obtain a typed object contained in a dictionary.
+
+For example, a getter such as this will help get a Location from the lambda
+result:
+
+```java
+public Location getLocation()
+```
+
+The above result can also be obtained via generics.
+
+```java
+public T getObject<T>()  // where T can be Location
+```
+
+Since Skygear support classes that come from standard library, it is difficult
+to define T in a way that is type safe. Specify T as a non-deserializable type
+will result in runtime error.
