@@ -92,3 +92,55 @@ difficult to read.
     }
 }
 ```
+
+## Sample code
+
+### Python logging usage
+
+```py
+import logging
+from skygear.utils.context import current_request_id
+
+logger = logging.getLogger(__name__)
+logger.info('Executed SQL',
+    extra={
+        'request_id': current_request_id(),
+        'component': 'chat',
+        'tag': 'db',
+        'fields': {
+            "args": [],
+            "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
+        }
+    }
+)
+```
+
+Support methods for logger
+- .debug()
+- .info()
+- .warning()
+- .error()
+- .critical()
+
+
+### JS logging usage
+
+```
+const skygearCloud = require('skygear/cloud');
+
+skygearCloud.log.info('message', {
+    'request_id': context.request_id,
+    'component': 'chat',
+    'tag': 'db',
+    'fields': {
+        "args": [],
+        "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
+    }
+});
+```
+
+We can also overwrite the native console method to print logs in structured format. The native console methods:
+- debug
+- info
+- warn
+- error
