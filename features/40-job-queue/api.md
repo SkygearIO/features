@@ -97,6 +97,10 @@ register different set of lambdas/async jobs based on registration parameters.
 For example, `high` priority worker will only register lambdas to skygear
 server with lambdas that are decorated with `high` priority.
 
+The semantics of priority is defined by the user. Defining a `high` priority for
+a lambda means that request for this lambda will be dispatched to a specific
+group of workers. It doesn't mean that the request will be dispatched earlier.
+
 ## Configurations
 
 Will support configuration including:
