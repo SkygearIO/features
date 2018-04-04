@@ -15,16 +15,17 @@
         - debug
     1. filter by component
         - Server
-        - Chat plugin
-        - CMS plugin
-        - Forgot password plugin
-        - SSO plugin
+        - Chat Plugin
+        - CMS Plugin
+        - Forgot Password Plugin
+        - SSO Plugin
+        - Cloud Code Functions (Default value of log functions, so user doesn't have to give too many argument when using log function in their code)
     1. filter by tag
         - db
-        - requests
+        - request
         - handler
         - pubsub
-        - Other with user input (User can defined his own tag if they use SDK provided logging functions to print log)
+        - Other with user input (User can defined their own tag if they use SDK provided logging functions to print log)
     1. All message / System logs or Errors
         - All message (No filter applied)
         - System logs or Errors (All logs sent out not in JSON format, including system logs or exceptions. If user use `print` or `console.log` without using SDK log function in their cloud function, those logs will also be shown here)
@@ -53,6 +54,7 @@ difficult to read.
 - Wrap exceptions to structured logs
 - skygear-server create id per request and pass request id to plugin through context
 - Refine all logs and reduce redundant logs in server and all skygear plugins
+- Output JSON formatted logs on the skygear cloud. Output readable log when deployed in docker compose. Skygear Cloud can supply custom environment variable to enable this behavior.
 
 ### Portal
 
@@ -77,7 +79,7 @@ difficult to read.
 
 ```js
 {
-    "time": 1521712900,
+    "time": 1521712900.511476,
     "level": "info", // debug / info / warn / error / critical
     "source": "server",  // server / py / js
     "component": "server", // server / chat / forgot_password / skygear_content_manager / skygear_sso
