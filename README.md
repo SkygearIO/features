@@ -44,7 +44,9 @@ Feature issue with "meta" label are Meta Feature Issue. It is usually when a few
   - Add `meta` label if an issue is about multiple features
 - For Feature issues:
   - Add the appropriate `area/` labels for which components it is related with.
-  - Add `attn/Portal` if the feature include changes from Skygear.io portal, and require UI/UX design.
+  - Add `area/Portal` if the feature include changes from Skygear.io portal, and require UI/UX design.
+    - The best practices is to have two separate issues for implementation of the feature on SDK and
+    server, and another issue for Skygear.io portal and guides.
 
 - Each feature issue might need spec / code / guides / UI design, so when a feature is planned for work, it should have the issues of:
    - `require/*` if a feature require spec / code / guides / UI-Design
