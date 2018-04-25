@@ -59,7 +59,7 @@ Examples:
     "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin
     "request_id": "uuid",
     "message": "Executed SQL successfully with sql.Queryx",
-    "fields": { // extra information of logs, optional
+    "extra": { // extra information of logs, optional
         "args": [],
         "error": "<nil>",
         "executionCount": 2,
@@ -70,17 +70,20 @@ Examples:
 
 ### Python log function
 
+To keep the
+- We can use filter to inject current request id
+https://docs.python.org/3/howto/logging-cookbook.html#using-filters-to-impart-contextual-information
+- Use the logger name for the tag, prefix the name with `tag.`. So if user create their own logger
+in their cloud functions. We can recognized the logs are from cloud functions.
+
 ```py
 import logging
-from skygear.utils.context import current_request_id
 
-logger = logging.getLogger('chat_plugin')
+logger = logging.getLogger('tag.chat_plugin')
 logger.info('Executed SQL',
     extra={
-        'fields': {
-            "args": [],
-            "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
-        }
+        "args": [],
+        "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
     }
 )
 ```
