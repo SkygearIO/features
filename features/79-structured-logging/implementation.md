@@ -32,7 +32,7 @@ skycli logs
 Options:
   --level       Apply log level filter, comma separated. Support values: debug,info,warning,error,critical
   --process     Apply process filter, comma separated. Support values: skygear-server,python,js
-  --tag         Apply tag filter, comma separated. Support values: request,auth,db,pubsub,push,auth_plugin,chat_plugin,cms_plugin,sso_plugin,others
+  --tag         Apply tag filter, comma separated. Support values: request,auth,db,pubsub,push,auth_plugin,chat_plugin,cms_plugin,sso_plugin,user,others
 
 Examples:
   # select skygear server logs and log level is debug
@@ -41,7 +41,10 @@ Examples:
   # select cms and error logs
   skycli --tag=cms,others logs
 
-  # select cloud functions logs
+  # select cloud functions logs which use py logger
+  skycli --tag=others logs
+
+  # select cloud functions logs (Unstructured logs + logs with `tag=user`)
   skycli --tag=others logs
 ````
 
@@ -56,7 +59,7 @@ Examples:
     "time": "2018-04-26T03:09:18.279977682Z",
     "level": "info", // debug / info / warn / error / critical
     "process": "server",  // skygear-server / python / js
-    "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin
+    "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin / user
     "request_id": "uuid",
     "message": "Executed SQL successfully with sql.Queryx",
     "extra": { // extra information of logs, optional
@@ -70,15 +73,14 @@ Examples:
 
 ### Python log function
 
-- We can use filter to inject current request id
-https://docs.python.org/3/howto/logging-cookbook.html#using-filters-to-impart-contextual-information
-- Use the logger name for the tag, prefix the name with `tag.`. So if user create their own logger
-in their cloud functions. We can recognize the logs are from cloud functions.
+- We can use filter to inject current request id and tag. When py receive a lambda call. We can set tag to the thread-local variable. Use filter to get and inject the tag. For user cloud functions, we can use `tag=user` by default. [About log filter](https://docs.python.org/3/howto/logging-cookbook.html#using-filters-to-impart-contextual-information)
+
+
 
 ```py
 import logging
 
-logger = logging.getLogger('tag.chat_plugin')
+logger = logging.getLogger(__name__)
 logger.info('Executed SQL',
     extra={
         "args": [],
