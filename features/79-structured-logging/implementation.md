@@ -39,10 +39,10 @@ Examples:
   skycli --level=debug --process=skygear-server logs
 
   # select cms and error logs
-  skycli --tags=cms,others logs
+  skycli --tag=cms,others logs
 
   # select cloud functions logs
-  skycli --tags=others logs
+  skycli --tag=others logs
 ````
 
 ### Cloud
@@ -53,7 +53,7 @@ Examples:
 
 ```js
 {
-    "time": 1521712900.511476,
+    "time": "2018-04-26T03:09:18.279977682Z",
     "level": "info", // debug / info / warn / error / critical
     "process": "server",  // skygear-server / python / js
     "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin
@@ -70,11 +70,10 @@ Examples:
 
 ### Python log function
 
-To keep the
 - We can use filter to inject current request id
 https://docs.python.org/3/howto/logging-cookbook.html#using-filters-to-impart-contextual-information
 - Use the logger name for the tag, prefix the name with `tag.`. So if user create their own logger
-in their cloud functions. We can recognized the logs are from cloud functions.
+in their cloud functions. We can recognize the logs are from cloud functions.
 
 ```py
 import logging
@@ -98,17 +97,18 @@ Support methods for logger
 
 ### JS log function
 
+- Use https://github.com/winstonjs/winston
+
 ```
 const skygearCloud = require('skygear/cloud');
 
-skygearCloud.log.info('message', {
-    'request_id': context.request_id,
-    'component': 'chat',
-    'tag': 'db',
-    'fields': {
-        "args": [],
-        "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
-    }
+skygearCloud
+  .log
+  .context(context)
+  .tag('db')
+  .info('test message %s, %s', 'first', 'second', {
+    "args": [],
+    "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
 });
 ```
 
