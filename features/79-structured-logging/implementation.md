@@ -7,6 +7,11 @@
 - Review all logs and add tag by its functional group (auth, push, pubsub ..etc)
 - Output JSON formatted logs on the skygear cloud. Output readable log when deployed in docker compose. Skygear Cloud can supply custom environment variable to enable this behavior.
 
+Logging can be configured by using these environment variables:
+
+- LOG_LEVEL: minimum log level to be printed
+- LOG_FORMAT: format of log output, either text or json
+
 #### py-skygear, skygear-SDK-JS
 
 - Log function to print structured logs
@@ -56,18 +61,24 @@ Examples:
 
 ```js
 {
+    // required fields
     "time": "2018-04-26T03:09:18.279977682Z",
     "level": "info", // debug / info / warn / error / critical
-    "process": "server",  // skygear-server / python / js
-    "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin / user
+    "process": "server",  // skygear-server / python / node
     "request_id": "uuid",
-    "message": "Executed SQL successfully with sql.Queryx",
-    "extra": { // extra information of logs, optional
-        "args": [],
-        "error": "<nil>",
-        "executionCount": 2,
-        "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\"",
-    }
+    "msg": "Executed SQL successfully with sql.Queryx",
+
+    // tag should be present, if not, assume cloud tag
+    "tag": "db", // request / auth / db / pubsub / push / auth_plugin / chat_plugin / cms_plugin / sso_plugin / user / cloud
+    
+    // if the log is related to an error/exception/panic, the "error" field will
+    // contain the error in textual format.
+    "error": "<nil>",
+
+    // extra information of logs, optional
+    "args": [],
+    "executionCount": 2,
+    "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
 }
 ```
 
@@ -99,18 +110,35 @@ Support methods for logger
 
 ### JS log function
 
-- Use https://github.com/winstonjs/winston
+- Using https://github.com/trentm/node-bunyan for logging and we will
+  support all logging functions supported by bunyan.
 
 ```
 const skygearCloud = require('skygear/cloud');
 
-skygearCloud
-  .log
-  .context(context)
-  .tag('db')
-  .info('test message %s, %s', 'first', 'second', {
-    "args": [],
-    "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
+skygearCloud.handler('hello:world', function (req, options) {
+  const {
+    context
+  } = options;
+
+  // create a logger, this will add:
+  // logger=lunchbot, tag=cloud, request_id and process etc
+  const logger = skygearCloud.log('lunchbot', context);
+
+  // log a simple message
+  logger.info('hello world!');
+
+  // log message with extra info
+  logger.info(
+    {
+      'more': 'info',
+      'fields': {
+          "args": [],
+          "sql": "SELECT record_type, record_field, user_role, writable, readable, comparable, discoverable FROM \"app_chatdemoapp\".\"_record_field_access\""
+      }
+    },
+    'hello world!'
+  );
 });
 ```
 
