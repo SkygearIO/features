@@ -77,9 +77,9 @@ The Record fetch and delete APIs are changed substantially:
         completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
 
 // New
-- (void)fetchRecordWithID:(NSString *)recordID
-                     type:(NSString *)recordType
-        completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
+- (void)fetchRecordWithType:(NSString *)recordType
+                   recordID:(NSString *)recordID
+          completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
 
 // Old
 - (void)fetchRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
@@ -89,9 +89,9 @@ The Record fetch and delete APIs are changed substantially:
                                       NSError *error))errorHandler;
 
 // New, no longer support fetching multiple types
-- (void)fetchRecordsWithIDs:(NSArray<NSString *> *)recordIDs
-                       type:(NSString *)recordType
-          completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
+- (void)fetchRecordsWithTypes:(NSString *)recordType
+                     recordID:(NSString *)recordID
+            completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
                                       NSError *operationError))completionHandler
       perRecordErrorHandler:(void (^)(NSString *recordID,
                                       NSError *error))errorHandler;
@@ -102,10 +102,10 @@ The Record fetch and delete APIs are changed substantially:
                                      NSError *error))completionHandler;
 
 // New
-- (void)deleteRecordWithID:(NSString *)recordID
-                      type:(NSString *)recordType
-         completionHandler:(void (^)(NSString *recordID,
-                                     NSError *error))completionHandler;
+- (void)deleteRecordWithType:(NSString *)recordType
+                    recordID:(NSString *)recordID
+           completionHandler:(void (^)(NSString *recordID,
+                                       NSError *error))completionHandler;
 
 // Old
 - (void)deleteRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
@@ -115,15 +115,16 @@ The Record fetch and delete APIs are changed substantially:
                                        NSError *error))errorHandler;
 
 // New, no longer support deleting multiple types
-- (void)deleteRecordsWithIDs:(NSArray<NSString *> *)recordIDs
-                        type:(NSString *)recordType
+- (void)deleteRecordsWithType:(NSString *)recordType
+                    recordIDs:(NSArray<NSString *> *)recordIDs
            completionHandler:(void (^)(NSArray<NSString *> *deletedRecordIDs,
                                        NSError *error))completionHandler
        perRecordErrorHandler:(void (^)(NSString *recordID,
                                        NSError *error))errorHandler;
 ```
 
-The record save API is unchanged.
+The record save API does not need to be changed for the purpose of this
+document.
 
 The Record class will be changed as follows:
 
@@ -193,12 +194,15 @@ Record object.
 
 ## JS SDK
 
-The `id` property of Record class will return Record ID instead of deprecated
-ID.
+The `recordId` property of Record class will return Record ID instead of
+deprecated ID.
 
 ```javascript
 var Note = Record.extend('note');
 var note = new Note({});
+
+// Removed
+console.log(note._id);  // undefined
 
 // Old
 console.log(note.id);  // 'note/91c02d33-ea8a-41d3-ae6c-a87e064eaa5c'
