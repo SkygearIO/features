@@ -1,4 +1,4 @@
-# Consistent error handling
+# Consistent error handling for JS SDK
 
 ## Requirement
 
@@ -24,13 +24,34 @@ In the third case, the error message may be available in one of these locations:
 
 ## Proposed solution
 
-* Rejected promise should return an Error or an Error subclass. When calling
-  third party library, make sure the rejected promise returns an Error.
-* Skygear SDK must wrap server-side error object in SkygearError, which is
-  a subclass of Error.
-* For other kinds of error, it is preferred to wrap such errors into
-  a SkygearError and use an appropriate error code. Reject the promise
-  with a SkygearError.
+* Rejected promise should return an Error or an Error subclass. Do not reject
+  promise with other types.
+* For Server API calls, the promise should be rejected with SkygearError. If a
+  third party library throws an Error, such Error should be wrapped inside
+  SkygearError and should be assigned an error code.
+* For other calls, the promise can be rejected with any Error. Error
+  from third party library will be used to reject the promise.
+* For function that returns a promise, the function should not throw an Error.
+  Instead, the function should return a rejected promise with the Error.
+* For function that does not return a promise, the function should
+  throw an Error.
+
+### Throwing error vs rejecting a promise
+
+Example: https://github.com/SkygearIO/skygear-SDK-JS/commit/0f43378979130bac903f378b1bdfb2840e8b9568#diff-50ac0edef58dc8c3df00d1e6c7ed9b7eR143
+
+When registering a device, the SDK checks whether the supplied token is
+non-empty before returning a promise to send a request. If the supplied token is
+empty, the functions throws an error.
+
+This pattern follows the pattern that fails quickly if there is a programmer
+error. See http://2ality.com/2016/03/promise-rejections-vs-exceptions.html.
+
+This also means the developer has to catch the thrown error in addition
+to checking the promise.
+
+Rejecting a promise instead of throwing an Error allows developer to catch
+the Error by checking promise, without using try...catch.
 
 ### Saving multiple records
 
@@ -44,8 +65,8 @@ records API are proposed:
   Save a single record.
 - `saveMultiple` - resolve([Record]), reject(Error)
   Save multiple record automically.
-- `saveMultiplePartially([Record])` - resolve({[Record], [Error]}), reject(Error)
-  Save multiple record partially.
+- `saveMultipleNonAtomically([Record])` - resolve({[Record], [Error]}), reject(Error)
+  Save multiple record non-atomically.
 
 ## Sample code
 
@@ -65,31 +86,8 @@ skygear.auth.signupWithUsername('ben', 'passw0rd').then((user) => {
 
   // Scenario 2: check if the error is an SkygearError
   if (error instanceof SkygearError) {
+    console.log(error.message);  // print errror message
     console.log(error.code);  // print numeric error code
   }
 });
 ```
-
-## Discussions
-
-### Throwing error vs rejecting a promise
-
-Example: https://github.com/SkygearIO/skygear-SDK-JS/commit/0f43378979130bac903f378b1bdfb2840e8b9568#diff-50ac0edef58dc8c3df00d1e6c7ed9b7eR143
-
-When registering a device, the SDK checks whether the supplied token is
-non-empty before returning a promise to send a request. If the supplied token is
-empty, the functions throws an error.
-
-This pattern follows the pattern that fails quickly if there is a programmer
-error. See http://2ality.com/2016/03/promise-rejections-vs-exceptions.html.
-
-This also means the developer has to catch the thrown error in addition
-to checking the promise.
-
-There are two approaches here:
-
-* Programmer error should be throw, developer has to fix the programmer
-  error or add additional try/catch.
-* Programmer error should be returned by rejecting the promise, developer
-  only need to check whether the promise is rejected.
-
