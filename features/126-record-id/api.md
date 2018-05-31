@@ -47,13 +47,13 @@ Old:
 
 ```json
 {
-	"_id": "note/note1",
-	"_access": null,
-	"_ownerID": "ownerID",
-	"category": {"$id":"category/important","$type":"ref"},
-	"city": {"$id":"city/beautiful","$type":"ref"},
-	"secret":{"$id":"secret/secretID","$type":"ref"},
-	"_transient": {"secret":null}
+    "_id": "note/note1",
+    "_access": null,
+    "_ownerID": "ownerID",
+    "category": {"$id":"category/important","$type":"ref"},
+    "city": {"$id":"city/beautiful","$type":"ref"},
+    "secret":{"$id":"secret/secretID","$type":"ref"},
+    "_transient": {"secret":null}
 }
 ```
 
@@ -61,13 +61,13 @@ New:
 
 ```json
 {
-	"_recordID": "b7c66af9-cabd-4e12-bcce-0a873dfb6328",
-	"_recordType": "note",
-	"_access": null,
-	"_ownerID": "ownerID",
-	"category": {"$recordID":"important","$recordType":"category","$type":"ref"},
-	"city": {"$recordID":"beautiful","$recordType":"city","$type":"ref"},
-	"secret":{"$recordID":"secret","$recordType":"secret","$type":"ref"},
-	"_transient": {"secret":null}
+    "_recordID": "b7c66af9-cabd-4e12-bcce-0a873dfb6328",
+    "_recordType": "note",
+    "_access": null,
+    "_ownerID": "ownerID",
+    "category": {"$recordID":"important","$recordType":"category","$type":"ref"},
+    "city": {"$recordID":"beautiful","$recordType":"city","$type":"ref"},
+    "secret":{"$recordID":"secret","$recordType":"secret","$type":"ref"},
+    "_transient": {"secret":null}
 }
 ```

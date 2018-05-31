@@ -5,9 +5,9 @@
 ```json
 // Old
 {
-	"_id": "note/4d4a6018-d365-4103-b35a-249b972ae614",
-	"_access": null,
-	"category": {
+    "_id": "note/4d4a6018-d365-4103-b35a-249b972ae614",
+    "_access": null,
+    "category": {
         "$id": "category/de3365c0-b89e-4e1e-8645-bd1ef33012af",
         "$type": "ref"
     },
@@ -15,10 +15,10 @@
 
 // New
 {
-	"_recordID": "4d4a6018-d365-4103-b35a-249b972ae614",
-	"_recordType": "note",
-	"_access": null,
-	"category": {
+    "_recordID": "4d4a6018-d365-4103-b35a-249b972ae614",
+    "_recordType": "note",
+    "_access": null,
+    "category": {
         "$recordType": "category", 
         "$recordID": "de3365c0-b89e-4e1e-8645-bd1ef33012af", 
         "$type": "ref"
@@ -27,11 +27,11 @@
 
 // Transitional (maintaining backward compatibility)
 {
-	"_id": "note/4d4a6018-d365-4103-b35a-249b972ae614",
-	"_recordID": "4d4a6018-d365-4103-b35a-249b972ae614",
-	"_recordType": "note",
-	"_access": null,
-	"category": {
+    "_id": "note/4d4a6018-d365-4103-b35a-249b972ae614",
+    "_recordID": "4d4a6018-d365-4103-b35a-249b972ae614",
+    "_recordType": "note",
+    "_access": null,
+    "category": {
         "$id": "category/de3365c0-b89e-4e1e-8645-bd1ef33012af",
         "$recordType": "category", 
         "$recordID": "de3365c0-b89e-4e1e-8645-bd1ef33012af", 
