@@ -28,7 +28,7 @@ For API with same purpose / calling the same skygear-server API, the same set of
     <td>JS</td>
   </tr>
   <tr>
-    <td>[container signupAnonymouslyWithCompletionHandler:]</td>
+    <td>[container signupAnonymouslyWithCompletion:]</td>
     <td>signupAnonymously(AuthResponseHandler handler)</td>
     <td>signupAnonymously(): Promise< Record ></td>
   </tr>
@@ -51,7 +51,7 @@ For example,
     <td>JS</td>
   </tr>
   <tr>
-    <td>setNewPassword:oldPassword:completionHandler:</td>
+    <td>setNewPassword:oldPassword:completion:</td>
     <td>changePassword(String newPassword, String oldPassword, AuthResponseHandler handler)</td>
     <td>changePassword(newPassword: String, oldPassword: String, invalidate: Boolean): Promise< Record ></td>
   </tr>
@@ -194,9 +194,15 @@ Android: `container.getPubsub().setListener(xxx)`
 iOS: `[[container pubsub] subscribeTo:@"xxx" handler:xxx]`
 Android: `container.getPubsub().subscribe("xxx", xxx)`
 
-While in JS, `skygear.pubsub.on('xxx', function() { xxx })`.
-
 # Platform specific guidelines
+
+### iOS
+
+#### `completion:` to pass a block function
+
+Use `completion:` instead of `completionHandler:`
+
+For example, `[container signupAnonymouslyWithCompletion:]` instead of `[container signupAnonymouslyWithCompletionHandler:]`.
 
 ### JS
 
@@ -210,12 +216,21 @@ This would affect what parameters to put in the function. Because if the model i
 
 # Exceptional cases
 
+#### `on` and `subscribe` in JS pubsub
+
+In iOS and Android, `subscribe` is the action.
+
+In JS, both `on` is more common name in JS for handling event. So we would have both function in this case, that:
+
+```
+skygear.pubsub.on('xxx', function() { xxx })
+skygear.pubsub.subscribe('xxx', function() { xxx }) // alias
+```
+
 ### Query in iOS
 
 iOS (ObjC/Swift) provides predicate class(es) natively.
 
-### Record save, mutliple or singular
+### Record API
 
-`save(Records)` and `save(Record)` should be separate functions.
-
-When saving multiple records, the client may specify if the operation should be atomic. The behaviour is different for multiple and singlar record save.
+see [record-api.md](./record-api.md)
