@@ -89,9 +89,9 @@ The Record fetch and delete APIs are changed substantially:
                                       NSError *error))errorHandler;
 
 // New, no longer support fetching multiple types
-- (void)fetchRecordsWithTypes:(NSString *)recordType
-                     recordID:(NSString *)recordID
-            completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
+- (void)fetchRecordsWithType:(NSString *)recordType
+                   recordIDs:(NSArray<NSString *> *)recordIDs
+           completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
                                       NSError *operationError))completionHandler
       perRecordErrorHandler:(void (^)(NSString *recordID,
                                       NSError *error))errorHandler;
