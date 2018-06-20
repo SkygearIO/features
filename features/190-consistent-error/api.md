@@ -35,6 +35,8 @@ In the third case, the error message may be available in one of these locations:
   Instead, the function should return a rejected promise with the Error.
 * For function that does not return a promise, the function should
   throw an Error.
+* For all the common errors, those errors will be wrapped inside SkygearError.
+  So user will only need to handle Skygear in all common cases.
 
 ### Throwing error vs rejecting a promise
 
