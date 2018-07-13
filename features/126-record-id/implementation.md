@@ -59,8 +59,16 @@
 // New
 {
     "action": "record:delete",
-    "ids": ["4d4a6018-d365-4103-b35a-249b972ae614"]
-    "type": "note"
+    "recordIDs": ["4d4a6018-d365-4103-b35a-249b972ae614"]
+    "recordType": "note"
+}
+
+// Transitional (maintaining backward compatibility)
+{
+    "action": "record:delete",
+    "ids": ["note/4d4a6018-d365-4103-b35a-249b972ae614"],
+    "recordIDs": ["4d4a6018-d365-4103-b35a-249b972ae614"],
+    "recordType": "note"
 }
 ```
 
