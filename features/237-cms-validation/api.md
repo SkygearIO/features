@@ -28,21 +28,20 @@
 - One validation item is a dictionary which contains the validation configuration (depends on where it is placed).
   - Each validation optionally contains a `message` field, which would be the error message if that validation item cannot pass.
   - Otherwise, a default error message would be shown.
-- `validation` may be a validation item or contains a list of validation items.
 
 ```
 new:
   # page validation
-  validation:
+  validations:
     - expression: xxx
     - expression: xxx
   fields:
     - name: xxx
       type: xxx
       # field validation
-      validation:
-        pattern: /^xxx$/
-        message:
+      validations:
+        - regex: /^xxx$/
+          message:
 ```
 
 ## Expression
@@ -51,10 +50,6 @@ new:
 - An expression is a string, which can be evaluated to give boolean value.
 - All other types of validation are predifined expression, i.e. they are all compiled to expression at runtime.
 - Expression evaluation would be based on this library https://github.com/joewalnes/filtrex, while CMS would provide extra predefined functions for common use case.
-
-### Functions
-
-- Passing wrong data type to the function would throw error in validation.
 
 ### Expression context: `value`
 
@@ -68,6 +63,25 @@ Developer uses the variable `value` in the expression to get the value from the 
   - `get(value: formValue, fieldName: string)`
   - e.g. `get(value, "full_name") != get(value, "nick_name")`
 
+Type of `value` for each field type
+
+- String: string
+- Number: number
+- Datetime: datetime
+- JSON: object | array
+- Location: object<{ lat: number, lng: number }>
+- Reference: object
+- References: array<object>
+- EmbeddedReference: object
+- EmbeddedReferences: array<object>
+- Asset: object<{ contentType: string, size: number }>
+
+`get` can be used to get children value in object(-like) and array(-like) value.
+
+### Functions
+
+- Passing wrong data type to the function would throw error in validation.
+
 #### Predefined functions
 
 - String
@@ -80,13 +94,28 @@ Developer uses the variable `value` in the expression to get the value from the 
   - `datetime(str: string)`
   - `timestamp(data: datetime | string)`
     - e.g. `timestamp(value) > timestamp('2018-01-01')`
+  - `get_year(data: datetime)`
+  - `get_month(data: datetime)`
+  - `get_week_of_year(data: datetime)`
+  - `get_week_of_month(data: datetime)`
+  - `get_day(data: datetime)`
+  - `get_day_of_year(data: datetime)`
+  - `get_day_of_week(data: datetime)`
+  - `get_hour(data: datetime)`
+  - `get_minute(data: datetime)`
+  - `get_second(data: datetime)`
 - JSON
   - `get(data: json, key: string | number)`
     - return the value at key
     - e.g. `get(get(value, "a"), "b")`, `{"a": {"b": 1}}` => `1`
     - e.g. `get(get(value, "a"), 0)`, `{"a": [1]}` => `1`
-  - `hasKey(data: json, key: string | number)`
+  - `has_key(data: json, key: string | number)`
     - return if the key exist
+  - `typeof(data: json)`
+    - return `object`, `array`, `string`, `number`, `null`
+  - `length(data: json)`
+    - return length of json array
+    - throw error if provided data is not json array
 - Location
 - References
   - `length(value: reference[])`
@@ -96,7 +125,6 @@ Developer uses the variable `value` in the expression to get the value from the 
   - `length(value: embeddedReference[])`
   - `get(data: embeddedReference[], index: number)`
 - Asset
-  - `size(value: asset)`
 
 ## Predefined validation for field validation
 
@@ -105,7 +133,7 @@ Developer uses the variable `value` in the expression to get the value from the 
 types: `String`, `Datetime`, `References`, `EmbeddedReferences`, `Asset`
 
 ```
-validation:
+validations:
 - required: true
 # String / References / EmbeddedReferences equivalent to
 - expression: length() > 0
@@ -115,32 +143,71 @@ validation:
 
 Note that, `required: false` is no-op.
 
-### `pattern`
+### `regex`
 
 types: `String`
 
 ```
-validation:
-- pattern: /xxx/
+validations:
+- regex: /xxx/
 # equivalent to
 - expression: value ~= /xxx/
 ```
 
+### `pattern`
+
+Predefined regex, e.g. `email`, `creditcard`, `url`
+
+types: `String`
+
+```
+validations:
+- pattern: email
+```
+
+### `length`
+
+types: `String`, `References`, `EmbeddedReferences`
+
+- `min`, `max`, can set one of them or both of them
+- `inclusive`: boolean, optional, default true
+
+```
+validations:
+- length:
+    min: 3
+    max: 5
+    inclusive: true
+# String / References / EmbeddedReferences equivalent to
+- expression: length() >= 3 and length() <= 5
+```
+
 ### Comparisons
+
+types: `String`
+
+- `contains`
+- `not_contains`
 
 types: `String`, `Number`, `Datetime`
 
-- `EqualTo`
-- `NotEqualTo`
+- `equal_to`
+- `not_equal_to`
 
 types: `Number`, `Datetime`
 
-- `LessThan`
-- `LessThanOrEqualTo`
-- `GreaterThan`
-- `GreaterThanOrEqualTo`
+- `less_than`
+- `less_than_or_equal_to`
+- `greater_than`
+- `greater_than_or_equal_to`
+- `range`
+  - `min`, `max`, can set one of them or both of them
+  - `inclusive`: boolean, optional, default true
 
 ```
-validation:
-- GreaterThan: 2018-01-01
+validations:
+- greater_than: 2018-01-01
+- range:
+    min: 2000-01-01
+    max: 2001-01-01
 ```
