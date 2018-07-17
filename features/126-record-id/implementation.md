@@ -274,3 +274,12 @@ console.log(note.recordType);  // 'note'
 console.log(note.recordID);  // '91c02d33-ea8a-41d3-ae6c-a87e064eaa5c'
 console.log(note.recordType);  // 'note'
 ```
+
+### Non-atomic save callback for partially save
+
+- For non-atomic save in SDKs, we will use 2 arrays to represent the result,
+array of saved records and array of errors. The length of 2 arrays will be the
+same as the length of request records. For example, if we save 10 records and
+the first two records can not be saved. The records array should have 8 records
+and the first two items will be null. The errors array will have 2 errors
+objects and the rest will be null.
