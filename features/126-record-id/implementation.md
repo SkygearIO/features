@@ -77,7 +77,7 @@
 This illustrates how the convenient methods will change. The SKYOperation APIs
 will be updated as well but not illustrated here.
 
-The Record fetch and delete APIs are changed substantially:
+The Record fetch, save and delete APIs are changed substantially:
 
 ```obj-c
 // Old
@@ -99,40 +99,61 @@ The Record fetch and delete APIs are changed substantially:
 // New, no longer support fetching multiple types
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
-                                      NSError *operationError))completionHandler
-      perRecordErrorHandler:(void (^)(NSString *recordID,
-                                      NSError *error))errorHandler;
+           completionHandler:(void (^)(NSArray<SKYRecord *> *recordsByRecordID,
+                                       NSArray<NSError *> *operationError))completionHandler;
+
+// Old
+- (void)saveRecords:(NSArray<SKYRecord *> *)records
+        completionHandler:(void (^_Nullable)(NSArray *_Nullable savedRecords,
+                                             NSError *_Nullable operationError))completionHandler
+    perRecordErrorHandler:
+        (void (^_Nullable)(SKYRecord *_Nullable record, NSError *_Nullable error))errorHandler;
+
+- (void)saveRecordsAtomically:(NSArray<SKYRecord *> *)records
+            completionHandler:
+                (void (^_Nullable)(NSArray *_Nullable savedRecords,
+                                   NSError *_Nullable operationError))completionHandler;
+
+// New, perRecordErrorHandler will be removed
+- (void)saveRecords:(NSArray<SKYRecord *> *)records
+  completionHandler:(void (^_Nullable)(NSArray<SKYRecord *> *savedRecords,
+                                       NSArray<NSError *> *errors))completionHandler;
+
+- (void)saveRecordsAtomically:(NSArray<SKYRecord *> *)records
+            completionHandler:(void (^_Nullable)(NSArray<SKYRecord *> *savedRecords,
+                                                 NSError *error))completionHandler;
 
 // Old
 - (void)deleteRecordWithID:(SKYRecordID *)recordID
          completionHandler:(void (^)(SKYRecordID *recordID,
                                      NSError *error))completionHandler;
 
-// New
-- (void)deleteRecordWithType:(NSString *)recordType
-                    recordID:(NSString *)recordID
-           completionHandler:(void (^)(NSString *recordID,
-                                       NSError *error))completionHandler;
-
-// Old
 - (void)deleteRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
            completionHandler:(void (^)(NSArray *deletedRecordIDs,
                                        NSError *error))completionHandler
        perRecordErrorHandler:(void (^)(SKYRecordID *recordID,
                                        NSError *error))errorHandler;
 
-// New, no longer support deleting multiple types
+- (void)deleteRecordsWithIDsAtomically:(NSArray<SKYRecordID *> *)recordIDs
+                     completionHandler:(void (^)(NSArray *_Nullable deletedRecordIDs,
+                                                 NSError *_Nullable error))completionHandler;
+
+// New, no longer support deleting multiple types, perRecordErrorHandler will be removed
+- (void)deleteRecordWithType:(NSString *)recordType
+                    recordID:(NSString *)recordID
+           completionHandler:(void (^)(NSString *recordID,
+                                       NSError *error))completionHandler;
+
 - (void)deleteRecordsWithType:(NSString *)recordType
                     recordIDs:(NSArray<NSString *> *)recordIDs
            completionHandler:(void (^)(NSArray<NSString *> *deletedRecordIDs,
-                                       NSError *error))completionHandler
-       perRecordErrorHandler:(void (^)(NSString *recordID,
-                                       NSError *error))errorHandler;
-```
+                                       NSArray<NSError *> *errors))completionHandler;
 
-The record save API does not need to be changed for the purpose of this
-document.
+- (void)deleteRecordsWithTypeAtomically:(NSString *)recordType
+                              recordIDs:(NSArray<NSString *> *)recordIDs
+                      completionHandler:(void (^)(NSArray<NSString *> *deletedRecordIDs,
+                                                  NSError *errors))completionHandler;
+```
 
 The Record class will be changed as follows:
 
