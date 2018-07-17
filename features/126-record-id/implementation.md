@@ -87,7 +87,7 @@ The Record fetch, save and delete APIs are changed substantially:
 // New
 - (void)fetchRecordWithType:(NSString *)recordType
                    recordID:(NSString *)recordID
-          completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
+                 completion:(void (^)(SKYRecord *record, NSError *error))completion;
 
 // Old
 - (void)fetchRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
@@ -99,13 +99,13 @@ The Record fetch, save and delete APIs are changed substantially:
 // New, no longer support fetching multiple types
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSArray<id> *records,
-                                       NSArray<id> *operationError))completionHandler NS_REFINED_FOR_SWIFT;
+                  completion:(void (^)(NSArray<id> *records,
+                                       NSArray<id> *operationError))completion NS_REFINED_FOR_SWIFT;
 
 extension SKYDatabase {
-    func fetchRecordsWithType(recordType: NSString,
-                              recordIDs: [NSString],
-                              completionHandler: (records: [SKYRecord?], errors: [NSError?]) -> Void) {
+    func fetchRecords(type: NSString,
+                      recordIDs: [NSString],
+                      completion: (records: [SKYRecord?], errors: [NSError?]) -> Void) {
         ...
     }
 }
@@ -124,19 +124,19 @@ extension SKYDatabase {
 
 // New, perRecordErrorHandler will be removed
 - (void)saveRecords:(NSArray<SKYRecord *> *)records
-  completionHandler:(void (^_Nullable)(NSArray<id> *savedRecords,
-                                       NSArray<id> *errors))completionHandler NS_REFINED_FOR_SWIFT;
+         completion:(void (^_Nullable)(NSArray<id> *savedRecords,
+                                       NSArray<id> *errors))completion NS_REFINED_FOR_SWIFT;
 
 extension SKYDatabase {
-    func saveRecords(records: [SKYRecord],
-                     completionHandler: (savedRecord: [SKYRecord?], errors: [NSError?]) -> Void) {
+    func saveRecords(_ records: [SKYRecord],
+                    completion: (savedRecord: [SKYRecord?], errors: [NSError?]) -> Void) {
         ...
     }
 }
 
 - (void)saveRecordsAtomically:(NSArray<SKYRecord *> *)records
-            completionHandler:(void (^_Nullable)(NSArray<SKYRecord *> *savedRecords,
-                                                 NSError *error))completionHandler;
+                   completion:(void (^_Nullable)(NSArray<SKYRecord *> *savedRecords,
+                                                 NSError *error))completion;
 
 // Old
 - (void)deleteRecordWithID:(SKYRecordID *)recordID
@@ -156,26 +156,26 @@ extension SKYDatabase {
 // New, no longer support deleting multiple types, perRecordErrorHandler will be removed
 - (void)deleteRecordWithType:(NSString *)recordType
                     recordID:(NSString *)recordID
-           completionHandler:(void (^)(NSString *recordID,
-                                       NSError *error))completionHandler;
+                  completion:(void (^)(NSString *recordID,
+                                       NSError *error))completion;
 
 - (void)deleteRecordsWithType:(NSString *)recordType
                     recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSArray<id> *deletedRecordIDs,
-                                       NSArray<id> *errors))completionHandler NS_REFINED_FOR_SWIFT;
+                   completion:(void (^)(NSArray<id> *deletedRecordIDs,
+                                       NSArray<id> *errors))completion NS_REFINED_FOR_SWIFT;
 
 extension SKYDatabase {
-    func deleteRecordsWithType(recordType: NSString,
-                               recordIDs:[NSString],
-                               completionHandler: (deletedRecordIDs: [NSString?], errors: [NSError?]) -> Void) {
+    func deleteRecords(type: NSString,
+                       recordIDs:[NSString],
+                       completion: (deletedRecordIDs: [NSString?], errors: [NSError?]) -> Void) {
         ...
     }
 }
 
 - (void)deleteRecordsWithTypeAtomically:(NSString *)recordType
                               recordIDs:(NSArray<NSString *> *)recordIDs
-                      completionHandler:(void (^)(NSArray<NSString *> *deletedRecordIDs,
-                                                  NSError *errors))completionHandler;
+                             completion:(void (^)(NSArray<NSString *> *deletedRecordIDs,
+                                                  NSError *errors))completion;
 ```
 
 The Record class will be changed as follows:
