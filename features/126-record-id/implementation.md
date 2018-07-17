@@ -221,6 +221,39 @@ The SDK does not expose deprecated ID in the API. The Android SDK does not
 support fetching record by ID (need to use query API) and deletion requires
 Record object.
 
+After updating the id format, ids are not necessarily unique in single save
+request. So partially save handler will change from map to array. 
+
+```java
+// old
+public abstract class RecordSaveResponseHandler implements ResponseHandler {
+
+    ...
+    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+}
+
+public abstract class RecordDeleteResponseHandler implements ResponseHandler {
+
+    ...
+    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+}
+
+// new
+public abstract class RecordSaveResponseHandler implements ResponseHandler {
+
+    ...
+
+    public abstract void onPartiallySaveSuccess(Record[] successRecords, Error[] errors);
+}
+
+public abstract class RecordDeleteResponseHandler implements ResponseHandler {
+
+    ...
+
+    public abstract void onDeletePartialSuccess(String[] ids, Error[] errors);
+}
+```
+
 ## JS SDK
 
 The `recordId` property of Record class will return Record ID instead of
