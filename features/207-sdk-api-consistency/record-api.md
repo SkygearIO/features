@@ -68,10 +68,28 @@ public void query(Query query, RecordQueryResponseHandler handler);
 ##### New
 
 ```java
-public abstract class RecordFetchResponseHandler implements ResponseHandler {
-    public abstract void onFetchSuccess(Map<String, Record> recordsById);
+/**
+ * Generic RecordResult object for fetch, non-atomic save and delete
+ * RecordResult represent the result of operation, 
+ * value will be the record id or record object if the operation is success
+ * otherwise there will be error
+ */
+public class RecordResult<T> {
+    public final T value;
+    public final Error error;
+}
+
+public abstract class RecordFetchResponseHandler<T> implements ResponseHandler {
+    public void onFetchSuccess(T result) {}
     public abstract void onFetchError(Error error);
 }
+
+public void fetchRecordById(String recordType,
+                            String recordId,
+                            RecordFetchResponseHandler<Record> handler);
+public void fetchRecordById(String recordType,
+                            String[] recordIds,
+                            RecordFetchResponseHandler<RecordResult<Record>[]> handler);
 
 public abstract class RecordQueryResponseHandler implements ResponseHandler {
     public void onQuerySuccess(Record[] records) {}
@@ -79,9 +97,42 @@ public abstract class RecordQueryResponseHandler implements ResponseHandler {
     public abstract void onQueryError(Error error);
 }
 
-public void fetchRecordById(String recordType, String recordId, RecordFetchResponseHandler handler);
-public void fetchRecordById(String recordType, String[] recordIds, RecordFetchResponseHandler handler);
 public void query(Query query, RecordQueryResponseHandler handler);
+```
+
+##### Fetch api example
+
+```java
+// fetch single record
+skygear.getPublicDatabase().fetchRecordById("note", "uuid1", new RecordFetchResponseHandler<RecordResult<Record>>() {
+    @Override
+    public void onFetchSuccess(Record result) {
+        Log.d("Fetched record", "id: " + result.id);
+    }
+
+    @Override
+    public void onFetchError(Error error) {
+
+    }
+});
+
+// fetch multiple records
+skygear.getPublicDatabase().fetchRecordById("note", new String[]{"uuid1"}, new RecordFetchResponseHandler<RecordResult<Record>>() {
+    @Override
+    public void onFetchSuccess(RecordResult<Record>[] result) {
+        for (RecordResult<Record> eachResult: result) {
+            if (eachResult.error != null) {
+                Record record = eachResult.value;
+                Log.d("Fetched record", "id: " + record.id);
+            }
+        }
+    }
+
+    @Override
+    public void onFetchError(Error error) {
+
+    }
+});
 ```
 
 #### JS
@@ -169,19 +220,25 @@ public void saveAtomically(Record[] records, RecordSaveResponseHandler handler);
 ##### New
 
 ```java
-public abstract class RecordSaveResponseHandler implements ResponseHandler {
-    public abstract void onSaveSuccess(Record[] records);
+public abstract class RecordSaveResponseHandler<T> implements ResponseHandler {
+    public abstract void onSaveSuccess(T records);
     public abstract void onSaveFail(Error error);
+}
+
+public void save(Record record, RecordSaveResponseHandler<Record> handler);
+public void save(Record[] records, RecordSaveResponseHandler<Record[]> handler);
+
+// Generic RecordResult object for fetch, non-atomic save and delete
+public class RecordResult<T> {
+    public final T value;
+    public final Error error;
 }
 
 public abstract class RecordNonAtomicSaveResponseHandler implements ResponseHandler {
-    public abstract void onSaveSuccess(Record[] records);
-    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+    public abstract void onSaveSuccess(RecordResult<Record> results);
     public abstract void onSaveFail(Error error);
 }
 
-public void save(Record record, RecordSaveResponseHandler handler);
-public void save(Record[] records, RecordSaveResponseHandler handler);
 public void saveNonAtomically(Record[] records, RecordNonAtomicSaveResponseHandler handler);
 ```
 
@@ -279,19 +336,36 @@ public void delete(Record[] records, RecordDeleteResponseHandler handler);
 ##### New
 
 ```java
-public abstract class RecordDeleteResponseHandler implements ResponseHandler {
-    public abstract void onDeleteSuccess(String[] ids);
+public abstract class RecordDeleteResponseHandler<T> implements ResponseHandler {
+    /**
+    *
+    * @param result record id or ids
+    *
+    **/
+    public abstract void onDeleteSuccess(T result);
     public abstract void onDeleteFail(Error error);
+}
+
+public void delete(Record record, RecordDeleteResponseHandler<String> handler);
+public void delete(Record[] records, RecordDeleteResponseHandler<String[]> handler);
+
+
+// Generic RecordResult object for fetch, non-atomic save and delete
+public class RecordResult<T> {
+    public final T value;
+    public final Error error;
 }
 
 public abstract class RecordNonAtomicDeleteResponseHandler implements ResponseHandler {
-    public abstract void onDeleteSuccess(String[] ids);
-    public abstract void onDeletePartialSuccess(String[] ids, Map<String, Error> errors);
+    /**
+    *
+    * @param results for record delete successfully, result.value will be recordID
+    *
+    **/
+    public abstract void onDeleteSuccess(RecordResult<String>[] results);
     public abstract void onDeleteFail(Error error);
 }
 
-public void delete(Record record, RecordDeleteResponseHandler handler);
-public void delete(Record[] records, RecordDeleteResponseHandler handler);
 public void deleteNonAtomically(Record[] records, RecordNonAtomicDeleteResponseHandler handler);
 ```
 
