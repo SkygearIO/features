@@ -92,6 +92,20 @@ public class SKYQueryResult {
 }
 
 public abstract class RecordFetchResponseHandler implements ResponseHandler {
+    /**
+    * Override this function when fetching single record
+    *
+    * @param {FetchRecordResult} fetch record result
+    *
+    **/
+    public void onFetchSuccess(FetchRecordResult result) {}
+
+    /**
+    * Override this function when fetching multiple records
+    *
+    * @param {FetchRecordResult[]} fetch records result
+    *
+    **/
     public void onFetchSuccess(FetchRecordResult[] results) {}
     public abstract void onFetchError(Error error);
 }
@@ -216,7 +230,21 @@ public class SaveRecordResult {
 }
 
 public abstract class RecordSaveResponseHandler implements ResponseHandler {
-    public abstract void onSaveSuccess(Record[] records);
+    /**
+    * Override this function when saving single record
+    *
+    * @param {Record} saved record
+    *
+    **/
+    public void onSaveSuccess(Record record) {}
+
+    /**
+    * Override this function when saving multiple records
+    *
+    * @param {Record[]} saved records
+    *
+    **/
+    public void onSaveSuccess(Record[] records) {}
     public abstract void onSaveFail(Error error);
 }
 
@@ -338,7 +366,21 @@ public class DeleteRecordResult {
 }
 
 public abstract class RecordDeleteResponseHandler implements ResponseHandler {
-    public abstract void onDeleteSuccess(String[] ids);
+    /**
+    * Override this function when deleting single record
+    *
+    * @param {String} deleted record id
+    *
+    **/
+    public void onDeleteSuccess(String id) {}
+
+    /**
+    * Override this function when deleting multiple records
+    *
+    * @param {String[]} deleted records id
+    *
+    **/
+    public void onDeleteSuccess(String[] ids) {}
     public abstract void onDeleteFail(Error error);
 }
 
