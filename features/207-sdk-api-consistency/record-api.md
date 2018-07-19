@@ -32,23 +32,29 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 
 ```objc
 - (void)performQuery:(SKYQuery *)query
-    completionHandler:
-        (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completionHandler;
+          completion:
+            (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completion;
 
 - (void)performCachedQuery:(SKYQuery *)query
-         completionHandler:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
-                                              NSError *_Nullable error))completionHandler;
+                completion:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
+                                              NSError *_Nullable error))completion;
 
 - (void)fetchRecordWithType:(NSString *)recordType
                    recordID:(NSString *)recordID
-          completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
+                 completion:(void (^_Nullable)(SKYRecord *_Nullable record,
+                                               NSError *_Nullable error))completion;
+
+@interface SKYFetchResult
+
+@property (nonatomic, readonly) SKYRecord *_Nullable record;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
 
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
-                                      NSError *operationError))completionHandler
-      perRecordErrorHandler:(void (^)(NSString *recordID,
-                                      NSError *error))errorHandler;
+                  completion:(void (^)(NSArray<SKYFetchResult*> *results,
+                                       NSError *operationError))completion;
 ```
 
 #### Android
@@ -191,13 +197,20 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
         completion:(SKYRecordSaveCompletion)completion;
 
 - (void)saveRecords:(NSArray<SKYRecord *> *)records
-        completionHandler:(void (^)(NSArray *savedRecords,
-                                    NSError *operationError))completionHandler;
+         completion:(void (^)(NSArray *savedRecords,
+                              NSError *operationError))completion;
+
+
+@interface SKYNonAtomicSaveResult
+
+@property (nonatomic, readonly) SKYRecord *_Nullable record;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
 
 - (void)saveRecordsNonAtomically:(NSArray<SKYRecord *> *)records
-               completionHandler:(void (^)(NSArray *savedRecords,
-                                           NSError *operationError))completionHandler
-           perRecordErrorHandler:(void (^)(SKYRecord * record, NSError * error))errorHandler;
+                      completion:(void (^)(NSArray<SKYNonAtomicSaveResult*> *results,
+                                           NSError *operationError))completion;
 ```
 
 #### Android
@@ -300,22 +313,26 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
 ```objc
 - (void)deleteRecordWithType:(NSString *)recordType
                     recordID:(NSString *)recordID
-           completionHandler:(void (^_Nullable)(NSString *_Nullable recordID,
-                                                NSError *_Nullable error))completionHandler;
+                  completion:(void (^_Nullable)(NSString *_Nullable recordID,
+                                                NSError *_Nullable error))completion;
 
 - (void)deleteRecordsWithType:(NSString *)recordType
                     recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
-                                                NSError *_Nullable error))completionHandler;
+                   completion:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
+                                                 NSError *_Nullable error))completion;
+
+@interface SKYNonAtomicDeleteResult
+
+@property (nonatomic, readonly) String *_Nullable recordID;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
 
 - (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
-                         completionHandler:
-                            (void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
-                                               NSError *_Nullable error))completionHandler
-                     perRecordErrorHandler:
-                         (void (^_Nullable)(NSString *_Nullable recordID,
-                                             NSError *_Nullable error))errorHandler;
+                                completion:
+                            (void (^_Nullable)(NSArray<SKYNonAtomicDeleteResult*> *_Nullable results,
+                                               NSError *_Nullable error))completion;
 ```
 
 #### Android
