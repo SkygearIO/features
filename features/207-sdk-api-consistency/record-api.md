@@ -54,7 +54,21 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
                   completion:(void (^)(NSArray<SKYFetchResult*> *results,
-                                       NSError *operationError))completion;
+                                       NSError *operationError))completion NS_REFINED_FOR_SWIFT;
+```
+
+```swift
+enum RecordResult<T> {
+    case success(T)
+    case error(NSError)
+}
+
+extension SKYDatabase {
+    func fetchRecords(type: NSString,
+                      recordIDs: [NSString],
+                      completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
+    }
+}
 ```
 
 #### Android
@@ -226,7 +240,21 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
 
 - (void)saveRecordsNonAtomically:(NSArray<SKYRecord *> *)records
                       completion:(void (^)(NSArray<SKYNonAtomicSaveResult*> *results,
-                                           NSError *operationError))completion;
+                                           NSError *operationError))completion NS_REFINED_FOR_SWIFT;
+```
+
+```swift
+enum RecordResult<T> {
+    case success(T)
+    case error(NSError)
+}
+
+extension SKYDatabase {
+    func saveRecordsNonAtomically(type: NSString,
+                                  records: [SKYRecord],
+                                  completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
+    }
+}
 ```
 
 #### Android
@@ -346,7 +374,21 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
                                  recordIDs:(NSArray<NSString *> *)recordIDs
                                 completion:
                             (void (^_Nullable)(NSArray<SKYNonAtomicDeleteResult*> *_Nullable results,
-                                               NSError *_Nullable error))completion;
+                                               NSError *_Nullable error))completion NS_NS_REFINED_FOR_SWIFT;
+```
+
+```swift
+enum RecordResult<T> {
+    case success(T)
+    case error(NSError)
+}
+
+extension SKYDatabase {
+    func deleteRecordsNonAtomically(type: NSString,
+                                    recordIDs: [NSString],
+                                    completion: ([RecordResult<NSString>]?, NSError?) -> Void) {
+    }
+}
 ```
 
 #### Android
