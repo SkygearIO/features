@@ -31,24 +31,37 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 ##### New
 
 ```objc
+@interface SKYFetchRecordResult
+
+@property (nonatomic, readonly) SKYRecord *_Nullable record;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
+
+@interface SKYQueryResult
+
+@property (nonatomic, readonly) NSArray<SKYRecord*> *_Nullable records;
+@property (nonatomic, readonly) int overallCount;
+
+@end
+
 - (void)performQuery:(SKYQuery *)query
-    completionHandler:
-        (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completionHandler;
+          completion:
+            (void (^_Nullable)(SKYQueryResult *_Nullable result, NSError *_Nullable error))completion;
 
 - (void)performCachedQuery:(SKYQuery *)query
-         completionHandler:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
-                                              NSError *_Nullable error))completionHandler;
+                completion:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
+                                              NSError *_Nullable error))completion;
 
 - (void)fetchRecordWithType:(NSString *)recordType
                    recordID:(NSString *)recordID
-          completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
+                 completion:(void (^_Nullable)(SKYRecord *_Nullable record,
+                                               NSError *_Nullable error))completion;
 
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
-                                      NSError *operationError))completionHandler
-      perRecordErrorHandler:(void (^)(NSString *recordID,
-                                      NSError *error))errorHandler;
+                  completion:(void (^)(NSArray<SKYFetchRecordResult*> *results,
+                                       NSError *operationError))completion;
 ```
 
 #### Android
@@ -68,14 +81,37 @@ public void query(Query query, RecordQueryResponseHandler handler);
 ##### New
 
 ```java
+public class FetchRecordResult {
+    public final Record record;
+    public final Error error;
+}
+
+public class SKYQueryResult {
+    public final Record[] records;
+    public final Error error;
+}
+
 public abstract class RecordFetchResponseHandler implements ResponseHandler {
-    public abstract void onFetchSuccess(Map<String, Record> recordsById);
+    /**
+    * Override this function when fetching single record
+    *
+    * @param {FetchRecordResult} fetch record result
+    *
+    **/
+    public void onFetchSuccess(FetchRecordResult result) {}
+
+    /**
+    * Override this function when fetching multiple records
+    *
+    * @param {FetchRecordResult[]} fetch records result
+    *
+    **/
+    public void onFetchSuccess(FetchRecordResult[] results) {}
     public abstract void onFetchError(Error error);
 }
 
 public abstract class RecordQueryResponseHandler implements ResponseHandler {
-    public void onQuerySuccess(Record[] records) {}
-    public void onQuerySuccess(Record[] records, QueryInfo queryInfo) {}
+    public void onQuerySuccess(SKYQueryResult result);
     public abstract void onQueryError(Error error);
 }
 
@@ -89,6 +125,12 @@ public void query(Query query, RecordQueryResponseHandler handler);
 ##### Old
 
 ```ts
+class QueryResult extends Array {
+  get overallCount() {
+    return this._overallCount;
+  }
+}
+
 getRecordByID(id: string): Promise<Record>;
 
 type cachedQueryCallback = (result: QueryResult, isCached: true) => void;
@@ -98,11 +140,17 @@ query(query: Query, cacheCallback: cachedQueryCallback): Promise<QueryResult>;
 ##### New
 
 ```ts
-type FetchResult = Map<string, Record>;
+class FetchRecordResult {
+    public record: Record;
+    public error: Error;
+}
+
 /**
- * The function reject if none is found
+ * The function resolve if sdk call the operation successfully, no matter
+ * how many records can be saved. The function reject only if the whole request
+ * reject. e.g. network error
  */
-fetchRecordByID(type: string, id: string | string[]): Promise<FetchResult>;
+fetchRecordByID(type: string, id: string | string[]): Promise<FetchRecordResult[]>;
 
 type cachedQueryCallback = (result: QueryResult, isCached: true) => void;
 query(query: Query, cacheCallback: cachedQueryCallback): Promise<QueryResult>;
@@ -140,13 +188,20 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
         completion:(SKYRecordSaveCompletion)completion;
 
 - (void)saveRecords:(NSArray<SKYRecord *> *)records
-        completionHandler:(void (^)(NSArray *savedRecords,
-                                    NSError *operationError))completionHandler;
+         completion:(void (^)(NSArray *savedRecords,
+                              NSError *operationError))completion;
+
+
+@interface SKYSaveRecordResult
+
+@property (nonatomic, readonly) SKYRecord *_Nullable record;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
 
 - (void)saveRecordsNonAtomically:(NSArray<SKYRecord *> *)records
-               completionHandler:(void (^)(NSArray *savedRecords,
-                                           NSError *operationError))completionHandler
-           perRecordErrorHandler:(void (^)(SKYRecord * record, NSError * error))errorHandler;
+                      completion:(void (^)(NSArray<SKYSaveRecordResult*> *results,
+                                           NSError *operationError))completion;
 ```
 
 #### Android
@@ -169,14 +224,32 @@ public void saveAtomically(Record[] records, RecordSaveResponseHandler handler);
 ##### New
 
 ```java
+public class SaveRecordResult {
+    public final Record record;
+    public final Error error;
+}
+
 public abstract class RecordSaveResponseHandler implements ResponseHandler {
-    public abstract void onSaveSuccess(Record[] records);
+    /**
+    * Override this function when saving single record
+    *
+    * @param {Record} saved record
+    *
+    **/
+    public void onSaveSuccess(Record record) {}
+
+    /**
+    * Override this function when saving multiple records
+    *
+    * @param {Record[]} saved records
+    *
+    **/
+    public void onSaveSuccess(Record[] records) {}
     public abstract void onSaveFail(Error error);
 }
 
 public abstract class RecordNonAtomicSaveResponseHandler implements ResponseHandler {
-    public abstract void onSaveSuccess(Record[] records);
-    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+    public abstract void onSaveSuccess(SaveRecordResult[] results);
     public abstract void onSaveFail(Error error);
 }
 
@@ -201,18 +274,22 @@ save(records: Record | Record[], options: { atomic: boolean }): Promise<Record |
 ##### New
 
 ```ts
+class SaveRecordResult {
+    public record: Record;
+    public error: Error;
+}
+
 /**
  * The function resolve with a single record when input is a single record.
  * The function resolve with array when input is array.
  */
 save(records: Record | Record[]): Promise<Record | Record[]>;
 
-type NonAtomicSaveResult = Record | Error;
 /**
  * The function resolve if at least one record is save sucessfully.
  * The function reject for any operational error or no record is saved.
  */
-saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
+saveNonAtomically(records: Record[]): Promise<SaveRecordResult[]>;
 ```
 
 ### Delete
@@ -241,24 +318,28 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
 ##### New
 
 ```objc
+@interface SKYDeleteRecordResult
+
+@property (nonatomic, readonly) String *_Nullable recordID;
+@property (nonatomic, readonly) NSError *_Nullable error;
+
+@end
+
 - (void)deleteRecordWithType:(NSString *)recordType
                     recordID:(NSString *)recordID
-           completionHandler:(void (^_Nullable)(NSString *_Nullable recordID,
-                                                NSError *_Nullable error))completionHandler;
+                  completion:(void (^_Nullable)(NSString *_Nullable recordID,
+                                                NSError *_Nullable error))completion;
 
 - (void)deleteRecordsWithType:(NSString *)recordType
                     recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
-                                                NSError *_Nullable error))completionHandler;
+                   completion:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
+                                                 NSError *_Nullable error))completion;
 
 - (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
-                         completionHandler:
-                            (void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
-                                               NSError *_Nullable error))completionHandler
-                     perRecordErrorHandler:
-                         (void (^_Nullable)(NSString *_Nullable recordID,
-                                             NSError *_Nullable error))errorHandler;
+                                completion:
+                            (void (^_Nullable)(NSArray<SKYDeleteRecordResult*> *_Nullable results,
+                                               NSError *_Nullable error))completion;
 ```
 
 #### Android
@@ -279,14 +360,32 @@ public void delete(Record[] records, RecordDeleteResponseHandler handler);
 ##### New
 
 ```java
+public class DeleteRecordResult {
+    public final String recordID;
+    public final Error error;
+}
+
 public abstract class RecordDeleteResponseHandler implements ResponseHandler {
-    public abstract void onDeleteSuccess(String[] ids);
+    /**
+    * Override this function when deleting single record
+    *
+    * @param {String} deleted record id
+    *
+    **/
+    public void onDeleteSuccess(String id) {}
+
+    /**
+    * Override this function when deleting multiple records
+    *
+    * @param {String[]} deleted records id
+    *
+    **/
+    public void onDeleteSuccess(String[] ids) {}
     public abstract void onDeleteFail(Error error);
 }
 
 public abstract class RecordNonAtomicDeleteResponseHandler implements ResponseHandler {
-    public abstract void onDeleteSuccess(String[] ids);
-    public abstract void onDeletePartialSuccess(String[] ids, Map<String, Error> errors);
+    public abstract void onDeleteSuccess(DeleteRecordResult[] results);
     public abstract void onDeleteFail(Error error);
 }
 
@@ -314,16 +413,20 @@ del(records: Record | Record[] | QueryResult): Promise<DeleteResult | DeleteResu
 ##### New
 
 ```ts
-del(records: Record | Record[] | QueryResult): Promise<undefined>;
+class DeleteRecordResult {
+    public recordID: String;
+    public error: Error;
+}
+
+del(records: Record | Record[] | QueryResult): Promise<String | String[]>;
 // alias to
 // delete(records: Record | Record[] | QueryResult): Promise<undefined>;
 
-type NonAtomicDeleteResult = Error | undefined;
 /**
  * The function resolve if at least one record is deleted sucessfully.
  * The function reject for any operational error or no record is deleted.
  */
-delNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
+delNonAtomically(records: Record[] | QueryResult): Promise<DeleteRecordResult[]>;
 // alias to
-// deleteNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
+// deleteNonAtomically(records: Record[] | QueryResult): Promise<DeleteRecordResult[]>;
 ```
