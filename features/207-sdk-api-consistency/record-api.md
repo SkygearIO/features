@@ -9,9 +9,16 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 ##### Old
 
 ```objc
+@interface SKYQueryInfo
+
+@property (nonatomic, readonly) int overallCount;
+
+@end
+
 - (void)performQuery:(SKYQuery *)query
-    completionHandler:
-        (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completionHandler;
+    completionHandler:(void (^_Nullable)(NSArray *_Nullable results,
+                                         SKYQueryInfo *_Nullable queryInfo,
+                                         NSError *_Nullable error))completionHandler;
 
 - (void)performCachedQuery:(SKYQuery *)query
          completionHandler:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
