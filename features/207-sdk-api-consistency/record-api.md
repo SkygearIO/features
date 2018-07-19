@@ -38,9 +38,16 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 
 @end
 
+@interface SKYQueryResult
+
+@property (nonatomic, readonly) NSArray<SKYRecord*> *_Nullable records;
+@property (nonatomic, readonly) int overallCount;
+
+@end
+
 - (void)performQuery:(SKYQuery *)query
           completion:
-            (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completion;
+            (void (^_Nullable)(SKYQueryResult *_Nullable result, NSError *_Nullable error))completion;
 
 - (void)performCachedQuery:(SKYQuery *)query
                 completion:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
@@ -79,14 +86,18 @@ public class FetchRecordResult {
     public final Error error;
 }
 
+public class SKYQueryResult {
+    public final Record[] records;
+    public final Error error;
+}
+
 public abstract class RecordFetchResponseHandler implements ResponseHandler {
     public void onFetchSuccess(FetchRecordResult[] results) {}
     public abstract void onFetchError(Error error);
 }
 
 public abstract class RecordQueryResponseHandler implements ResponseHandler {
-    public void onQuerySuccess(Record[] records) {}
-    public void onQuerySuccess(Record[] records, QueryInfo queryInfo) {}
+    public void onQuerySuccess(SKYQueryResult result);
     public abstract void onQueryError(Error error);
 }
 
@@ -100,6 +111,12 @@ public void query(Query query, RecordQueryResponseHandler handler);
 ##### Old
 
 ```ts
+class QueryResult extends Array {
+  get overallCount() {
+    return this._overallCount;
+  }
+}
+
 getRecordByID(id: string): Promise<Record>;
 
 type cachedQueryCallback = (result: QueryResult, isCached: true) => void;
