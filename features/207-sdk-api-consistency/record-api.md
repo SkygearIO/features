@@ -146,6 +146,12 @@ skygear.getPublicDatabase().fetchRecordById("note", new String[]{"uuid1"}, new R
 ##### Old
 
 ```ts
+class QueryResult extends Array {
+  get overallCount() {
+    return this._overallCount;
+  }
+}
+
 getRecordByID(id: string): Promise<Record>;
 
 type cachedQueryCallback = (result: QueryResult, isCached: true) => void;
@@ -155,12 +161,22 @@ query(query: Query, cacheCallback: cachedQueryCallback): Promise<QueryResult>;
 ##### New
 
 ```ts
-type FetchResult = Map<string, Record>;
+type FetchResult = Record | Error;
 /**
  * The function reject if none is found
  */
-fetchRecordByID(type: string, id: string | string[]): Promise<FetchResult>;
+fetchRecordByID(type: string, id: string): Promise<Record>;
+/**
+ * The function resolve with individual record not found error.
+ * The function reject only for operational error e.g. network or server error.
+ */
+fetchRecordsByID(type: string, id: string[]): Promise<FetchResult[]>;
 
+class QueryResult extends Array {
+  get overallCount() {
+    return this._overallCount;
+  }
+}
 type cachedQueryCallback = (result: QueryResult, isCached: true) => void;
 query(query: Query, cacheCallback: cachedQueryCallback): Promise<QueryResult>;
 ```
@@ -271,16 +287,14 @@ save(records: Record | Record[], options: { atomic: boolean }): Promise<Record |
 ##### New
 
 ```ts
-/**
- * The function resolve with a single record when input is a single record.
- * The function resolve with array when input is array.
- */
-save(records: Record | Record[]): Promise<Record | Record[]>;
+saveRecord(record: Record): Promise<Record>;
+saveRecords(records: Record[]): Promise<Record[]>;
 
 type NonAtomicSaveResult = Record | Error;
 /**
- * The function resolve if at least one record is save sucessfully.
- * The function reject for any operational error or no record is saved.
+ * The function resolve with individual record cannot be saved error.
+ * The function reject only for operational error e.g. network or server error
+ *
  */
 saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
 ```
@@ -405,16 +419,13 @@ del(records: Record | Record[] | QueryResult): Promise<DeleteResult | DeleteResu
 ##### New
 
 ```ts
-del(records: Record | Record[] | QueryResult): Promise<undefined>;
-// alias to
-// delete(records: Record | Record[] | QueryResult): Promise<undefined>;
+deleteRecord(record: Record): Promise<String>;
+deleteRecords(records: Record[] | QueryResult): Promise<String[]>;
 
-type NonAtomicDeleteResult = Error | undefined;
+type NonAtomicDeleteResult = String | Error;
 /**
- * The function resolve if at least one record is deleted sucessfully.
- * The function reject for any operational error or no record is deleted.
+ * The function resolve with individual record is not deleted error.
+ * The function reject only for operational error e.g. network or server error.
  */
-delNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
-// alias to
-// deleteNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
+deleteRecordsNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
 ```
