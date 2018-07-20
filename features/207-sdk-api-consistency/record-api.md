@@ -185,7 +185,7 @@ fetchRecordByID(type: string, id: string): Promise<Record>;
  * The function resolve with individual record not found error.
  * The function reject only for operational error e.g. network or server error.
  */
-fetchRecordsByID(type: string, id: string[]): Promise<FetchResult[]>;
+fetchRecordsByID(type: string, ids: string[]): Promise<FetchResult[]>;
 
 class QueryResult extends Array {
   get overallCount() {
@@ -353,6 +353,9 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
 
 ##### New
 
+- Deleted record is an `SKYRecord` Object that contain `recordID`, `recordType` and `deleted`,
+`deleted` is `true` and the other part of record is empty.
+
 ```objc
 - (void)deleteRecordWithType:(NSString *)recordType
                     recordID:(NSString *)recordID
@@ -364,6 +367,14 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
                    completion:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
                                                  NSError *_Nullable error))completion;
 
+- (void)deleteRecord:(SKYRecord *)record
+          completion:(void (^_Nullable)(SKYRecord *_Nullable deleteRecord,
+                                        NSError *_Nullable error))completion;
+
+- (void)deleteRecords:(NSArray<SKYRecord*> *)records
+           completion:(void (^_Nullable)(NSArray *_Nullable deleteRecords,
+                                         NSError *_Nullable error))completion;
+
 // Generic RecordResult object for fetch, non-atomic save and delete
 @interface SKYRecordResult<ObjectType> : NSObject
 
@@ -371,13 +382,17 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
 @property (nonatomic, readonly) NSError* error;
 
 @end
-
 // results contain deleted record id
 - (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
                                 completion:(void (^_Nullable)(
                                     NSArray<SKYRecordResult<NSString*>*> *_Nullable results,
                                     NSError *_Nullable error))completion NS_NS_REFINED_FOR_SWIFT;
+
+// results contain deleted record
+- (void)deleteRecordsNonAtomically:(NSArray<SKYRecord *> *)records
+                        completion:(void (^_Nullable)(NSArray<SKYRecordResult<Record*>*> *_Nullable results,
+                                                      NSError *_Nullable error))completion NS_NS_REFINED_FOR_SWIFT;
 ```
 
 ```swift
@@ -390,6 +405,10 @@ extension SKYDatabase {
     func deleteRecordsNonAtomically(type: NSString,
                                     recordIDs: [NSString],
                                     completion: ([RecordResult<NSString>]?, NSError?) -> Void) {
+    }
+
+    func deleteRecordsNonAtomically(records: [SKYRecords],
+                                    completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
     }
 }
 ```
@@ -411,6 +430,9 @@ public void delete(Record[] records, RecordDeleteResponseHandler handler);
 
 ##### New
 
+- Deleted record is an `Record` Object that contain `id`, `type` and `deleted`,
+`deleted` is `true` and the other part of record is empty.
+
 ```java
 public abstract class RecordDeleteResponseHandler<T> implements ResponseHandler {
     /**
@@ -422,8 +444,10 @@ public abstract class RecordDeleteResponseHandler<T> implements ResponseHandler 
     public abstract void onDeleteFail(Error error);
 }
 
-public void delete(Record record, RecordDeleteResponseHandler<String> handler);
-public void delete(Record[] records, RecordDeleteResponseHandler<String[]> handler);
+public void delete(String type, String recordID, RecordDeleteResponseHandler<String> handler);
+public void delete(String type, String[] recordIDs, RecordDeleteResponseHandler<String[]> handler);
+public void delete(Record record, RecordDeleteResponseHandler<Record> handler);
+public void delete(Record[] records, RecordDeleteResponseHandler<Record[]> handler);
 
 
 // Generic RecordResult object for fetch, non-atomic save and delete
@@ -432,17 +456,18 @@ public class RecordResult<T> {
     public final Error error;
 }
 
-public abstract class RecordNonAtomicDeleteResponseHandler implements ResponseHandler {
+public abstract class RecordNonAtomicDeleteResponseHandler<T> implements ResponseHandler {
     /**
     *
     * @param results for record delete successfully, result.value will be recordID
     *
     **/
-    public abstract void onDeleteSuccess(RecordResult<String>[] results);
+    public abstract void onDeleteSuccess(RecordResult<T>[] results);
     public abstract void onDeleteFail(Error error);
 }
 
-public void deleteNonAtomically(Record[] records, RecordNonAtomicDeleteResponseHandler handler);
+public void deleteNonAtomically(String[] recordIDs, RecordNonAtomicDeleteResponseHandler<String> handler);
+public void deleteNonAtomically(Record[] records, RecordNonAtomicDeleteResponseHandler<Record> handler);
 ```
 
 #### JS
@@ -463,14 +488,22 @@ del(records: Record | Record[] | QueryResult): Promise<DeleteResult | DeleteResu
 
 ##### New
 
-```ts
-deleteRecord(record: Record): Promise<String>;
-deleteRecords(records: Record[] | QueryResult): Promise<String[]>;
+- Deleted record is an `Record` Object that contain `_recordID`, `_recordType` and `deleted`,
+`deleted` is `true` and the other part of record is empty.
 
-type NonAtomicDeleteResult = String | Error;
+```ts
+deleteRecordByID(type: string, id: string): Promise<String>;
+deleteRecordsByID(type: string, ids: string[]): Promise<String[]>;
+
+deleteRecord(record: Record): Promise<Record>;
+deleteRecords(records: Record[] | QueryResult): Promise<Record[]>;
+
+type NonAtomicDeleteByIDResult = String | Error;
+type NonAtomicDeleteResult = Record | Error;
 /**
  * The function resolve with individual record is not deleted error.
  * The function reject only for operational error e.g. network or server error.
  */
+deleteRecordsByIDNonAtomically(type: string, ids: Record[] | QueryResult): Promise<NonAtomicDeleteByIDResult[]>;
 deleteRecordsNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
 ```
