@@ -44,16 +44,17 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
                  completion:(void (^_Nullable)(SKYRecord *_Nullable record,
                                                NSError *_Nullable error))completion;
 
-@interface SKYFetchResult
+// Generic RecordResult object for fetch, non-atomic save and delete
+@interface SKYRecordResult<ObjectType> : NSObject
 
-@property (nonatomic, readonly) SKYRecord *_Nullable record;
-@property (nonatomic, readonly) NSError *_Nullable error;
+@property (nonatomic, readonly) ObjectType value;
+@property (nonatomic, readonly) NSError* error;
 
 @end
 
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-                  completion:(void (^)(NSArray<SKYFetchResult*> *results,
+                  completion:(void (^)(NSArray<SKYRecordResult<SKYRecord*>*> *results,
                                        NSError *operationError))completion NS_REFINED_FOR_SWIFT;
 ```
 
@@ -230,16 +231,16 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
          completion:(void (^)(NSArray *savedRecords,
                               NSError *operationError))completion;
 
+// Generic RecordResult object for fetch, non-atomic save and delete
+@interface SKYRecordResult<ObjectType> : NSObject
 
-@interface SKYNonAtomicSaveResult
-
-@property (nonatomic, readonly) SKYRecord *_Nullable record;
-@property (nonatomic, readonly) NSError *_Nullable error;
+@property (nonatomic, readonly) ObjectType value;
+@property (nonatomic, readonly) NSError* error;
 
 @end
 
 - (void)saveRecordsNonAtomically:(NSArray<SKYRecord *> *)records
-                      completion:(void (^)(NSArray<SKYNonAtomicSaveResult*> *results,
+                      completion:(void (^)(NSArray<SKYRecordResult<SKYRecord*>*> *results,
                                            NSError *operationError))completion NS_REFINED_FOR_SWIFT;
 ```
 
@@ -363,22 +364,24 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
                    completion:(void (^_Nullable)(NSArray *_Nullable deletedRecordIDs,
                                                  NSError *_Nullable error))completion;
 
-@interface SKYNonAtomicDeleteResult
+// Generic RecordResult object for fetch, non-atomic save and delete
+@interface SKYRecordResult<ObjectType> : NSObject
 
-@property (nonatomic, readonly) String *_Nullable recordID;
-@property (nonatomic, readonly) NSError *_Nullable error;
+@property (nonatomic, readonly) ObjectType value;
+@property (nonatomic, readonly) NSError* error;
 
 @end
 
+// results contain deleted record id
 - (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
-                                completion:
-                            (void (^_Nullable)(NSArray<SKYNonAtomicDeleteResult*> *_Nullable results,
-                                               NSError *_Nullable error))completion NS_NS_REFINED_FOR_SWIFT;
+                                completion:(void (^_Nullable)(
+                                    NSArray<SKYRecordResult<NSString*>*> *_Nullable results,
+                                    NSError *_Nullable error))completion NS_NS_REFINED_FOR_SWIFT;
 ```
 
 ```swift
-enum RecordResult<T> {
+enum SKYRecordResult<T> {
     case success(T)
     case error(NSError)
 }
