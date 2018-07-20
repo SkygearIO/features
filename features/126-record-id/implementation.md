@@ -258,7 +258,7 @@ public abstract class RecordSaveResponseHandler implements ResponseHandler {
 public abstract class RecordDeleteResponseHandler implements ResponseHandler {
 
     ...
-    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+    public abstract void onDeletePartialSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
 }
 
 // new
@@ -266,14 +266,14 @@ public abstract class RecordSaveResponseHandler implements ResponseHandler {
 
     ...
 
-    public abstract void onPartiallySaveSuccess(Record[] successRecords, Error[] errors);
+    public abstract void onPartialSaveSuccess(Record[] successRecords, Error[] errors);
 }
 
 public abstract class RecordDeleteResponseHandler implements ResponseHandler {
 
     ...
 
-    public abstract void onDeletePartialSuccess(String[] ids, Error[] errors);
+    public abstract void onPartialDeleteSuccess(String[] ids, Error[] errors);
 }
 ```
 
