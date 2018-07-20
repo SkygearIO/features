@@ -1,5 +1,10 @@
 # Removing `type/` from APIs
 
+This document focus on removing `type/` from the record object, all apis are not
+in the latest version. For the completed spec for record apis, please refer to:
+
+https://github.com/SkygearIO/features/blob/master/features/207-sdk-api-consistency/record-api.md
+
 ## Record Payload
 
 ```json
