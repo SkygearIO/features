@@ -387,7 +387,7 @@ NS_SWIFT_NAME("__SKYRecordResult")
 @end
 
 // results contain deleted record id
-- (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
+- (void)deleteRecordsNonAtomicallyWithType:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
                                 completion:(void (^_Nullable)(
                                     NSArray<SKYRecordResult<NSString*>*> *_Nullable results,
@@ -508,6 +508,6 @@ type NonAtomicDeleteResult = Record | Error;
  * The function resolve with individual record is not deleted error.
  * The function reject only for operational error e.g. network or server error.
  */
-deleteRecordsByIDNonAtomically(type: string, ids: Record[] | QueryResult): Promise<NonAtomicDeleteByIDResult[]>;
+deleteRecordsNonAtomicallyByID(type: string, ids: Record[] | QueryResult): Promise<NonAtomicDeleteByIDResult[]>;
 deleteRecordsNonAtomically(records: Record[] | QueryResult): Promise<NonAtomicDeleteResult[]>;
 ```
