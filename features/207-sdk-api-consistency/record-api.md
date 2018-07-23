@@ -45,6 +45,7 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
                                                NSError *_Nullable error))completion;
 
 // Generic RecordResult object for fetch, non-atomic save and delete
+NS_SWIFT_NAME("__SKYRecordResult")
 @interface SKYRecordResult<ObjectType> : NSObject
 
 @property (nonatomic, readonly) ObjectType value;
@@ -59,7 +60,7 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 ```
 
 ```swift
-enum RecordResult<T> {
+enum SKYRecordResult<T> {
     case success(T)
     case error(NSError)
 }
@@ -67,7 +68,7 @@ enum RecordResult<T> {
 extension SKYDatabase {
     func fetchRecords(type: NSString,
                       recordIDs: [NSString],
-                      completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
+                      completion: ([SKYRecordResult<SKYRecord>]?, NSError?) -> Void) {
     }
 }
 ```
@@ -232,6 +233,7 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
                               NSError *operationError))completion;
 
 // Generic RecordResult object for fetch, non-atomic save and delete
+NS_SWIFT_NAME("__SKYRecordResult")
 @interface SKYRecordResult<ObjectType> : NSObject
 
 @property (nonatomic, readonly) ObjectType value;
@@ -245,7 +247,7 @@ typedef void (^SKYRecordSaveCompletion)(SKYRecord *record, NSError *error);
 ```
 
 ```swift
-enum RecordResult<T> {
+enum SKYRecordResult<T> {
     case success(T)
     case error(NSError)
 }
@@ -253,7 +255,7 @@ enum RecordResult<T> {
 extension SKYDatabase {
     func saveRecordsNonAtomically(type: NSString,
                                   records: [SKYRecord],
-                                  completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
+                                  completion: ([SKYRecordResult<SKYRecord>]?, NSError?) -> Void) {
     }
 }
 ```
@@ -376,12 +378,14 @@ saveNonAtomically(records: Record[]): Promise<NonAtomicSaveResult[]>;
                                          NSError *_Nullable error))completion;
 
 // Generic RecordResult object for fetch, non-atomic save and delete
+NS_SWIFT_NAME("__SKYRecordResult")
 @interface SKYRecordResult<ObjectType> : NSObject
 
 @property (nonatomic, readonly) ObjectType value;
 @property (nonatomic, readonly) NSError* error;
 
 @end
+
 // results contain deleted record id
 - (void)deleteRecordsWithTypeNonAtomically:(NSString *)recordType
                                  recordIDs:(NSArray<NSString *> *)recordIDs
@@ -404,11 +408,11 @@ enum SKYRecordResult<T> {
 extension SKYDatabase {
     func deleteRecordsNonAtomically(type: NSString,
                                     recordIDs: [NSString],
-                                    completion: ([RecordResult<NSString>]?, NSError?) -> Void) {
+                                    completion: ([SKYRecordResult<NSString>]?, NSError?) -> Void) {
     }
 
     func deleteRecordsNonAtomically(records: [SKYRecords],
-                                    completion: ([RecordResult<SKYRecord>]?, NSError?) -> Void) {
+                                    completion: ([SKYRecordResult<SKYRecord>]?, NSError?) -> Void) {
     }
 }
 ```
@@ -488,8 +492,8 @@ del(records: Record | Record[] | QueryResult): Promise<DeleteResult | DeleteResu
 
 ##### New
 
-- Deleted record is an `Record` Object that contain `_recordID`, `_recordType` and `deleted`,
-`deleted` is `true` and the other part of record is empty.
+- Deleted record is an `Record` Object that contain `_recordID`, `_recordType` and `_deleted`,
+`_deleted` is `true` and the other part of record is empty.
 
 ```ts
 deleteRecordByID(type: string, id: string): Promise<String>;
