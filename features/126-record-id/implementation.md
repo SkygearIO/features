@@ -1,5 +1,10 @@
 # Removing `type/` from APIs
 
+This document focus on removing `type/` from the record object, all apis are not
+in the latest version. For the completed spec for record apis, please refer to:
+
+https://github.com/SkygearIO/features/blob/master/features/207-sdk-api-consistency/record-api.md
+
 ## Record Payload
 
 ```json
@@ -77,7 +82,7 @@
 This illustrates how the convenient methods will change. The SKYOperation APIs
 will be updated as well but not illustrated here.
 
-The Record fetch and delete APIs are changed substantially:
+The Record fetch, save and delete APIs are changed substantially:
 
 ```obj-c
 // Old
@@ -87,7 +92,7 @@ The Record fetch and delete APIs are changed substantially:
 // New
 - (void)fetchRecordWithType:(NSString *)recordType
                    recordID:(NSString *)recordID
-          completionHandler:(void (^)(SKYRecord *record, NSError *error))completionHandler;
+                 completion:(void (^)(SKYRecord *record, NSError *error))completion;
 
 // Old
 - (void)fetchRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
@@ -99,40 +104,84 @@ The Record fetch and delete APIs are changed substantially:
 // New, no longer support fetching multiple types
 - (void)fetchRecordsWithType:(NSString *)recordType
                    recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSDictionary<NSString *, SKYRecord *> *recordsByRecordID,
-                                      NSError *operationError))completionHandler
-      perRecordErrorHandler:(void (^)(NSString *recordID,
-                                      NSError *error))errorHandler;
+                  completion:(void (^)(NSArray<id> *records,
+                                       NSArray<id> *operationError))completion NS_REFINED_FOR_SWIFT;
+
+extension SKYDatabase {
+    func fetchRecords(type: NSString,
+                      recordIDs: [NSString],
+                      completion: (records: [SKYRecord?], errors: [NSError?]) -> Void) {
+        ...
+    }
+}
+
+// Old
+- (void)saveRecords:(NSArray<SKYRecord *> *)records
+        completionHandler:(void (^_Nullable)(NSArray *_Nullable savedRecords,
+                                             NSError *_Nullable operationError))completionHandler
+    perRecordErrorHandler:
+        (void (^_Nullable)(SKYRecord *_Nullable record, NSError *_Nullable error))errorHandler;
+
+- (void)saveRecordsAtomically:(NSArray<SKYRecord *> *)records
+            completionHandler:
+                (void (^_Nullable)(NSArray *_Nullable savedRecords,
+                                   NSError *_Nullable operationError))completionHandler;
+
+// New, perRecordErrorHandler will be removed
+- (void)saveRecords:(NSArray<SKYRecord *> *)records
+         completion:(void (^_Nullable)(NSArray<id> *savedRecords,
+                                       NSArray<id> *errors))completion NS_REFINED_FOR_SWIFT;
+
+extension SKYDatabase {
+    func saveRecords(_ records: [SKYRecord],
+                    completion: (savedRecord: [SKYRecord?], errors: [NSError?]) -> Void) {
+        ...
+    }
+}
+
+- (void)saveRecordsAtomically:(NSArray<SKYRecord *> *)records
+                   completion:(void (^_Nullable)(NSArray<SKYRecord *> *savedRecords,
+                                                 NSError *error))completion;
 
 // Old
 - (void)deleteRecordWithID:(SKYRecordID *)recordID
          completionHandler:(void (^)(SKYRecordID *recordID,
                                      NSError *error))completionHandler;
 
-// New
-- (void)deleteRecordWithType:(NSString *)recordType
-                    recordID:(NSString *)recordID
-           completionHandler:(void (^)(NSString *recordID,
-                                       NSError *error))completionHandler;
-
-// Old
 - (void)deleteRecordsWithIDs:(NSArray<SKYRecordID *> *)recordIDs
            completionHandler:(void (^)(NSArray *deletedRecordIDs,
                                        NSError *error))completionHandler
        perRecordErrorHandler:(void (^)(SKYRecordID *recordID,
                                        NSError *error))errorHandler;
 
-// New, no longer support deleting multiple types
+- (void)deleteRecordsWithIDsAtomically:(NSArray<SKYRecordID *> *)recordIDs
+                     completionHandler:(void (^)(NSArray *_Nullable deletedRecordIDs,
+                                                 NSError *_Nullable error))completionHandler;
+
+// New, no longer support deleting multiple types, perRecordErrorHandler will be removed
+- (void)deleteRecordWithType:(NSString *)recordType
+                    recordID:(NSString *)recordID
+                  completion:(void (^)(NSString *recordID,
+                                       NSError *error))completion;
+
 - (void)deleteRecordsWithType:(NSString *)recordType
                     recordIDs:(NSArray<NSString *> *)recordIDs
-           completionHandler:(void (^)(NSArray<NSString *> *deletedRecordIDs,
-                                       NSError *error))completionHandler
-       perRecordErrorHandler:(void (^)(NSString *recordID,
-                                       NSError *error))errorHandler;
-```
+                   completion:(void (^)(NSArray<id> *deletedRecordIDs,
+                                       NSArray<id> *errors))completion NS_REFINED_FOR_SWIFT;
 
-The record save API does not need to be changed for the purpose of this
-document.
+extension SKYDatabase {
+    func deleteRecords(type: NSString,
+                       recordIDs:[NSString],
+                       completion: (deletedRecordIDs: [NSString?], errors: [NSError?]) -> Void) {
+        ...
+    }
+}
+
+- (void)deleteRecordsWithTypeAtomically:(NSString *)recordType
+                              recordIDs:(NSArray<NSString *> *)recordIDs
+                             completion:(void (^)(NSArray<NSString *> *deletedRecordIDs,
+                                                  NSError *errors))completion;
+```
 
 The Record class will be changed as follows:
 
@@ -200,6 +249,39 @@ The SDK does not expose deprecated ID in the API. The Android SDK does not
 support fetching record by ID (need to use query API) and deletion requires
 Record object.
 
+After updating the id format, ids are not necessarily unique in single save
+request. So partially save handler will change from map to array. 
+
+```java
+// old
+public abstract class RecordSaveResponseHandler implements ResponseHandler {
+
+    ...
+    public abstract void onPartiallySaveSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+}
+
+public abstract class RecordDeleteResponseHandler implements ResponseHandler {
+
+    ...
+    public abstract void onDeletePartialSuccess(Map<String, Record> successRecords, Map<String, Error> errors);
+}
+
+// new
+public abstract class RecordSaveResponseHandler implements ResponseHandler {
+
+    ...
+
+    public abstract void onPartialSaveSuccess(Record[] successRecords, Error[] errors);
+}
+
+public abstract class RecordDeleteResponseHandler implements ResponseHandler {
+
+    ...
+
+    public abstract void onPartialDeleteSuccess(String[] ids, Error[] errors);
+}
+```
+
 ## JS SDK
 
 The `recordId` property of Record class will return Record ID instead of
@@ -220,3 +302,12 @@ console.log(note.recordType);  // 'note'
 console.log(note.recordID);  // '91c02d33-ea8a-41d3-ae6c-a87e064eaa5c'
 console.log(note.recordType);  // 'note'
 ```
+
+### Non-atomic save callback for partially save
+
+- For non-atomic save in SDKs, we will use 2 arrays to represent the result,
+array of saved records and array of errors. The length of 2 arrays will be the
+same as the length of request records. For example, if we save 10 records and
+the first two records can not be saved. The records array should have 8 records
+and the first two items will be null. The errors array will have 2 errors
+objects and the rest will be null.
