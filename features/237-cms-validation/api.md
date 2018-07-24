@@ -90,6 +90,8 @@ Type of `value` for each field type
   - `lower(value: string)`
   - `substring(value: string, from: number, to: number)`
   - `regex(value: string, regex: string)`
+  - `match_pattern(value: string, pattern: string)`
+    - e.g. `email`, `credit_card`, `url`
 - Number
 - Datetime
   - `datetime(str: string)`
@@ -98,13 +100,13 @@ Type of `value` for each field type
   - `get_year(data: datetime)`
   - `get_month(data: datetime)`
   - `get_week_of_year(data: datetime)`
-  - `get_week_of_month(data: datetime)`
-  - `get_day(data: datetime)`
+  - `get_day_of_month(data: datetime)`
   - `get_day_of_year(data: datetime)`
   - `get_day_of_week(data: datetime)`
   - `get_hour(data: datetime)`
   - `get_minute(data: datetime)`
   - `get_second(data: datetime)`
+  - TODO: Provide a complete set of date time functions, e.g. exposing `moment` functions
 - JSON
   - `get(data: json, key: string | number)`
     - return the value at key
@@ -157,7 +159,7 @@ validations:
 
 ### `pattern`
 
-Predefined regex, e.g. `email`, `creditcard`, `url`
+Call `match_pattern`, e.g. `email`, `credit_card`, `url`
 
 types: `String`
 
