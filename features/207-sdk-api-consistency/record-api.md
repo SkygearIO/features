@@ -9,16 +9,10 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 ##### Old
 
 ```objc
-@interface SKYQueryInfo
-
-@property (nonatomic, readonly) int overallCount;
-
-@end
-
 - (void)performQuery:(SKYQuery *)query
-    completionHandler:(void (^_Nullable)(NSArray *_Nullable results,
-                                         SKYQueryInfo *_Nullable queryInfo,
-                                         NSError *_Nullable error))completionHandler;
+          completion:
+            (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completion;
+
 
 - (void)performCachedQuery:(SKYQuery *)query
          completionHandler:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
@@ -38,9 +32,16 @@ https://github.com/SkygearIO/features/pull/227 is considered in this doc.
 ##### New
 
 ```objc
+@interface SKYQueryInfo
+
+@property (nonatomic, readonly) int overallCount;
+
+@end
+
 - (void)performQuery:(SKYQuery *)query
-          completion:
-            (void (^_Nullable)(NSArray *_Nullable results, NSError *_Nullable error))completion;
+    completionHandler:(void (^_Nullable)(NSArray *_Nullable results,
+                                         SKYQueryInfo *_Nullable queryInfo,
+                                         NSError *_Nullable error))completionHandler;
 
 - (void)performCachedQuery:(SKYQuery *)query
                 completion:(void (^_Nullable)(NSArray *_Nullable results, BOOL pending,
