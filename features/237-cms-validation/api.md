@@ -89,6 +89,9 @@ Type of `value` for each field type
   - `upper(value: string)`
   - `lower(value: string)`
   - `substring(value: string, from: number, to: number)`
+  - `regex(value: string, regex: string)`
+  - `match_pattern(value: string, pattern: string)`
+    - e.g. `email`, `credit_card`, `url`
 - Number
 - Datetime
   - `datetime(str: string)`
@@ -97,13 +100,13 @@ Type of `value` for each field type
   - `get_year(data: datetime)`
   - `get_month(data: datetime)`
   - `get_week_of_year(data: datetime)`
-  - `get_week_of_month(data: datetime)`
-  - `get_day(data: datetime)`
+  - `get_day_of_month(data: datetime)`
   - `get_day_of_year(data: datetime)`
   - `get_day_of_week(data: datetime)`
   - `get_hour(data: datetime)`
   - `get_minute(data: datetime)`
   - `get_second(data: datetime)`
+  - TODO: Provide a complete set of date time functions, e.g. exposing `moment` functions
 - JSON
   - `get(data: json, key: string | number)`
     - return the value at key
@@ -156,7 +159,7 @@ validations:
 
 ### `pattern`
 
-Predefined regex, e.g. `email`, `creditcard`, `url`
+Call `match_pattern`, e.g. `email`, `credit_card`, `url`
 
 types: `String`
 
@@ -210,4 +213,106 @@ validations:
 - range:
     min: 2000-01-01
     max: 2001-01-01
+```
+
+### Null value handling
+
+Cases where `null` value appears:
+
+- value cleared for `Datetime`, `Reference`, `EmbeddedReference`, `Asset` field
+- value was originally `null` and not updated when save
+
+They may produce error when calling predefined functions, since `null` is a different data type from its original data type of the field type.
+
+Null value can be eliminated by adding extra checking in the expression, but this checking will be duplicated in most expression and may complicate the expression, which makes it hard to maintain.
+
+```yaml
+# bad example
+# Error is thrown if value == null, because length requires a string or array
+- expression: length(value) > 10
+
+# example
+- expression: value == null or length(value) > 10
+```
+
+`when` config is introduced to simplify the expression.
+
+- accepts an string expression which evaluates to give boolean value, like `expression`.
+- the effective boolean expression would be: `not (when) or (expression)`
+- `when` is optional, default `when` expression: `true`
+- if `when` expression pass, `expression` will evaluate the value.
+- if `when` expression fail, the validation will pass.
+
+```yaml
+# example with 'when'
+- when: value != null
+  expression: length(value) > 10
+  # equivalent to
+  expression: not (value != null) or (length(value) > 10)
+```
+
+#### Field validation
+
+All validations, except `required`, require non null value to work.
+
+Thus we provide a default `when` config, `value != null`, for all validations except `required`.
+
+In other word, **CMS developer does NOT need to check null value themselves in field validation.**
+
+```yaml
+# example: field not required
+- type: date_time
+  validations:
+    - expression: get_year(value) >= 2000
+    - expression: get_month(value) >= 6 and get_month(value) <= 8
+
+# example: field required
+- type: date_time
+  validations:
+    - required: true  # reject null value
+    - expression: get_year(value) >= 2000
+    - expression: get_month(value) >= 6 and get_month(value) <= 8
+
+# example: field required (effectively same as above)
+- type: date_time
+  validations:
+    - expression: get_year(value) >= 2000
+    - expression: get_month(value) >= 6 and get_month(value) <= 8
+    - required: true  # reject null value
+
+# BAD example:
+- type: date_time
+  validations:
+    - expression: value != null  # this will always pass
+```
+
+#### Form validation
+
+No default value for `when` config in form validation.
+
+```yaml
+# example
+- when: get(value, "deadline") != null and get(value, "submitted_at") != null
+  expression: timestamp(get(value, "deadline")) > timestamp(get(value, "submitted_at"))
+
+# example (expression only version)
+- expression: get(value, "deadline") == null or get(value, "submitted_at") == null or timestamp(get(value, "deadline")) > timestamp(get(value, "submitted_at"))
+```
+
+#### Other use case
+
+Checking `null` value is only one use case of `when` config, CMS developer can organize the validation config by combining `when` and `expression` config, or other predefined validation config, in their own fashion.
+
+However, the original `when` config will be overwritten, thus the null value checking must be written explicitly.
+
+```yaml
+# example
+- type: string
+  validations:
+    - when: value != null and regex(value, "^admin")
+      length:
+        max: 15
+    - when: value != null and not regex(value, "^admin")
+      length:
+        max: 10
 ```
