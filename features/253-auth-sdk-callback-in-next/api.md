@@ -54,14 +54,12 @@ Followings are some concerns are known but will not be discussed in this PR.
 - [user] access auth data (roles, disabled)
 - [user] access user profile (username, email, phone number, ...)
 - [user] update user profile (username, email, phone number, ...)
-
-skip following admin scenarios temporarily:
-- ~~[admin] query other users by some predicates~~
-- ~~[admin] set other users auth data (roles, disabled)~~
+- [admin] query other users by some predicates
+- [admin] set other users auth data (roles, disabled)
 
 # Changes on SDK
 
-We consider 3 options mainly:
+## We consider three options mainly:
 
    - [**option1**] profile record is part of `currentUser`
      
@@ -80,10 +78,6 @@ We consider 3 options mainly:
      skygear.auth.currentUser['username'] = 'new-username';
      skygear.auth.currentUser.profile['phone'] = 'new-phone';
      skygear.auth.updateUser(skygear.auth.currentUser);
-     
-     // it is uncertain for now if developer saves via record gear
-     skygear.auth.currentUser.profile['username'] = 'new-username';
-     skygear.publicDB.save(skygear.auth.currentUser.profile); // ??? what should happened? should record save back to auth gear?
      ```
      
      Pros:
@@ -110,10 +104,6 @@ We consider 3 options mainly:
      skygear.auth.currentUser['username'] = 'new-username';
      skygear.auth.currentUser['phone'] = 'new-phone';
      skygear.auth.updateUser(skygear.auth.currentUser);
-     
-     // it is uncertain for now if developer saves via record gear
-     skygear.auth.currentUser['username'] = 'new-username';
-     skygear.publicDB.save(skygear.auth.currentUser.profile); // ??? what should happened?
      ```
      Pros:
      - almost sync with current design.
@@ -151,4 +141,20 @@ We consider 3 options mainly:
      Cons:
      - introduce a new data type
      - a developer may update reserved attributes, like `skygear.auth.currentUser.disabled = false`.
-     - (Ben) could be a lot of edge case especially when Cloud functions and user querying user table happens.
+     - (Ben) could be a lot of edge case especially when Cloud functions and user querying user table happens..
+
+## Some options when a developer uses record gear to save profile:
+
+It is a instant question if a developer can interact with user profile record directly (option 1 and option 2), we have following options so far:
+
+| Operation | Description | Concerns |
+| -------- | -------- | ----- |
+| Disallow | developer can only use auth gear to update user, record gear should block developer from saving reserved fields, record save should be denied.| for record gear, need to figure out how to distinguish request from auth gear. |
+| Allow | it's developer's responsibility to maintain the consistency between auth_data and user profile | a developer may feel confused and frustrated when `auth_data` doesn't sync with user profile record.
+| Allow | auth gear won't help copy auth_data to user profile record, a developer should pass profile as a parameter when signup | same as above |
+
+## SDK API user parameter supported form of each option
+
+| Option 1 | Option 2 | Option 3 |
+| -------- | -------- | -------- |
+| coreUsers<br>coreUserIDs<br>userRecords<br> userRecordIDs | userRecords<br> userRecordIDs | skUsers<br>skUserIDs |
