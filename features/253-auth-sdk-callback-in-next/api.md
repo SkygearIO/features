@@ -141,48 +141,6 @@ Followings are some concerns are known but will not be discussed in this PR.
      - since auth gear may need handle record save and implement `updateUser(<record>)` endpoint, auth gear will be coupled with record gear.
      - not sure how to handle record save directly problem.
 
-   - [**option3**] no user record, SDK will wrap it to a new `SKUser` type
-     
-     ```
-     +-------------------------------+
-     |                               |
-     |  [currentUser <SKUser>]       |
-     |  username                     |
-     |  email                        |
-     |  disabled                     |
-     |  verified                     |
-     |  phone                        |
-     |  ......                       |
-     |                               |
-     +-------------------------------+
-
-     skygear.auth.currentUser; // SKUser type
-     
-     // auth info
-     skygear.auth.currentUser.disabled;
-     skygear.auth.currentUser.verified;
-     
-     // profile info
-     const phone = skygear.auth.currentUser['phone'];
-     
-     // update record
-     skygear.auth.currentUser['username'] = 'new-username';
-     skygear.auth.currentUser['phone'] = 'new-phone';
-     skygear.auth.updateUser(skygear.auth.currentUser);
-     ```
-     
-     Pros:
-     
-     - developer won't confused with record save.
-     - it is clear to use `updateUser` API.
-     - it should be fine if record gear is not configured.
-
-
-     Cons:
-     - introduce a new data type
-     - a developer may update reserved attributes, like `skygear.auth.currentUser.disabled = false`.
-     - (Ben) could be a lot of edge case especially when Cloud functions and user querying user table happens..
-
 ## Some options when a developer uses record gear to save profile:
 
 It is a instant question if a developer can interact with user profile record directly (option 1 and option 2), we have following options so far:
@@ -195,6 +153,6 @@ It is a instant question if a developer can interact with user profile record di
 
 ## SDK API user parameter supported form of each option
 
-| Option 1 | Option 2 | Option 3 |
-| -------- | -------- | -------- |
-| coreUsers<br>coreUserIDs<br>userRecords<br> userRecordIDs | userRecords<br> userRecordIDs | skUsers<br>skUserIDs |
+| Option 1 | Option 2 |
+| -------- | -------- |
+| coreUsers<br>coreUserIDs<br>userRecords<br> userRecordIDs | userRecords<br> userRecordIDs |
