@@ -62,8 +62,26 @@ Followings are some concerns are known but will not be discussed in this PR.
 ## We consider three options mainly:
 
    - [**option1**] profile record is part of `currentUser`
-     
      ```
+     +-------------------------------+
+     |                               |
+     |  [currentUser]                |
+     |  username                     |
+     |  email                        |
+     |  disabled                     |
+     |  verified                     |
+     |  ......                       |
+     |                               |
+     |  +------------------------+   |
+     |  | [ profile <record> ]   |   |
+     |  | username               |   |
+     |  | email                  |   |
+     |  | phone                  |   |
+     |  | .....                  |   |
+     |  +------------------------+   |
+     |                               |
+     +-------------------------------+
+
      skygear.auth.currentUser; // core user + user record
      skygear.auth.currentUser.profile; // user record
      
@@ -91,6 +109,16 @@ Followings are some concerns are known but will not be discussed in this PR.
    - [**option2**] keep current design, return is a `record`
       
      ```
+     +--------------------------+
+     |                          |
+     | [ currentUser <record> ] |
+     | username                 |
+     | email                    |
+     | phone                    |
+     | .....                    |
+     |                          |
+     +--------------------------+
+
      skygear.auth.currentUser; // user record
      
      // auth info
@@ -116,6 +144,18 @@ Followings are some concerns are known but will not be discussed in this PR.
    - [**option3**] no user record, SDK will wrap it to a new `SKUser` type
      
      ```
+     +-------------------------------+
+     |                               |
+     |  [currentUser <SKUser>]       |
+     |  username                     |
+     |  email                        |
+     |  disabled                     |
+     |  verified                     |
+     |  phone                        |
+     |  ......                       |
+     |                               |
+     +-------------------------------+
+
      skygear.auth.currentUser; // SKUser type
      
      // auth info
