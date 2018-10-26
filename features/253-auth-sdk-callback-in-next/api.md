@@ -65,7 +65,7 @@ Followings are some concerns are known but will not be discussed in this PR.
      ```
      +-------------------------------+
      |                               |
-     |  [currentUser]                |
+     |  [currentUser <coreUser>]     |
      |  username                     |
      |  email                        |
      |  disabled                     |
@@ -141,18 +141,39 @@ Followings are some concerns are known but will not be discussed in this PR.
      - since auth gear may need handle record save and implement `updateUser(<record>)` endpoint, auth gear will be coupled with record gear.
      - not sure how to handle record save directly problem.
 
-## Some options when a developer uses record gear to save profile:
+## Main concerns of each option
 
-It is a instant question if a developer can interact with user profile record directly (option 1 and option 2), we have following options so far:
+### Option 1: A user may be confused which data type to use in SDK.
 
-| Operation | Description | Concerns |
+```javascript=
+// User may be confused which data type to use in SDK
+// especially for un-typed language
+// take admin reset password as an example:
+skygear.auth.adminResetPassword(user<coreUser>, newPassword);
+skygear.auth.adminResetPassword(user<userRecord>, newPassword);
+```
+
+### Option 2: When record gear isn't configured, we don't know what is the correct data type of the result object.
+```javascript=
+// It would be very weird if record gear won't configured
+// take signup as an example
+skygear.auth.signupWithUsername(username, password).then((result) => {
+    // result === null;
+    // when record gear is not configured
+});
+skygear.auth.signupWithUsername(username, password).then((result) => {
+    // result !== not null;
+    // when record gear is configured
+});
+// what data type to be passed to SDK when record is not configured?
+skygear.auth.adminResetPassword(user<???>, newPassword);
+skygear.auth.adminResetPassword(user<userRecord>, newPassword);
+```
+
+And there is an immediate question arisen if a developer can save user profile record directly, it is not easy to handle it gracefully. We have following options so far:
+
+| Result | Description | Concerns |
 | -------- | -------- | ----- |
-| Disallow | developer can only use auth gear to update user, record gear should block developer from saving reserved fields, record save should be denied.| for record gear, need to figure out how to distinguish request from auth gear. |
-| Allow | it's developer's responsibility to maintain the consistency between auth_data and user profile | a developer may feel confused and frustrated when `auth_data` doesn't sync with user profile record.
-| Allow | auth gear won't help copy auth_data to user profile record, a developer should pass profile as a parameter when signup | same as above |
-
-## SDK API user parameter supported form of each option
-
-| Option 1 | Option 2 |
-| -------- | -------- |
-| coreUsers<br>coreUserIDs<br>userRecords<br> userRecordIDs | userRecords<br> userRecordIDs |
+| Error | **a developer can only use auth gear to update user**, record gear should block developer from saving reserved fields, record save should be denied.| for record gear, need to figure out how to distinguish request from auth gear. |
+| OK | **it's developer's responsibility to maintain the consistency** between auth_data and user profile | a developer may feel confused and frustrated when `auth_data` doesn't sync with user profile record.
+| OK | **auth gear won't help copy auth_data to user profile record**, a developer should pass profile as a parameter when signup. That can help developer to understand auth_data and user record are different data. | same as above |
