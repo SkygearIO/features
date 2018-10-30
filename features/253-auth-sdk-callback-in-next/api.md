@@ -134,78 +134,31 @@ Auth gear will keep current implementation, embed user profile record in the res
 }
 ```
 
-To handle the case of record gear missing, auth gear will add an field to handle basic user profile implementation.
-
-Old:
+To handle the case of record gear missing, auth gear will add a new table to save user's profile.
 
 ```
-CREATE TABLE _core_user (
-  id text PRIMARY KEY,
-  token_valid_since timestamp without time zone,
-  last_seen_at timestamp without time zone,
-  last_login_at timestamp without time zone,
-  disabled boolean NOT NULL DEFAULT false,
-  disabled_message text,
-  disabled_expiry timestamp without time zone
+CREATE TABLE _auth_user_profile (
+  user_id text REFERENCES _core_user(id),
+  auth_data jsonb,
 );
 ```
 
-New:
-
-```
-CREATE TABLE _core_user (
-  ...
-  disabled_expiry timestamp without time zone,
-  profile jsonb
-);
-```
-
-Auth gear will also update `AuthInfo` to have a basic profile implementation:
-
+Auth gear will also have a store `SimpleUserProfileStore` which confirms `UserProfileStore` interface:
 
 Old:
 ```
-type AuthInfo struct {
-	ID              string     `json:"_id"`
-	Roles           []string   `json:"roles,omitempty"`
-	TokenValidSince *time.Time `json:"token_valid_since,omitempty"`
-	LastSeenAt      *time.Time `json:"last_seen_at,omitempty"`
-	LastLoginAt     *time.Time `json:"last_login_at,omitempty"`
-	Disabled        bool       `json:"disabled"`
-	DisabledMessage string     `json:"disabled_message,omitempty"`
-	DisabledExpiry  *time.Time `json:"disabled_expiry,omitempty"`
+type UserProfileStore interface {
+	CreateUserProfile(userProfile interface{}) error
+	GetUserProfile(userID string, userProfile *interface{}) error
 }
 ```
+
 New:
 ```
-type AuthInfo struct {
-    ....
-    Profile         []map[string]interface{} `json:"profile,omitempty"`
+type UserProfileStore interface {
+	CreateUserProfile(userProfile map[string]interface{}) error
+	GetUserProfile(userID string, userProfile *skydb.Record) error
 }
 ```
 
-When generate auth response, and record gear is missing, auth gear will generate a record-alike profile:
-
-```
-func NewAuthResponse(authInfo authinfo.AuthInfo, user skydb.Record, accessToken string) AuthResponse {
-	var jsonUser *skyconv.JSONRecord
-	var lastLoginAt *time.Time
-
-	if user.ID.Type != "" {
-	    // record is existed
-        // handle user record
-    } else {
-        // record is not existed
-        // generate JSONRecord from authInfo.profile
-    }
-
-	return AuthResponse{
-		UserID:      authInfo.ID,
-		Profile:     jsonUser,
-		Roles:       authInfo.Roles,
-		AccessToken: accessToken,
-		LastLoginAt: lastLoginAt,
-		LastSeenAt:  authInfo.LastSeenAt,
-	}
-}
-```
+`GetUserProfile` returns a profile record, and then auth gear can use it with `NewAuthResponse(...)`.
