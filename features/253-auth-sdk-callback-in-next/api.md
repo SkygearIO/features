@@ -124,13 +124,13 @@ SDK auth container will be added an API to help update user auth info:
 Auth gear will keep current implementation, embed user profile record in the response:
 
 ```
-{
-    UserID      string              `json:"user_id,omitempty"`
-    Profile     *skyconv.JSONRecord `json:"profile"`
-    Roles       []string            `json:"roles,omitempty"`
-    AccessToken string              `json:"access_token,omitempty"`
-    LastLoginAt *time.Time          `json:"last_login_at,omitempty"`
-    LastSeenAt  *time.Time          `json:"last_seen_at,omitempty"`
+type AuthResponse struct {
+	UserID      string                 `json:"user_id,omitempty"`
+	Profile     map[string]interface{} `json:"profile"`
+	Roles       []string               `json:"roles,omitempty"`
+	AccessToken string                 `json:"access_token,omitempty"`
+	LastLoginAt *time.Time             `json:"last_login_at,omitempty"`
+	LastSeenAt  *time.Time             `json:"last_seen_at,omitempty"`
 }
 ```
 
@@ -157,8 +157,20 @@ New:
 ```
 type UserProfileStore interface {
 	CreateUserProfile(userProfile map[string]interface{}) error
-	GetUserProfile(userID string, userProfile *skydb.Record) error
+	GetUserProfile(userID string, userProfile *map[string]interface{}) error
 }
 ```
 
-`GetUserProfile` returns a profile record, and then auth gear can use it with `NewAuthResponse(...)`.
+And, for `NewAuthResponse`,
+
+Old:
+
+```
+func NewAuthResponse(authInfo authinfo.AuthInfo, user skydb.Record, accessToken string) AuthResponse
+```
+
+New:
+
+```
+func NewAuthResponse(authInfo authinfo.AuthInfo, profile map[string]interface{}, accessToken string) AuthResponse
+```
