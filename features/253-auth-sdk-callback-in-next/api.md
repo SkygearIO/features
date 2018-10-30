@@ -123,6 +123,21 @@ SDK auth container will be added an API to help update user auth info:
 
 Auth gear will keep current implementation, embed user profile record in the response:
 
+Old:
+
+```
+type AuthResponse struct {
+	UserID      string              `json:"user_id,omitempty"`
+	Profile     *skyconv.JSONRecord `json:"profile"`
+	Roles       []string            `json:"roles,omitempty"`
+	AccessToken string              `json:"access_token,omitempty"`
+	LastLoginAt *time.Time          `json:"last_login_at,omitempty"`
+	LastSeenAt  *time.Time          `json:"last_seen_at,omitempty"`
+}
+```
+
+New:
+
 ```
 type AuthResponse struct {
 	UserID      string                 `json:"user_id,omitempty"`
@@ -131,6 +146,24 @@ type AuthResponse struct {
 	AccessToken string                 `json:"access_token,omitempty"`
 	LastLoginAt *time.Time             `json:"last_login_at,omitempty"`
 	LastSeenAt  *time.Time             `json:"last_seen_at,omitempty"`
+}
+```
+
+And `AuthResponse.Profile` is a marshalled JSON object:
+
+```
+{
+    "_access": null,
+    "_created_at": "<datetime>",
+    "_created_by": "<user_id>",
+    "_id": "user\/<record_id>",
+    "_ownerID": "<user_id>",
+    "_recordID": "<record_id>",
+    "_recordType": "user",
+    "_type": "record",
+    "_updated_at": "<datetime>",
+    "_updated_by": "<user_id>",
+    "email": "abc@example.com"
 }
 ```
 
@@ -161,7 +194,7 @@ type UserProfileStore interface {
 }
 ```
 
-And, for `NewAuthResponse`,
+And, use `NewAuthResponse` to generate auth response,
 
 Old:
 
