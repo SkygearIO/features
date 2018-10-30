@@ -25,155 +25,187 @@ skygear.publicDB.save(user).then((user) => {
 });
 ```
 
----
-
 In skygear next, we will have several gears, and each gear handles its own responsibility only. For user auth related functionalities, we will use two gears to handle a user's state.
 
 - auth gear
-    - It handles auth related information:
-        - user role, disable state, verify state, etc.
+    - it handles auth related information:
+        - user role, disabled state, verified state, etc.
         - principal (how a user can login, e.g. (username/email) + password)
-- record gear (optional)
-    - A general purpose gear to handle user profile
-    - Accessible by record gear only
-    - Expected to be accessed by Auth gear through public API optionally
+- record gear (optional).
+    - a general purpose gear to handle user profile.
+    - accessible by record gear only.
+    - expected to be accessed by Auth gear through public API optionally.
 
-There are some concerns arisen due to the design:
+This feature PR aims to find out a graceful design of the data type of the auth gear response object.
 
-1. since record gear is optional, what is the expected return data for the auth related API?
-2. how does a user update his own profile? especially when he tries to update his username or email that connects to auth data.
+# Glossary
 
-Followings are some concerns are known but will not be discussed in this PR.
+- skygear next: next generation skygear.
+- gear: distinct functionality component of skygear next.
+- auth gear: skygear next component for user authentication and authorization.
+- record gear: general purpose skygear next component handles record operation (CRUD).
+- profile record: a record object which handles user profile information (phone number, address, ...).
+- auth info: user authentication related information, like role, disabled state, verified state, principal.
 
-1. should auth gear support query functionality?
-2. what is the expected parameter data type when admin updates other users' info?
 
 # Scenario
 
 - [user] sign up and login
-- [user] access auth data (roles, disabled)
+- [user] access auth info (roles, disabled)
 - [user] access user profile (username, email, phone number, ...)
 - [user] update user profile (username, email, phone number, ...)
 - [admin] query other users by some predicates
-- [admin] set other users auth data (roles, disabled)
+- [admin] set other users auth info (roles, disabled)
+
+# Guideline
+
+For a developer, it's not easy to understand different data types convey similar concepts. Before skygear next, we had already found `authUser` and `UserRecord` confuse developers, both of them are considered as `user` data type and misuse them easily on SDK.
+
+So in skygear next, even though record gear is optional, we won't introduce a new `coreUser` data type, on the contrary, we will keep return data type of auth gear as `record` to reduce any possible misunderstanding. 
+
+For the case record gear is missing, auth gear will have a simple user profile implementatio by adding a json field to `_core_user` table. And it will also generate a record alike data arribute to client SDK.
+
+# Example usage on JS SDK
+
+keep current design, return data type is `record`.
+      
+```
++--------------------------+
+|                          |
+| [ currentUser <record> ] |
+| username                 |
+| email                    |
+| phone                    |
+| .....                    |
+|                          |
++--------------------------+
+
+// user record
+skygear.auth.currentUser;
+
+// current user auth info
+skygear.auth.isCurrentUserVerified;
+skygear.auth.isCurrentUserDisabled;
+
+// current user profile record
+const phone = skygear.auth.currentUser['phone'];
+
+// update record
+skygear.auth.currentUser['username'] = 'new-username';
+skygear.auth.currentUser['phone'] = 'new-phone';
+skygear.auth.updateUser(skygear.auth.currentUser);
+```
 
 # Changes on SDK
 
-## We consider three options mainly:
+Skygear next server will help generate `record` data type for SDK, therefore SDKs are expected no major changes.
 
-   - [**option1**] profile record is part of `currentUser`
-     ```
-     +-------------------------------+
-     |                               |
-     |  [currentUser <coreUser>]     |
-     |  username                     |
-     |  email                        |
-     |  disabled                     |
-     |  verified                     |
-     |  ......                       |
-     |                               |
-     |  +------------------------+   |
-     |  | [ profile <record> ]   |   |
-     |  | username               |   |
-     |  | email                  |   |
-     |  | phone                  |   |
-     |  | .....                  |   |
-     |  +------------------------+   |
-     |                               |
-     +-------------------------------+
+Such changes are occurred in server side rather than SDK because:
 
-     skygear.auth.currentUser; // core user + user record
-     skygear.auth.currentUser.profile; // user record
-     
-     // auth info
-     skygear.auth.currentUser.disabled;
-     skygear.auth.currentUser.verified;
-     
-     // profile info
-     skygear.auth.currentUser.profile['phone'];
-     
-     // update record
-     skygear.auth.currentUser['username'] = 'new-username';
-     skygear.auth.currentUser.profile['phone'] = 'new-phone';
-     skygear.auth.updateUser(skygear.auth.currentUser);
-     ```
-     
-     Pros:
-     - easy to implement.
-     - it is clear that we have two ideas here: core user and user record.
-     
-     Cons:
-     - it still conveys two ideas, core user and user record, it may confuse a developer to use which attribute when invokes auth related operations, e.g. when a user wants to update username, which one should I update? `skygear.auth.currentUser['username']` or `skygear.auth.currentUser.profile['username']`?
-     - not sure how to handle record save directly problem.
+- SDK doesn't know record gear has zero knowledge about whether record configured or not.
+- Server side implementation would apply to multiple SDKs at once.
+- Server side implementation eliminates possible errors.
 
-   - [**option2**] keep current design, return is a `record`
-      
-     ```
-     +--------------------------+
-     |                          |
-     | [ currentUser <record> ] |
-     | username                 |
-     | email                    |
-     | phone                    |
-     | .....                    |
-     |                          |
-     +--------------------------+
+SDK auth container will have following changes to fetch auth info of a user:
 
-     skygear.auth.currentUser; // user record
-     
-     // auth info
-     skygear.auth.isCurrentUserVerified;
-     skygear.auth.isCurrentUserDisabled;
-     
-     // profile info
-     const phone = skygear.auth.currentUser['phone'];
-     
-     // update record
-     skygear.auth.currentUser['username'] = 'new-username';
-     skygear.auth.currentUser['phone'] = 'new-phone';
-     skygear.auth.updateUser(skygear.auth.currentUser);
-     ```
-     Pros:
-     - almost sync with current design.
-     
-     Cons:
-     - if record gear doesn't configured, it could be very weired if API still return a record object.
-     - since auth gear may need handle record save and implement `updateUser(<record>)` endpoint, auth gear will be coupled with record gear.
-     - not sure how to handle record save directly problem.
+- properties:
+    - isCurrentUserVerified;
+    - isCurrentUserDisabled;
+- APIs:
+    - Promise<Boolean> isUserVerified(user<userRecord>);
+    - Promise<Boolean> isUserDisabled(user<userRecord>);
 
-## Main concerns of each option
+SDK auth container will be added an API to help update user auth info:
 
-### Option 1: A user may be confused which data type to use in SDK.
+- Promise<record> updateUser(user<record>);
 
-```javascript=
-// User may be confused which data type to use in SDK
-// especially for un-typed language
-// take admin reset password as an example:
-skygear.auth.adminResetPassword(user<coreUser>, newPassword);
-skygear.auth.adminResetPassword(user<userRecord>, newPassword);
+# Changes on auth gear
+
+Auth gear will keep current implementation, embed user profile record in the response:
+
+```
+{
+    UserID      string              `json:"user_id,omitempty"`
+    Profile     *skyconv.JSONRecord `json:"profile"`
+    Roles       []string            `json:"roles,omitempty"`
+    AccessToken string              `json:"access_token,omitempty"`
+    LastLoginAt *time.Time          `json:"last_login_at,omitempty"`
+    LastSeenAt  *time.Time          `json:"last_seen_at,omitempty"`
+}
 ```
 
-### Option 2: When record gear isn't configured, we don't know what is the correct data type of the result object.
-```javascript=
-// It would be very weird if record gear won't configured
-// take signup as an example
-skygear.auth.signupWithUsername(username, password).then((result) => {
-    // result === null;
-    // when record gear is not configured
-});
-skygear.auth.signupWithUsername(username, password).then((result) => {
-    // result !== not null;
-    // when record gear is configured
-});
-// what data type to be passed to SDK when record is not configured?
-skygear.auth.adminResetPassword(user<???>, newPassword);
-skygear.auth.adminResetPassword(user<userRecord>, newPassword);
+To handle the case of record gear missing, auth gear will add an field to handle basic user profile implementation.
+
+Old:
+
+```
+CREATE TABLE _core_user (
+  id text PRIMARY KEY,
+  token_valid_since timestamp without time zone,
+  last_seen_at timestamp without time zone,
+  last_login_at timestamp without time zone,
+  disabled boolean NOT NULL DEFAULT false,
+  disabled_message text,
+  disabled_expiry timestamp without time zone
+);
 ```
 
-And there is an immediate question arisen if a developer can save user profile record directly, it is not easy to handle it gracefully. We have following options so far:
+New:
 
-| Result | Description | Concerns |
-| -------- | -------- | ----- |
-| Error | **a developer can only use auth gear to update user**, record gear should block developer from saving reserved fields, record save should be denied.| for record gear, need to figure out how to distinguish request from auth gear. |
-| OK | **it's developer's responsibility to maintain the consistency** between auth_data and user profile | a developer may feel confused and frustrated when `auth_data` doesn't sync with user profile record.
-| OK | **auth gear won't help copy auth_data to user profile record**, a developer should pass profile as a parameter when signup. That can help developer to understand auth_data and user record are different data. | same as above |
+```
+CREATE TABLE _core_user (
+  ...
+  disabled_expiry timestamp without time zone,
+  profile jsonb
+);
+```
+
+Auth gear will also update `AuthInfo` to have a basic profile implementation:
+
+
+Old:
+```
+type AuthInfo struct {
+	ID              string     `json:"_id"`
+	Roles           []string   `json:"roles,omitempty"`
+	TokenValidSince *time.Time `json:"token_valid_since,omitempty"`
+	LastSeenAt      *time.Time `json:"last_seen_at,omitempty"`
+	LastLoginAt     *time.Time `json:"last_login_at,omitempty"`
+	Disabled        bool       `json:"disabled"`
+	DisabledMessage string     `json:"disabled_message,omitempty"`
+	DisabledExpiry  *time.Time `json:"disabled_expiry,omitempty"`
+}
+```
+New:
+```
+type AuthInfo struct {
+    ....
+    Profile         []map[string]interface{} `json:"profile,omitempty"`
+}
+```
+
+When generate auth response, and record gear is missing, auth gear will generate a record-alike profile:
+
+```
+func NewAuthResponse(authInfo authinfo.AuthInfo, user skydb.Record, accessToken string) AuthResponse {
+	var jsonUser *skyconv.JSONRecord
+	var lastLoginAt *time.Time
+
+	if user.ID.Type != "" {
+	    // record is existed
+        // handle user record
+    } else {
+        // record is not existed
+        // generate JSONRecord from authInfo.profile
+    }
+
+	return AuthResponse{
+		UserID:      authInfo.ID,
+		Profile:     jsonUser,
+		Roles:       authInfo.Roles,
+		AccessToken: accessToken,
+		LastLoginAt: lastLoginAt,
+		LastSeenAt:  authInfo.LastSeenAt,
+	}
+}
+```
