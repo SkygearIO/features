@@ -195,7 +195,7 @@ type UserProfileStore interface {
 New:
 ```
 type UserProfileStore interface {
-	CreateUserProfile(userProfile map[string]interface{}) error
+	CreateUserProfile(userID string, userProfile map[string]interface{}) error
 	GetUserProfile(userID string, userProfile *map[string]interface{}) error
 }
 ```
