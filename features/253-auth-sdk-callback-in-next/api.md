@@ -140,12 +140,12 @@ New:
 
 ```
 type AuthResponse struct {
-	UserID      string                 `json:"user_id,omitempty"`
-	Profile     map[string]interface{} `json:"profile"`
-	Roles       []string               `json:"roles,omitempty"`
-	AccessToken string                 `json:"access_token,omitempty"`
-	LastLoginAt *time.Time             `json:"last_login_at,omitempty"`
-	LastSeenAt  *time.Time             `json:"last_seen_at,omitempty"`
+	UserID      string                  `json:"user_id,omitempty"`
+	Profile     userprofile.UserProfile `json:"profile"`
+	Roles       []string                `json:"roles,omitempty"`
+	AccessToken string                  `json:"access_token,omitempty"`
+	LastLoginAt *time.Time              `json:"last_login_at,omitempty"`
+	LastSeenAt  *time.Time              `json:"last_seen_at,omitempty"`
 }
 ```
 
@@ -194,9 +194,33 @@ type UserProfileStore interface {
 
 New:
 ```
-type UserProfileStore interface {
-	CreateUserProfile(userID string, userProfile map[string]interface{}) error
-	GetUserProfile(userID string, userProfile *map[string]interface{}) error
+// Meta is meta data part of a user profile record
+type Meta struct {
+	ID         string                 `json:"_id"`
+	Type       string                 `json:"_type"`
+	RecordID   string                 `json:"_recordID"`
+	RecordType string                 `json:"_recordType"`
+	Access     map[string]interface{} `json:"_access"`
+	OwnerID    string                 `json:"_ownerID"`
+	CreatedAt  time.Time              `json:"_createdAt"`
+	CreatedBy  string                 `json:"_createdBy"`
+	UpdatedAt  time.Time              `json:"_updatedAt"`
+	UpdatedBy  string                 `json:"_updatedBy"`
+}
+
+// Data refers the profile info of a user,
+// like username, email, age, phone number
+type Data map[string]interface{}
+
+// UserProfile refers user profile data type
+type UserProfile struct {
+	Meta
+	Data
+}
+
+type Store interface {
+	CreateUserProfile(userID string, data Data) (UserProfile, error)
+	GetUserProfile(userID string) (UserProfile, error)
 }
 ```
 
@@ -211,5 +235,5 @@ func NewAuthResponse(authInfo authinfo.AuthInfo, user skydb.Record, accessToken 
 New:
 
 ```
-func NewAuthResponse(authInfo authinfo.AuthInfo, profile map[string]interface{}, accessToken string) AuthResponse
+func NewAuthResponse(authInfo authinfo.AuthInfo, profile userprofile.UserProfile, accessToken string) AuthResponse
 ```
