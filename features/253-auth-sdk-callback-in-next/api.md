@@ -2,7 +2,7 @@
 
 In skygear v1, auth related API in SDK often returns a `user<record>` as the result. e.g.
 
-```
+```javascript=
 skygear.auth.signupWithUsername(username, password).then((user) => {
   console.log(user); // user is an user record
   console.log(user["username"]); // username of the user
@@ -13,7 +13,7 @@ skygear.auth.signupWithUsername(username, password).then((user) => {
 
 and user can update its profile via `record` API, like:
 
-```
+```javascript=
 var user = skygear.auth.currentUser;
 user["username"] = "new-username";
 skygear.publicDB.save(user).then((user) => {
@@ -102,22 +102,33 @@ Skygear next server will help generate `record` data type for SDK, therefore SDK
 
 Such changes are occurred in server side rather than SDK because:
 
-- SDK doesn't know record gear has zero knowledge about whether record configured or not.
+- SDK have zero knowledge about whether record configured or not.
 - Server side implementation would apply to multiple SDKs at once.
 - Server side implementation eliminates possible errors.
 
-SDK auth container will have following changes to fetch auth info of a user:
+Besides user profile custom fields, for other auth related information, SDK will wrap it into corresponding properties. For example, SDK will have following properties of auth info of current user:
 
-- properties:
-    - isCurrentUserVerified;
-    - isCurrentUserDisabled;
-- APIs:
-    - Promise<Boolean> isUserVerified(user<userRecord>);
-    - Promise<Boolean> isUserDisabled(user<userRecord>);
+- `isCurrentUserVerified;`
+- `isCurrentUserDisabled;`
+- `signupAt;`
+- `lastLoginAt;`
+- `lastSeenAt;`
+- and other future added user auth info properties.
 
-SDK auth container will be added an API to help update user auth info:
+For the case for query another user's auth related information, SDK will provide corresponding APIs. For example:
 
-- Promise<record> updateUser(user<record>);
+- `Promise<Boolean> isUserVerified(user<userRecord>);`
+- `Promise<Boolean> isUserDisabled(user<userRecord>);`
+- `Promise<String> getUserSignupAt(user<userRecord>);`
+- `Promise<String> getUserLastLoginAt(user<userRecord>);`
+- `Promise<String> getUserLastSeenAt(user<userRecord>);`
+- and other future added user auth info properties API.
+
+SDK auth container will add an API to help update user auth info:
+
+- `Promise<record> updateUser(user<record>);`
+
+If a user tries to update user profile via record gear, it will get an error.
 
 # Changes on auth gear
 
@@ -125,33 +136,33 @@ Auth gear will keep current implementation, embed user profile record in the res
 
 Old:
 
-```
+```go=
 type AuthResponse struct {
-	UserID      string              `json:"user_id,omitempty"`
-	Profile     *skyconv.JSONRecord `json:"profile"`
-	Roles       []string            `json:"roles,omitempty"`
-	AccessToken string              `json:"access_token,omitempty"`
-	LastLoginAt *time.Time          `json:"last_login_at,omitempty"`
-	LastSeenAt  *time.Time          `json:"last_seen_at,omitempty"`
+  UserID      string              `json:"user_id,omitempty"`
+  Profile     *skyconv.JSONRecord `json:"profile"`
+  Roles       []string            `json:"roles,omitempty"`
+  AccessToken string              `json:"access_token,omitempty"`
+  LastLoginAt *time.Time          `json:"last_login_at,omitempty"`
+  LastSeenAt  *time.Time          `json:"last_seen_at,omitempty"`
 }
 ```
 
 New:
 
-```
+```go=
 type AuthResponse struct {
-	UserID      string                  `json:"user_id,omitempty"`
-	Profile     userprofile.UserProfile `json:"profile"`
-	Roles       []string                `json:"roles,omitempty"`
-	AccessToken string                  `json:"access_token,omitempty"`
-	LastLoginAt *time.Time              `json:"last_login_at,omitempty"`
-	LastSeenAt  *time.Time              `json:"last_seen_at,omitempty"`
+  UserID      string                  `json:"user_id,omitempty"`
+  Profile     userprofile.UserProfile `json:"profile"`
+  Roles       []string                `json:"roles,omitempty"`
+  AccessToken string                  `json:"access_token,omitempty"`
+  LastLoginAt *time.Time              `json:"last_login_at,omitempty"`
+  LastSeenAt  *time.Time              `json:"last_seen_at,omitempty"`
 }
 ```
 
 And `AuthResponse.Profile` is a marshalled JSON object:
 
-```
+```json=
 {
     "_access": null,
     "_created_at": "<datetime>",
@@ -169,7 +180,7 @@ And `AuthResponse.Profile` is a marshalled JSON object:
 
 To handle the case of record gear missing, auth gear will add a new table to save user's profile.
 
-```
+```sql=
 CREATE TABLE _auth_user_profile (
   user_id text REFERENCES _core_user(id),
   created_at timestamp without time zone NOT NULL,
@@ -185,27 +196,27 @@ CREATE TABLE _auth_user_profile (
 Auth gear will also have a store `SimpleUserProfileStore` which confirms `UserProfileStore` interface:
 
 Old:
-```
+```go=
 type UserProfileStore interface {
-	CreateUserProfile(userProfile interface{}) error
-	GetUserProfile(userID string, userProfile *interface{}) error
+  CreateUserProfile(userProfile interface{}) error
+  GetUserProfile(userID string, userProfile *interface{}) error
 }
 ```
 
 New:
-```
+```go=
 // Meta is meta data part of a user profile record
 type Meta struct {
-	ID         string                 `json:"_id"`
-	Type       string                 `json:"_type"`
-	RecordID   string                 `json:"_recordID"`
-	RecordType string                 `json:"_recordType"`
-	Access     map[string]interface{} `json:"_access"`
-	OwnerID    string                 `json:"_ownerID"`
-	CreatedAt  time.Time              `json:"_createdAt"`
-	CreatedBy  string                 `json:"_createdBy"`
-	UpdatedAt  time.Time              `json:"_updatedAt"`
-	UpdatedBy  string                 `json:"_updatedBy"`
+  ID         string                 `json:"_id"`
+  Type       string                 `json:"_type"`
+  RecordID   string                 `json:"_recordID"`
+  RecordType string                 `json:"_recordType"`
+  Access     map[string]interface{} `json:"_access"`
+  OwnerID    string                 `json:"_ownerID"`
+  CreatedAt  time.Time              `json:"_createdAt"`
+  CreatedBy  string                 `json:"_createdBy"`
+  UpdatedAt  time.Time              `json:"_updatedAt"`
+  UpdatedBy  string                 `json:"_updatedBy"`
 }
 
 // Data refers the profile info of a user,
@@ -214,13 +225,13 @@ type Data map[string]interface{}
 
 // UserProfile refers user profile data type
 type UserProfile struct {
-	Meta
-	Data
+  Meta
+  Data
 }
 
 type Store interface {
-	CreateUserProfile(userID string, data Data) (UserProfile, error)
-	GetUserProfile(userID string) (UserProfile, error)
+  CreateUserProfile(userID string, data Data) (UserProfile, error)
+  GetUserProfile(userID string) (UserProfile, error)
 }
 ```
 
@@ -228,12 +239,155 @@ And, use `NewAuthResponse` to generate auth response,
 
 Old:
 
-```
+```go=
 func NewAuthResponse(authInfo authinfo.AuthInfo, user skydb.Record, accessToken string) AuthResponse
 ```
 
 New:
 
+```go=
+func NewAuthResponse(authInfo authinfo.AuthInfo, userProfile userprofile.UserProfile, accessToken string) AuthResponse
 ```
-func NewAuthResponse(authInfo authinfo.AuthInfo, profile userprofile.UserProfile, accessToken string) AuthResponse
+
+# More usage example
+
+## login
+
+```javascript=
+skygear.auth.signupWithUsername(username, password).then((user) => {
+  console.log(user); // user is an user record
+  console.log(user["username"]); // username of the user
+}, (error) => {
+  ;
+});
+```
+
+## update user profile
+
+```javascript=
+var user = skygear.auth.currentUser;
+user["username"] = "new-username";
+skygear.auth.updateUser(user).then((user) => {
+  console.log(user); // updated user record
+  console.log('Username is changed to: ', user["username"]);
+  return skygear.auth.whoami();
+}, (error) => {
+  console.error(error);
+});
+```
+
+## update user profile via record gear (the error of permission denied is expected)
+
+```javascript=
+var user = skygear.auth.currentUser;
+user["username"] = "new-username";
+skygear.publicDB.save(user).then((user) => {
+  ;
+}, (error) => {
+  // permission denied
+  console.error(error);
+});
+```
+
+# access current user profile
+
+```javascript=
+console.log(skygear.auth.currentUser["username"]);
+console.log(skygear.auth.currentUser["email"]);
+console.log(skygear.auth.currentUser["gender"]);
+```
+
+# access current user auth info
+
+```javascript=
+console.log(skygear.auth.isCurrentUserVerified);
+console.log(skygear.auth.isCurrentUserDisabled);
+```
+
+## get current user roles
+
+```javascript=
+const users = [skygear.auth.currentUser];
+skygear.auth.fetchUserRole(skygear.auth.currentUser).then((roleMap) => {
+    console.log(roleMap); // { "<currentUsrId>": ["admin", "editor"] }
+}, (error) => {
+    console.error(error);
+});
+```
+
+## access aother user's profile
+
+```javascript=
+const User = skygear.Record.extend('user');
+const query = new skygear.Query(User);
+query.equalTo('username', 'oursky');
+skygear.publicDB.query(query).then((records) => {
+  const user = records[0];
+  console.log(user["username"]);
+  console.log(user["email"]);
+  console.log(user["gender"]);
+}, (error) => {
+  console.error(error);
+});
+```
+
+## access another user's auth info
+
+```javascript=
+// check another user's verified state
+const User = skygear.Record.extend('user');
+const query = new skygear.Query(User);
+query.equalTo('username', 'oursky');
+skygear.publicDB.query(query).then((records) => {
+  const user = records[0];
+  return skygear.auth.isUserVerified(user);
+}).then((verified) => {
+  console.log(verified);
+}, (error) => {
+  console.error(error);
+});
+
+// check another user's disabled state
+const User = skygear.Record.extend('user');
+const query = new skygear.Query(User);
+query.equalTo('username', 'oursky');
+skygear.publicDB.query(query).then((records) => {
+  const user = records[0];
+  return skygear.auth.isUserDisabled(user);
+}).then((disabled) => {
+  console.log(disabled);
+}, (error) => {
+  console.error(error);
+});
+```
+
+## disable user
+
+```javascript=
+const User = skygear.Record.extend('user');
+const query = new skygear.Query(User);
+query.equalTo('username', 'oursky');
+skygear.publicDB.query(query).then((records) => {
+  const user = records[0];
+  return skygear.auth.adminDisableUser(user);
+}).then((userId) => {
+  console.log(userId);
+}, (error) => {
+  console.error(error);
+});
+```
+
+## get another user roles
+
+```javascript=
+const User = skygear.Record.extend('user');
+const query = new skygear.Query(User);
+query.equalTo('username', 'oursky');
+skygear.publicDB.query(query).then((records) => {
+  return skygear.auth.fetchUserRole(records);
+}).then((roleMap) => {
+  console.log(roleMap); // { "<userId>": ["admin", "editor"] }
+}, (error) => {
+  console.error(error);
+});
 ```
