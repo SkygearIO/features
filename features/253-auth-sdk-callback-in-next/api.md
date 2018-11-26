@@ -193,7 +193,7 @@ CREATE TABLE _auth_user_profile (
 );
 ```
 
-Auth gear will also have a store `SimpleUserProfileStore` which confirms `UserProfileStore` interface:
+Auth gear will also have a store `SimpleUserProfileStore` which implements `UserProfileStore` interface:
 
 Old:
 ```go=
@@ -270,7 +270,7 @@ user["username"] = "new-username";
 skygear.auth.updateUser(user).then((user) => {
   console.log(user); // updated user record
   console.log('Username is changed to: ', user["username"]);
-  return skygear.auth.whoami();
+  return user;
 }, (error) => {
   console.error(error);
 });
