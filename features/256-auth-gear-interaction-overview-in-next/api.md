@@ -7,7 +7,7 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 * auth gear: a skygear provided component which utilizes user authentication and authorization process, and user profile handling. It would bring enhanced features in the future, such as: JWT provider, Auth UIKit, user management dashboard.
 * Cloud Function: a developer would create a Cloud Function to fulfill application requirements. A cloud function should be a single purpose that attached to certain events or triggered by requirement.
 * auth data: auth related state, such as disabled, last login at, ..., etc.
-* user metadata: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
+* user metadata: indicated as common user properties, such as avatar, first name, last name, display name, ..., etc. 
 * user profile: varied user properties, differs from application to application
 * user attributes: merge user auth data, user metadata, user profile together.
 
@@ -24,7 +24,7 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 * Move admin related features from Client SDK to APIs at Cloud Functions.
 * API gateway should add "current user" in request context and dispatch to auth gear or Cloud Function.
 * Auth gear should support query functionality.
-* Auth gear should have user metadata for fixed user properties.
+* Auth gear should have user metadata for common user properties.
 
 ## Architecture overview
 
@@ -46,15 +46,20 @@ Following function will be removed from SDK, a developer should create its Cloud
 | password | `POST /auth/reset_password`| `adminResetPassword` |
 | role | `POST /auth/role/assign`<br/>`POST /auth/role/admin`<br/>`POST /auth/role/default` | `assignUserRole`<br/>`revokeUserRole`<br/>`setDefaultRole` |
 
-## Execute hooked Cloud Function in auth gear
+## Execution order of hooked Cloud Function
 
 When auth gear receives a request to update user attributes (disabled, roles, profile), it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding records in its own DB.
 
-There are two hooked Cloud Function forms: `before_XXX_sync`, `after_XXX`, where `XXX` is the auth action name. 
+Basically, there are two hooked Cloud Function forms: 
+
+- `before_XXX_sync`
+- `after_XXX`
+
+where `XXX` is the auth action name. 
 
 And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way, where `before_XXX_sync` is executed within the DB transaction in synchronized manner and is allowed to raise an exception to abort the operation, whereas `after_XXX` is executed in asynchronize manner and the execution result is omitted.
 
-Note that, the hooked Cloud Function usage here is quite different from skygear v1, which its cloud database hooks allow to alter record attributes in before save hook. In skygear next, since Cloud Function has its own DB, it's Cloud Function could generate preferred attributes and save it in its own DB. 
+Note that, the hooked Cloud Function usage here is quite different from skygear v1, which its cloud database hooks allow to alter record attributes in "before save" hook. In skygear next, since Cloud Function has its own DB, it's Cloud Function could generate preferred attributes and save it in its own DB. 
 
 Following code demonstrates the execution flow in auth gear:
 
@@ -125,7 +130,7 @@ function after_XXX(req) {
 module.exports = skygear.auth.after_XXX(afterXXX);
 ```
 
-[TBD] Followings are some of hooks:
+**[TBD]** Followings are some of hooks:
 
 | Action | Hooked Cloud Function |
 | -------- | -------- |
@@ -138,6 +143,7 @@ module.exports = skygear.auth.after_XXX(afterXXX);
 | `pasword` | `before_reset_password_sync`<br/>`after_reset_password` |
 | `verify` | `before_verified_sync`<br/>`after_verified` |
 | `update_user` | `before_update_user_sync`<br/>`after_update_user` |
+| `get_user` | `get_user_by_id_sync` |
 
 Note that, to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
 
@@ -170,7 +176,11 @@ EOF
 
 ## user metadata and user profile
 
-For future advanced management requirements, auth gear should bring user metadata idea, which is indicated as a fixed user properties, such as avatar, first name, last name, display name, preferred language, birthday, gender, country, address, segment..., etc. And user profile is for varied user properties, they differ from application to application, such as: ethnic, height, weight, hobby,..., etc.
+For future advanced management requirements, auth gear should have user metadata, which is saved for common user properties, such as avatar, first name, last name, display name, preferred language, ..., etc. 
+
+User metadata would be great help for better auth gear use experience, which allows to provide API response in preferred language, segment support, multi-lang custom email template.
+
+User profile is for used for varied user properties, they differ from application to application, such as: ethnic, height, weight, hobby,..., etc.
 
 ```
 CREATE TABLE _auth_user_profile (
@@ -196,6 +206,7 @@ CREATE TABLE _auth_user_metadata (
   display_name text,
   birthday imestamp without time zone,
   gender text,
+  prefer_lang_id text REFERENCES _core_lang(id),
   ...
   PRIMARY KEY(user_id),
   UNIQUE (user_id)
@@ -215,6 +226,53 @@ The structure of user attributes could be:
         avatarUrl: <avatarUrl>,
         birthday: <birthday>,
         preferredLang: <preferredLang>,
+        ...
+    },
+    profile: {
+        // any other free form data
+        ...
+    }
+}
+```
+
+## Normalized user attributes
+
+Since cloud function could have an "override" version of user attributes, auth gear could invoke `get_user_by_id_sync` Cloud Function to get user attributes saved on auth gear.
+
+Fox example, auth gear saved following user attributes:
+
+```
+{
+    id: <id>,
+    ...
+    metaData: {
+        avatarUrl: "http://avatar.com/1.png",
+        ...
+    },
+    profile: {
+        // any other free form data
+        ...
+    }
+}
+```
+
+In Cloud Function, it may have user attributes like:
+
+```
+users: [
+    { id: <id>, avatarUrl: "http://avatar.com/2.png" },
+    ...
+]
+```
+
+After user login via SDK, it should get response like by invoking `get_user_by_id_sync`:
+
+```
+{
+    id: <id>,
+    ...
+    metaData: {
+        avatarUrl: "http://avatar.com/2.png",
         ...
     },
     profile: {
@@ -318,3 +376,67 @@ module.exports = skygear.auth.before_update_user_sync(before_update_user_sync);
 ```
 5. Cloud Function raise an error to abort the operation.
 6. API gateway routes the result back to auth gear, and since Cloud Function aborts the operation, it will rollback DB and returns error from Cloud Function.
+
+## Use case: auth gear as JWT provider
+
+Since auth gear has the knowledge of user metadata and user profile, it could generate authenticated JWT token with custom claim support.
+
+```
+{
+  "iss": "<iss>",
+  "prn": "<prn>",
+  "iat": <iat>,
+  "exp": <exp>",
+  "nce": "<nce>",
+  
+  "first_name" : "Firstname",
+  "last_name" : "Lastname",
+  "display_name" : "displayname", 
+  "avatar_url" : "https://example.com/image.jpg"
+}
+```
+
+## [TBD] Use case: User Management Dashboard
+
+Consider a dashboard, which provides general purpose user management functions. For normal application users, it should support:
+
+- change avatar
+- delete connected sessions
+- update additional user information
+- change password
+- ...
+ 
+For admin user, it should support:
+
+- create user
+- query users
+- disable user
+- send notification by user segment
+- update additional user information
+- reset user password
+- ...
+
+![](https://i.imgur.com/c7j5jvQ.png)
+
+It should a separate service, and connect to auth gear via provided APIs. Above functionalities could be achieve via:
+
+- `/auth/users/query`
+- `update_user`
+- `disable`
+- `reset_password`
+- ...
+
+## [TBD] Auth UIKit
+
+![](https://i.imgur.com/c4Vqk6G.png)
+
+Consider skygear has a general purpose UIKit for user login/signup, the UI should response by following settings:
+
+- auth criteria: username, email, phone number, ..., etc.
+- auth protocols: SSO, LDAP, SAML, ..., etc.
+- multi-factor authentication
+- ...
+
+![](https://i.imgur.com/0Rg7IOA.png)
+
+It should be a separate service to handle such settings, and then Auth UIKit knows how to update its UI accordingly.

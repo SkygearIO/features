@@ -1,16 +1,17 @@
 {
-  id: <id>,
-  createdAt: <createdAt>,
-  updatedAt: <updatedAt>,
-  disabled: <disabled>,
-  metaData: {
-      avatarUrl: <avatarUrl>,
-      birthday: <birthday>,
-      preferredLang: <preferredLang>,
-      ...
-  },
-  profile: {
-      // any other free form data
-      ...
-  }
+    id: <id>,
+    createdAt: <createdAt>,
+    updatedAt: <updatedAt>,
+    disabled: <disabled>,
+    roles: [<role>, <role>, <role>, ...],
+    metaData: {
+        avatarUrl: <avatarUrl>,
+        birthday: <birthday>,
+        preferredLang: <preferredLang>,
+        ...
+    },
+    profile: {
+        // any other free form data
+        ...
+    }
 }

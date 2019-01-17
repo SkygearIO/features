@@ -11,5 +11,5 @@
 | `before_change_role_sync` | `before_update_user_sync`     |
 | `after_change_role`       | `after_update_user`           |
 +---------------------------+-------------------------------+
-| `after_logout`            |                               |
+| `after_logout`            | `get_user_by_id_sync`         |
 +---------------------------+-------------------------------+
