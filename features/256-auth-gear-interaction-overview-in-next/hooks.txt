@@ -1,0 +1,15 @@
++---------------------------+-------------------------------+
+| `before_signup_sync`      | `before_change_password_sync` |
+| `after_signup`            | `after_change_password`       |
++---------------------------+-------------------------------+
+| `before_login_sync`       | `before_reset_password_sync`  |
+| `after_login`             | `after_reset_password`        |
++---------------------------+-------------------------------+
+| `before_disable_sync`     | `before_verified_sync`        |
+| `after_disable`           | `after_verified`              |
++---------------------------+-------------------------------+
+| `before_change_role_sync` | `before_update_user_sync`     |
+| `after_change_role`       | `after_update_user`           |
++---------------------------+-------------------------------+
+| `after_logout`            |                               |
++---------------------------+-------------------------------+
