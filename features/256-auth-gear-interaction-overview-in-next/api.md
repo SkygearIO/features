@@ -6,6 +6,10 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 
 * auth gear: a skygear provided component which utilizes user authentication and authorization process, and user profile handling. It would bring enhanced features in the future, such as: JWT provider, Auth UIKit, user management dashboard.
 * Cloud Function: a developer would create a Cloud Function to fulfill application requirements. A cloud function should be a single purpose that attached to certain events or triggered by requirement.
+* auth data: auth related state, such as disabled, last login at, ..., etc.
+* user metadata: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
+* user profile: varied user properties, differs from application to application
+* user attributes: merge user auth data, user metadata, user profile together.
 
 ## Goal
 
@@ -20,7 +24,7 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 * Move admin related features from Client SDK to APIs at Cloud Functions.
 * API gateway should add "current user" in request context and dispatch to auth gear or Cloud Function.
 * Auth gear should support query functionality.
-* Auth gear should have user metadata for fixed user attributes.
+* Auth gear should have user metadata for fixed user properties.
 
 ## Architecture overview
 
@@ -50,7 +54,7 @@ There are two hooked Cloud Function forms: `before_XXX_sync`, `after_XXX`, where
 
 And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way, where `before_XXX_sync` is executed within the DB transaction in synchronized manner and is allowed to raise an exception to abort the operation, whereas `after_XXX` is executed in asynchronize manner and the execution result is omitted.
 
-Note that, the hooked Cloud Function usage here is quite different from skygear v1, which its cloud database hooks allow to alter attributes in before save hook. In skygear next, since Cloud Function has its own DB, it's Cloud Function's responsibility to generate preferred attributes in its own DB. 
+Note that, the hooked Cloud Function usage here is quite different from skygear v1, which its cloud database hooks allow to alter record attributes in before save hook. In skygear next, since Cloud Function has its own DB, it's Cloud Function could generate preferred attributes and save it in its own DB. 
 
 Following code demonstrates the execution flow in auth gear:
 
@@ -166,7 +170,7 @@ EOF
 
 ## user metadata and user profile
 
-For future advanced management requirements, auth gear should bring user metadata idea, which is indicated as a fixed user attributes, such as avatar, first name, last name, display name, preferred language, birthday, gender, country, address, segment..., etc. And user profile is for varied user attributes, they differ from application to application, such as: ethnic, height, weight, hobby,..., etc.
+For future advanced management requirements, auth gear should bring user metadata idea, which is indicated as a fixed user properties, such as avatar, first name, last name, display name, preferred language, birthday, gender, country, address, segment..., etc. And user profile is for varied user properties, they differ from application to application, such as: ethnic, height, weight, hobby,..., etc.
 
 ```
 CREATE TABLE _auth_user_profile (
@@ -198,13 +202,15 @@ CREATE TABLE _auth_user_metadata (
 );
 ```
 
-The response structure of a user object should be:
+The structure of user attributes could be:
 
 ```
 {
     id: <id>,
     createdAt: <createdAt>,
     updatedAt: <updatedAt>,
+    disabled: <disabled>,
+    roles: [<role>, <role>, <role>, ...],
     metaData: {
         avatarUrl: <avatarUrl>,
         birthday: <birthday>,

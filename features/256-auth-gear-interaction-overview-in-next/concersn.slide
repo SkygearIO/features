@@ -1,0 +1,93 @@
+auth gear and Cloud Function interaction overview in skygear next
+
+* Quick Overview
+
+.image https://i.imgur.com/jxNxhmd.png
+
+1. auth gear and CF both has connected DB
+
+2. auth gear invoke CF hooks when auth event fires
+
+* Major changes
+
+- Auth gear should have user metadata for fixed user attributes.
+
+- Auth gear should support query functionality.
+
+* Terminology
+
+- auth data: auth related state, such as disabled, last login at, ..., etc.
+
+- user metadata: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
+
+- user profile: varied user properties, differs from application to application
+
+- user attributes: merge user auth data, user metadata, user profile together.
+
+* Example
+
+Updated user profile
+
+.image https://i.imgur.com/1uupx9O.png
+
+3. auth gear invoke `before_update_user_sync()` hook.
+
+5. CF handles `before_update_user_sync()`.
+
+* Execution flow
+
+.code flow.go
+
+* Before XXX Example
+
+.code before.js
+
+* After XXX Example
+
+.code after.js
+
+* Note of hooks
+
+- `before_XXX` is in SYNC manner
+
+- `after_XXX` is in ASYNC manner
+
+- `before_XXX` can raise exception to abort operions
+
+- Don't care `after_XXX` response
+
+- hook funciton should not alter user attributes
+
+* hooks
+
+.code hooks.txt
+
+* User metadata and user profile
+
+- metadata - a fixed user attributes, such as avatar, first name, last name, display name.
+- profile - varied user attributes, they differ from application to application, such as: ethnic, height, weight, hobby.
+
+* User metadata and user profile
+
+.code user.json
+
+* Concers
+
+1. Can we use `before_update_user_sync` and `after_update_user` to replace all other hooks?
+
+2. If we do want every hook for every auth action, should we provide both "SYNC" and "ASYNC" version for both before and after hook, like:
+`before_signup_sync`, `before_signup`, `after_signup_sync`, `after_signup`?
+
+3. In current design, hook function won't have a way to alter user attributes, is it enough to use?
+
+* Concerns
+
+1. Since CF may have its own version of user object, how to make sure `currentUser` in SDK have a normalized user data? (use case: CF has some extra user attributes besides user profile).
+
+2. Besides to support query interface in auth gear, for future User Management Dashboard, should auth gear also support update interface? (use case: Admin wants to update user disabled state via User Management Dashboard).
+
+* TBD
+
+1. Custom DB connection auth flow.
+
+2. Auth UIKit.
