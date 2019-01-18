@@ -1,15 +1,17 @@
 const skygear = require('skygear');
 
-function after_XXX(req) {
-    // 1. req.context.user: the user object from auth gear
-    const user = req.context.user;
-    // 2. req.body: the original payload from the request
-    const body = req.body.json();
-    
+/* 
+ * user: user object to be saved
+ * currentUser: current exection user
+ */
+function after_XXX(user, currentUser) {    
     console.log(body); // { "loveCat": false }
     console.log(user.profile.loveCat); // true
     
-    res.status(200);
+    /*
+     * or rasie exception
+     * throw new Error("some error");
+     */
 }
 
-module.exports = skygear.auth.after_XXX(afterXXX);
+module.exports = skygear.auth.after_XXX(after_XXX);

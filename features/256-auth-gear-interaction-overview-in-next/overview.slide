@@ -12,7 +12,7 @@ auth gear and Cloud Function interaction overview in skygear next
 
 - Auth gear invokes hooked Cloud Function
 
-- Auth gear should have user metadata for fixed user attributes.
+- Auth gear should have user metadata for common user attributes.
 
 - Auth gear should support query functionality.
 
@@ -20,7 +20,7 @@ auth gear and Cloud Function interaction overview in skygear next
 
 - _user_auth_data_: auth related state, such as disabled, last login at, ..., etc.
 
-- _user_metadata_: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
+- _user_metadata_: indicated as a common user properties, such as avatar, first name, last name, display name, ..., etc. 
 
 - _user_profile_: varied user properties, differs from application to application
 
@@ -58,7 +58,7 @@ Updated user profile
 
 - hooked Cloud Function without sync suffix is in ASYNC call
 
-- hooked Cloud Function can raise error to abort operions
+- hooked Cloud Function can raise exception to abort operions
 
 - Don't care `after_XXX` or `after_XXX_sync` response
 
@@ -75,3 +75,5 @@ Updated user profile
 1. Custom DB connection auth flow.
 
 2. Auth UIKit.
+
+3. User Management Dashboard

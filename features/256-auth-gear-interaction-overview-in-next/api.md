@@ -16,14 +16,13 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 * Consider auth gear would be extended to be a rich-featured functional set, such as JWT provider, Auth UIKit, ..., etc.
 * Encourage Cloud Functions, less SDK burden, a developer should create corresponding Cloud Function to fulfill application requirements.
 * Avoid coupling between cloud function and auth gear, consider auth gear would be used independently, any access to data owned by another service should only happen through APIs.
-* Auth gear and Cloud Function should have identical current user execution context.
+* Auth gear and Cloud Function both should have current user execution context.
 * List use cases to demonstrate how auth gear and Cloud Function interaction flow.
 
 ## Major changes
 
 * Move admin related features from Client SDK to APIs at Cloud Functions.
-* API gateway should add "current user" in request context and dispatch to auth gear or Cloud Function.
-* Auth gear should support query functionality.
+* API gateway should inject "current user" into request context and then dispatch request to auth gear or Cloud Function.
 * Auth gear should have user metadata for common user properties.
 
 ## Architecture overview
@@ -46,11 +45,11 @@ Following function will be removed from SDK, a developer should create its Cloud
 | password | `POST /auth/reset_password`| `adminResetPassword` |
 | role | `POST /auth/role/assign`<br/>`POST /auth/role/admin`<br/>`POST /auth/role/default` | `assignUserRole`<br/>`revokeUserRole`<br/>`setDefaultRole` |
 
-## Execution order of hooked Cloud Function
+## Execution flow of hooked Cloud Function
 
-When auth gear receives a request to update user attributes (disabled, roles, profile), it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding records in its own DB.
+When auth gear receives a request to update user attributes (disabled, roles, profile), it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding objects in its own DB.
 
-Basically, there are four hooked Cloud Function forms: 
+There are four hooked Cloud Function forms: 
 
 - `before_XXX_sync`
 - `before_XXX`
@@ -59,11 +58,12 @@ Basically, there are four hooked Cloud Function forms:
 
 where `XXX` is the auth action name. 
 
-And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way. All hooks are executed in transaction. `before_XXX_sync` and `before_XXX` is executed "before" DB operation, `after_XXX_sync` and `after_XXX` is executed "after" DB operation. All of them can raise error to abort current operation.
+And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way. And all hooks are executed in transaction. `before_XXX_sync` and `before_XXX` is executed "before" DB operation. Whereas `after_XXX_sync` and `after_XXX` is executed "after" DB operation. All of them can raise exception to abort current operation.
 
 Following code demonstrates the execution flow in auth gear:
 
 ```go=
+// start DB transaction
 txContext.BeginTx()
 
 resp, err := handle(payload, &user)
@@ -95,9 +95,10 @@ if err != nil {
     return response
 }
 
-response.Result = resp
+// DB commit
 txContext.CommitTx();
 
+response.Result = resp
 return response
 ```
 
@@ -108,23 +109,27 @@ Function signature of `before_XXX_sync` hooked Cloud Function is:
 ```javascript
 const skygear = require('skygear');
 
-function before_XXX_sync(req, res) {
-    // 1. req.context.user: the user object from auth gear
-    const user = req.context.user;
-    // 2. req.body: the original payload from the request
-    const body = req.body.json();
-    
-    console.log(body); // { "loveCat": false }
+/* 
+ * user: user object to be saved
+ * orgUser: original user object
+ * currentUser: current exection user
+ */
+function before_XXX_sync(user, orgUser, currentUser) {
     console.log(user.profile.loveCat); // false
     
     // alter user profile
     user.profile.loveCat = true;
+    
+    /*
+     * or rasie exception
+     * throw new Error("some error");
+     */
 
-    res.status(200);
-    res.send(user);
+    // return updated user object
+    return user;
 }
 
-module.exports = skygear.auth.before_XXX_sync(beforeXXXSync);
+module.exports = skygear.auth.before_XXX_sync(before_XXX_sync);
 ```
 
 Function signature of `after_XXX` hooked Cloud Function is:
@@ -132,63 +137,38 @@ Function signature of `after_XXX` hooked Cloud Function is:
 ```javascript
 const skygear = require('skygear');
 
-function after_XXX(req) {
-    // 1. req.context.user: the user object from auth gear
-    const user = req.context.user;
-    // 2. req.body: the original payload from the request
-    const body = req.body.json();
-    
+/* 
+ * user: user object to be saved
+ * currentUser: current exection user
+ */
+function after_XXX(user, currentUser) {    
     console.log(body); // { "loveCat": false }
     console.log(user.profile.loveCat); // true
     
-    res.status(200);
+    /*
+     * or rasie exception
+     * throw new Error("some error");
+     */
 }
 
-module.exports = skygear.auth.after_XXX(afterXXX);
+module.exports = skygear.auth.after_XXX(after_XXX);
 ```
 
-**[TBD]** Followings are some of hooks:
+Followings are hooks of auth actions:
 
 | Action | Hooked Cloud Function |
 | -------- | -------- |
-| `signup` | `before_signup_sync`<br/>`after_signup` |
-| `login` | `before_login_sync`<br/>`after_login` |
-| `disable` | `before_disable_sync`<br/>`after_disable` |
-| `role` | `before_change_role_sync`<br/>`after_change_role` |
-| `logout` | `after_logout` |
-| `password` | `before_change_password_sync`<br/>`after_change_password` |
-| `pasword` | `before_reset_password_sync`<br/>`after_reset_password` |
-| `verify` | `before_verified_sync`<br/>`after_verified` |
-| `update_user` | `before_update_user_sync`<br/>`after_update_user` |
+| `signup` | `before_signup_sync(user, orgUser, currentUser)`<br/>`before_signup(user, orgUser, currentUser)`<br/>`after_signup_sync(user, currentUser)`<br/>`after_signup(user, currentUser)`<br/> |
+| `login` | `before_login_sync(user, orgUser, currentUser)`<br/>`before_login(user, orgUser, currentUser)`<br/>`after_login_sync(user, currentUser)`<br/>`after_login(user, currentUser)` |
+| `disable` | `before_disable_sync(user, orgUser, currentUser)`<br/>`before_disable(user, orgUser, currentUser)`<br/>`after_disable_sync(user, currentUser)`<br/>`after_disable(user, currentUser)` |
+| `role` | `before_change_role_sync(user, orgUser, currentUser)`<br/>`before_change_role(user, orgUser, currentUser)`<br/>`after_change_role_sync(user, currentUser)`<br/>`after_change_role(user, currentUser)` |
+| `logout` | `before_logout_sync(user, orgUser, currentUser)`<br/>`before_logout(user, orgUser, currentUser)`<br/>`after_logout_sync(user, currentUser)`<br/>`after_logout(user, currentUser)` |
+| `password` | `before_change_password_sync(user, orgUser, currentUser)`<br/>`before_change_password(user, orgUser, currentUser)`<br/>`after_change_password_sync(user, currentUser)`<br/>`after_change_password(user, currentUser)` |
+| `pasword` | `before_reset_password_sync(user, orgUser, currentUser)`<br/>`before_reset_password(user, orgUser, currentUser)`<br/>`after_reset_password_sync(user, currentUser)`<br/>`after_reset_password(user, currentUser)` |
+| `verify` | `before_verified_sync(user, orgUser, currentUser)`<br/>`before_verified(user, orgUser, currentUser)`<br/>`after_verified_sync(user, currentUser)`<br/>`after_verified(user, currentUser)` |
+| `update_user` | `before_update_user_sync(user, orgUser, currentUser)`<br/>`before_update_user(user, orgUser, currentUser)`<br/>`after_update_user_sync(user, currentUser)`<br/>`after_update_user(user, currentUser)` |
 
 Note that, to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
-
-## Query support `/auth/users/query` in auth gear
-
-Auth gear should support user query interface `auth/users/query`, it provides other services to create enhanced features, like User Management Dashboard, or JWT provider.
-
-```
-curl -X POST -H "Content-Type: application/json" \
-     -H "X-Skygear-Api-Key: MASTER_KEY" \
-     -d @- http://localhost:3000/auth/users/query <<EOF
-{
-    "predicate": [
-        "eq",
-        {
-            "$val": "_id",
-            "$type": "keypath"
-        },
-        "<a-user-id>"
-    ]
-}
-EOF
-{
-     "results": [
-        <user>,
-        <user>
-     ]
-}
-```
 
 ## user metadata and user profile
 
@@ -263,11 +243,9 @@ Since Cloud Function would indicate it is executed by authenticated user only, s
 ```javascript=
 const skygear = require('skygear');
 
-function welcome(req, res) {
+module.exports = (req, res) => {
     res.end("welcome " + req.context.user.email);
 }
-
-module.exports = skygear.auth.authed(welcome);
 ```
 
 ## Use cases: save user profile in Cloud Function DB after user signup
@@ -276,10 +254,7 @@ module.exports = skygear.auth.authed(welcome);
 const skygear = require('skygear');
 const mongoClient = require('mongodb').MogoClient;
 
-function after_signup(req) {
-    // req.context.user: the user object in auth gear
-    const user = req.context.user;
-    
+function after_signup(user, currentUser) {
     // connect to Cloud Function DB
     const secrets = req.context.secrets;
     const mongoUrl = 'mongodb://' + secrets.MONGODB_HOST + ':' + secrets.MONGODB_PORT + '/' + secrets.MONGODB_DBNAME;
@@ -328,18 +303,12 @@ skygear.auth.updateUser(currentUser).then((user) => {
 ```javascript
 const skygear = require('skygear');
 
-function before_update_user_sync(req, res) {
-    // req.context.user: the user object in auth gear
-    const user = req.context.user;
-    
+function before_update_user_sync(user, orgUser, currentUser) {    
     if (!user.profile.loveCat) {
-        res.status(500);
-        res.send({ error: "EVERYONE SHOULD LOVE CAT" });
-        return;
+        throw new Error("EVERYONE LOVES CAT");
     }
     
-    res.status(200);
-    res.send(user);
+    return user;
 }
 
 module.exports = skygear.auth.before_update_user_sync(before_update_user_sync);
@@ -366,6 +335,15 @@ Since auth gear has the knowledge of user metadata and user profile, it could ge
 }
 ```
 
+## User listing in Cloud Function
+
+For app's requirements, app could use Cloud Function to support its own user listing functionality if it creates its own user table and implement some hooks.
+
+1. Developer creates `user` table hosted in Cloud Function DB.
+2. Developer supports `after_signup` hooks.
+3. Insert user data into `user` table in the hook.
+4. Cloud Function could create its own query functionality with it's DB.
+
 ## [TBD] Use case: User Management Dashboard
 
 Consider a dashboard, which provides general purpose user management functions. For normal application users, it should support:
@@ -386,15 +364,7 @@ For admin user, it should support:
 - reset user password
 - ...
 
-![](https://i.imgur.com/c7j5jvQ.png)
-
-It should a separate service, and connect to auth gear via provided APIs. Above functionalities could be achieve via:
-
-- `/auth/users/query`
-- `update_user`
-- `disable`
-- `reset_password`
-- ...
+To support above functionalities, it would be provided by auth gear internally. It can connect auth gear DB directly, and no need to provide query interface to the public.
 
 ## [TBD] Auth UIKit
 
