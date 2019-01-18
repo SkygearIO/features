@@ -1,16 +1,19 @@
 const skygear = require('skygear');
 
-function before_update_user_sync(req, res) {
-    // req.context.user: the user object in auth gear
+function before_XXX_sync(req, res) {
+    // 1. req.context.user: the user object from auth gear
     const user = req.context.user;
+    // 2. req.body: the original payload from the request
+    const body = req.body.json();
     
-    if (!user.profile.loveCat) {
-        res.status(500);
-        res.send({ error: "EVERYONE SHOULD LOVE CAT" });
-        return;
-    }
+    console.log(body); // { "loveCat": false }
+    console.log(user.profile.loveCat); // false
     
-    res.end();
+    // alter user profile
+    user.profile.loveCat = true;
+
+    res.status(200);
+    res.send(user);
 }
 
-module.exports = skygear.auth.before_update_user_sync(before_update_user_sync);
+module.exports = skygear.auth.before_XXX_sync(beforeXXXSync);

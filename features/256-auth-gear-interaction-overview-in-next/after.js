@@ -6,8 +6,10 @@ function after_XXX(req) {
     // 2. req.body: the original payload from the request
     const body = req.body.json();
     
-    console.log(user.disabled); // true
-    console.log(body); // { "auth_id": "XXXX", "disabled": true, ... }
+    console.log(body); // { "loveCat": false }
+    console.log(user.profile.loveCat); // true
+    
+    res.status(200);
 }
 
 module.exports = skygear.auth.after_XXX(afterXXX);

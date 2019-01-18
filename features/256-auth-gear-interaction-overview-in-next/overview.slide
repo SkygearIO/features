@@ -10,19 +10,21 @@ auth gear and Cloud Function interaction overview in skygear next
 
 * Major changes
 
+- Auth gear invokes hooked Cloud Function
+
 - Auth gear should have user metadata for fixed user attributes.
 
 - Auth gear should support query functionality.
 
 * Terminology
 
-- auth data: auth related state, such as disabled, last login at, ..., etc.
+- _user_auth_data_: auth related state, such as disabled, last login at, ..., etc.
 
-- user metadata: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
+- _user_metadata_: indicated as a fixed user properties, such as avatar, first name, last name, display name, ..., etc. 
 
-- user profile: varied user properties, differs from application to application
+- _user_profile_: varied user properties, differs from application to application
 
-- user attributes: merge user auth data, user metadata, user profile together.
+- user attributes: merge _user_auth_data_, _user_metadata_, and _user_profile_ together.
 
 * Example
 
@@ -33,6 +35,10 @@ Updated user profile
 3. auth gear invoke `before_update_user_sync()` hook.
 
 5. CF handles `before_update_user_sync()`.
+
+* Execution flow
+
+.image flow.png
 
 * Execution flow
 
@@ -48,15 +54,13 @@ Updated user profile
 
 * Note of hooks
 
-- `before_XXX_sync` is in SYNC manner
+- hooked Cloud Function with sync suffix is in SYNC call
 
-- `after_XXX` is in ASYNC manner
+- hooked Cloud Function without sync suffix is in ASYNC call
 
-- `before_XXX_sync` can raise exception to abort operions
+- hooked Cloud Function can raise error to abort operions
 
-- Don't care `after_XXX` response
-
-- hook funciton can't alter user attributes
+- Don't care `after_XXX` or `after_XXX_sync` response
 
 * hooks
 
@@ -64,23 +68,7 @@ Updated user profile
 
 * User metadata and user profile
 
-- metadata - common user attributes, such as avatar, first name, last name, display name.
-- profile - varied user attributes, they differ from application to application, such as: ethnic, height, weight, hobby.
-
-* User metadata and user profile
-
 .code user.json
-
-* Concers
-
-1. Looks like `before_update_user_sync` and `after_update_user` can cover most cases, maybe we should consider to remove other hooks.
-
-2. If we do want every hook for every auth action, should we provide both "SYNC" and "ASYNC" version for both before and after hook, like:
-`before_signup_sync`, `before_signup`, `after_signup_sync`, `after_signup`?
-
-3. In current design, hook function won't have a way to alter user attributes, is it enough to use?
-
-4. Besides to support query interface in auth gear, for future User Management Dashboard, should auth gear also support update interface? (use case: Admin wants to update user disabled state via User Management Dashboard).
 
 * TBD
 

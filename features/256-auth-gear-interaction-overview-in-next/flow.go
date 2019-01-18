@@ -1,13 +1,28 @@
-// execute auth handler
-resp, err = apiHandler.Handle(payload)
+txContext.BeginTx()
+
+resp, err := handle(payload, &user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
     return response
 }
 
-// execute hooked before save Cloud Function
-err = hookHandlers.ExecuteBeforeSaveUserSync(payload)
+err = hooks.ExecuteBeforeHooks(&user)
+if err != nil {
+    response.Err = skyerr.MakeError(err)
+    h.TxContext.RollbackTx()
+    return response
+}
+
+// DB operation
+err = userStore.update(user)
+if err != nil {
+    response.Err = skyerr.MakeError(err)
+    h.TxContext.RollbackTx()
+    return response
+}
+
+err = hooks.ExecuteAfterHooks(user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
@@ -17,5 +32,4 @@ if err != nil {
 response.Result = resp
 txContext.CommitTx();
 
-// execute hooked after save Cloud Function
-go hookHandlers.ExecuteAfterSaveUser(payload)
+return response

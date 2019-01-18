@@ -50,32 +50,45 @@ Following function will be removed from SDK, a developer should create its Cloud
 
 When auth gear receives a request to update user attributes (disabled, roles, profile), it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding records in its own DB.
 
-Basically, there are two hooked Cloud Function forms: 
+Basically, there are four hooked Cloud Function forms: 
 
 - `before_XXX_sync`
+- `before_XXX`
+- `after_XXX_sync`
 - `after_XXX`
 
 where `XXX` is the auth action name. 
 
-And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way, where `before_XXX_sync` is executed within the DB transaction in synchronized manner and is allowed to raise an exception to abort the operation, whereas `after_XXX` is executed in asynchronize manner and the execution result is omitted.
-
-Note that, the hooked Cloud Function usage here is quite different from skygear v1, which its cloud database hooks allow to alter record attributes in "before save" hook. In skygear next, since Cloud Function has its own DB, it's Cloud Function could generate preferred attributes and save it in its own DB. 
+And as the name inferred, hooked Cloud Functions are executed in two ways: `sync` and `async` way. All hooks are executed in transaction. `before_XXX_sync` and `before_XXX` is executed "before" DB operation, `after_XXX_sync` and `after_XXX` is executed "after" DB operation. All of them can raise error to abort current operation.
 
 Following code demonstrates the execution flow in auth gear:
 
 ```go=
-//....
-        
-// execute auth handler
-resp, err = apiHandler.Handle(payload)
+txContext.BeginTx()
+
+resp, err := handle(payload, &user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
     return response
 }
 
-// execute hooked before save Cloud Function
-err = hookHandlers.ExecuteBeforeSaveUserSync(payload)
+err = hooks.ExecuteBeforeHooks(&user)
+if err != nil {
+    response.Err = skyerr.MakeError(err)
+    h.TxContext.RollbackTx()
+    return response
+}
+
+// DB operation
+err = userStore.update(user)
+if err != nil {
+    response.Err = skyerr.MakeError(err)
+    h.TxContext.RollbackTx()
+    return response
+}
+
+err = hooks.ExecuteAfterHooks(user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
@@ -85,11 +98,10 @@ if err != nil {
 response.Result = resp
 txContext.CommitTx();
 
-// execute hooked after save Cloud Function
-go hookHandlers.ExecuteAfterSaveUser(payload)
-
 return response
 ```
+
+In `before_XXX_sync` and `before_XXX`, it may alter user metadata and user profile, on the contrary, `after_XXX_sync` and `after_XXX` won't support to alter user metadata and user profile.
 
 Function signature of `before_XXX_sync` hooked Cloud Function is:
 
@@ -102,11 +114,14 @@ function before_XXX_sync(req, res) {
     // 2. req.body: the original payload from the request
     const body = req.body.json();
     
-    console.log(user.disabled); // true
-    console.log(body); // { "auth_id": "XXXX", "disabled": true, ... }    
+    console.log(body); // { "loveCat": false }
+    console.log(user.profile.loveCat); // false
     
-    // doesn't raise exception
-    res.end();
+    // alter user profile
+    user.profile.loveCat = true;
+
+    res.status(200);
+    res.send(user);
 }
 
 module.exports = skygear.auth.before_XXX_sync(beforeXXXSync);
@@ -123,8 +138,10 @@ function after_XXX(req) {
     // 2. req.body: the original payload from the request
     const body = req.body.json();
     
-    console.log(user.disabled); // true
-    console.log(body); // { "auth_id": "XXXX", "disabled": true, ... }
+    console.log(body); // { "loveCat": false }
+    console.log(user.profile.loveCat); // true
+    
+    res.status(200);
 }
 
 module.exports = skygear.auth.after_XXX(afterXXX);
@@ -143,7 +160,6 @@ module.exports = skygear.auth.after_XXX(afterXXX);
 | `pasword` | `before_reset_password_sync`<br/>`after_reset_password` |
 | `verify` | `before_verified_sync`<br/>`after_verified` |
 | `update_user` | `before_update_user_sync`<br/>`after_update_user` |
-| `get_user` | `get_user_by_id_sync` |
 
 Note that, to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
 
@@ -226,53 +242,6 @@ The structure of user attributes could be:
         avatarUrl: <avatarUrl>,
         birthday: <birthday>,
         preferredLang: <preferredLang>,
-        ...
-    },
-    profile: {
-        // any other free form data
-        ...
-    }
-}
-```
-
-## Normalized user attributes
-
-Since cloud function could have an "override" version of user attributes, auth gear could invoke `get_user_by_id_sync` Cloud Function to get user attributes saved on auth gear.
-
-Fox example, auth gear saved following user attributes:
-
-```
-{
-    id: <id>,
-    ...
-    metaData: {
-        avatarUrl: "http://avatar.com/1.png",
-        ...
-    },
-    profile: {
-        // any other free form data
-        ...
-    }
-}
-```
-
-In Cloud Function, it may have user attributes like:
-
-```
-users: [
-    { id: <id>, avatarUrl: "http://avatar.com/2.png" },
-    ...
-]
-```
-
-After user login via SDK, it should get response like by invoking `get_user_by_id_sync`:
-
-```
-{
-    id: <id>,
-    ...
-    metaData: {
-        avatarUrl: "http://avatar.com/2.png",
         ...
     },
     profile: {
@@ -369,7 +338,8 @@ function before_update_user_sync(req, res) {
         return;
     }
     
-    res.end();
+    res.status(200);
+    res.send(user);
 }
 
 module.exports = skygear.auth.before_update_user_sync(before_update_user_sync);
