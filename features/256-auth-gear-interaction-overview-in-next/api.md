@@ -6,10 +6,10 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 
 * auth gear: a skygear provided component which utilizes user authentication and authorization process, and user profile handling. It would bring enhanced features in the future, such as: JWT provider, Auth UIKit, user management dashboard.
 * Cloud Function: a developer would create a Cloud Function to fulfill application requirements. A cloud function should be a single purpose that attached to certain events or triggered by requirement.
-* auth data: auth related state, such as disabled, last login at, ..., etc.
-* user metaData: indicated as common user properties, such as avatar, first name, last name, display name, ..., etc. 
+* user auth data: such as disabled, last login at, ..., etc.
+* user common properties: such as avatar, first name, last name, ..., etc.
 * user profile: varied user properties, differs from application to application.
-* user attributes: merge user auth data, user metaData, user profile together.
+* user attributes: merge user auth data, user common properties, and user profile together.
 
 ## Goal
 
@@ -23,7 +23,7 @@ Base on the new product architecture decision (auth gear + Cloud Function and dr
 
 * Move admin related features from Client SDK to APIs at Cloud Functions.
 * API gateway should inject "current user" into request context and then dispatch request to auth gear or Cloud Function.
-* Auth gear should have user metaData for common user properties.
+* Auth gear should extend core user to support common user properties.
 
 ## Architecture overview
 
@@ -45,9 +45,11 @@ Following function will be removed from SDK, a developer should create its Cloud
 | password | `POST /auth/reset_password`| `adminResetPassword` |
 | role | `POST /auth/role/assign`<br/>`POST /auth/role/admin`<br/>`POST /auth/role/default` | `assignUserRole`<br/>`revokeUserRole`<br/>`setDefaultRole` |
 
+For security reason, Cloud Function should invoke admin relative API with master key.
+
 ## Execution flow of hooked Cloud Function
 
-When auth gear receives a request to update user attributes (disabled, roles, metaData, ...), it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding objects in its own DB.
+When auth gear receives a request to update user auth data, it's auth gear's responsibility to invoke hooked function to allow Cloud Function creates/updates corresponding objects in its own DB.
 
 There are four hooked Cloud Function forms: 
 
@@ -100,14 +102,14 @@ response.Result = resp
 return response
 ```
 
-In `before_XXX_sync` and `before_XXX`, it may alter user metaData and user profile, on the contrary, `after_XXX_sync` and `after_XXX` won't support to alter user metaData and user profile.
+In `before_XXX_sync` and `before_XXX`, it may alter user common properties and user profile, on the contrary, `after_XXX_sync` and `after_XXX` won't support to alter user common properties and user profile. And all hooks won't support alter user auth data.
 
-|  | alter user attributes | raising an exception to stop operation |
-| -------- | -------- | -------- |
-| `before_XXX_sync`  | ✓     | ✓     |
-| `before_XXX`  |  ✓    | ✓     |
-| `after_XXX_sync`  | 🚫     | ✓     |
-| `after_XXX`  |   🚫   | ✓     |
+|  | alter common properties and profile | alter user auth data | raising an exception |
+| -------- | -------- | -------- | ------ |
+| `before_XXX_sync`  | ✓     | 🚫 | ✓ |
+| `before_XXX`  |  ✓    | 🚫 | ✓ |
+| `after_XXX_sync`  | 🚫     | 🚫 | ✓ |
+| `after_XXX`  |   🚫   | 🚫 | ✓ |
 
 
 Function signature of `before_XXX_sync` hooked Cloud Function is:
@@ -117,10 +119,10 @@ const skygear = require('skygear');
 
 /* 
  * user: user object to be saved
- * orgUser: original user object
+ * original_user: original user object
  * context: current exection context
  */
-function before_XXX_sync(user, orgUser, context) {
+function before_XXX_sync(user, original_user, context) {
     console.log(user.profile.loveCat); // false
     
     // alter user profile
@@ -164,15 +166,15 @@ Followings are hooks of auth actions:
 
 | Action | Hooked Cloud Function | Note |
 | -------- | -------- | ----- |
-| `signup` | `before_signup_sync(user, orgUser, context)`<br/>`before_signup(user, orgUser, context)`<br/>`after_signup_sync(user, context)`<br/>`after_signup(user, context)`<br/> | `orgUser` is `null` |
-| `login` | `before_login_sync(user, orgUser, context)`<br/>`before_login(user, orgUser, context)`<br/>`after_login_sync(user, context)`<br/>`after_login(user, context)` | |
-| `disable` | `before_disable_sync(user, orgUser, context)`<br/>`before_disable(user, orgUser, context)`<br/>`after_disable_sync(user, context)`<br/>`after_disable(user, context)` | |
-| `role` | `before_change_role_sync(user, orgUser, context)`<br/>`before_change_role(user, orgUser, context)`<br/>`after_change_role_sync(user, context)`<br/>`after_change_role(user, context)` | |
-| `logout` | `before_logout_sync(user, orgUser, context)`<br/>`before_logout(user, orgUser, context)`<br/>`after_logout_sync(user, context)`<br/>`after_logout(user, context)` | |
-| `password` | `before_change_password_sync(user, orgUser, context)`<br/>`before_change_password(user, orgUser, context)`<br/>`after_change_password_sync(user, context)`<br/>`after_change_password(user, context)` | |
-| `password` | `before_reset_password_sync(user, orgUser, context)`<br/>`before_reset_password(user, orgUser, context)`<br/>`after_reset_password_sync(user, context)`<br/>`after_reset_password(user, context)` | |
-| `verify` | `before_verified_sync(user, orgUser, context)`<br/>`before_verified(user, orgUser, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)` | |
-| `update_user` | `before_update_user_sync(user, orgUser, context)`<br/>`before_update_user(user, orgUser, context)`<br/>`after_update_user_sync(user, context)`<br/>`after_update_user(user, context)` | invoked when user metaData and profile are updated. |
+| `signup` | `before_signup_sync(user, original_user, context)`<br/>`before_signup(user, original_user, context)`<br/>`after_signup_sync(user, context)`<br/>`after_signup(user, context)`<br/> | `original_user` is `null` |
+| `login` | `before_login_sync(user, original_user, context)`<br/>`before_login(user, original_user, context)`<br/>`after_login_sync(user, context)`<br/>`after_login(user, context)` | |
+| `disable` | `before_disable_sync(user, original_user, context)`<br/>`before_disable(user, original_user, context)`<br/>`after_disable_sync(user, context)`<br/>`after_disable(user, context)` | |
+| `role` | `before_change_role_sync(user, original_user, context)`<br/>`before_change_role(user, original_user, context)`<br/>`after_change_role_sync(user, context)`<br/>`after_change_role(user, context)` | |
+| `logout` | `before_logout_sync(user, original_user, context)`<br/>`before_logout(user, original_user, context)`<br/>`after_logout_sync(user, context)`<br/>`after_logout(user, context)` | |
+| `password` | `before_change_password_sync(user, original_user, context)`<br/>`before_change_password(user, original_user, context)`<br/>`after_change_password_sync(user, context)`<br/>`after_change_password(user, context)` | |
+| `password` | `before_reset_password_sync(user, original_user, context)`<br/>`before_reset_password(user, original_user, context)`<br/>`after_reset_password_sync(user, context)`<br/>`after_reset_password(user, context)` | |
+| `verify` | `before_verified_sync(user, original_user, context)`<br/>`before_verified(user, original_user, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)` | |
+| `update_user` | `before_update_user_sync(user, original_user, context)`<br/>`before_update_user(user, original_user, context)`<br/>`after_update_user_sync(user, context)`<br/>`after_update_user(user, context)` | invoked when user common properties and profile are updated. |
 
 To avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
 
@@ -183,11 +185,11 @@ To avoid spiral request loop, it is forbidden to send request to auth gear in ho
 3. `context.req.id`: original request ID.
 4. `context.secrets`: secrets of the hook.
 
-## user metaData and user profile
+## user common properties and user profile
 
-For future advanced management requirements, auth gear should have user metaData, which is saved for common user properties, such as avatar, first name, last name, display name, preferred language, ..., etc. 
+For future advanced management requirements, auth gear should have user common properties, which is saved for common user properties, such as avatar, first name, last name, display name, preferred language, ..., etc. 
 
-User metaData would be great help for better auth gear use experience, which allows to provide API response in preferred language, segment support, multi-lang custom email template.
+User common properties would be great help for better auth gear use experience, which allows to provide API response in preferred language, segment support, multi-lang custom email template.
 
 User profile is for used for varied user properties, they differ from application to application, such as: ethnic, height, weight, hobby,..., etc.
 
@@ -203,12 +205,20 @@ CREATE TABLE _auth_user_profile (
   UNIQUE (user_id)
 );
 
-CREATE TABLE _auth_user_meta_data (
-  user_id text REFERENCES _core_user(id),
-  created_at timestamp without time zone NOT NULL,
-  created_by text,
-  updated_at timestamp without time zone NOT NULL,
-  updated_by text,
+CREATE TABLE _core_user (
+  id text PRIMARY KEY,
+  token_valid_since timestamp without time zone,
+  
+  last_seen_at timestamp without time zone,
+  last_login_at timestamp without time zone,
+  
+  disabled boolean NOT NULL DEFAULT false,
+  disabled_message text,
+  disabled_expiry timestamp without time zone,
+  
+  verified boolean NOT NULL DEFAULT false,
+  verify_info jsonb NOT NULL DEFAULT '{}'::JSONB,
+  
   avatar_url text,
   first_name text,
   last_name text,
@@ -217,8 +227,6 @@ CREATE TABLE _auth_user_meta_data (
   gender text,
   prefer_lang_id text REFERENCES _core_lang(id),
   ...
-  PRIMARY KEY(user_id),
-  UNIQUE (user_id)
 );
 ```
 
@@ -278,8 +286,8 @@ function after_signup(user, context) {
         // create Cloud Function's user profile
         const profile = {
             id: user.id,
-            birthday: user.metaData.birthday,
-            avatar: user.metaData.avatarUrl,
+            birthday: user.birthday,
+            avatar: user.avatarUrl,
             maritalStatus: user.profile.maritalStatus,
         };
 
@@ -299,7 +307,7 @@ module.exports = skygear.auth.after_signup(after_signup);
 
 ```javascript=
 const context = skygear.auth.context;
-context.metaData.avatar = "http://example.com/a.jpg";
+context.avatarUrl = "http://example.com/a.jpg";
 context.profile.loveCat = false;
 skygear.auth.updateUser(context).then((user) => {
   console.log(user.profile.loveCat);
@@ -315,7 +323,7 @@ skygear.auth.updateUser(context).then((user) => {
 ```javascript
 const skygear = require('skygear');
 
-function before_update_user_sync(user, orgUser, context) {    
+function before_update_user_sync(user, original_user, context) {    
     if (!user.profile.loveCat) {
         throw new Error("EVERYONE LOVES CAT");
     }
