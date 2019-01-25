@@ -110,3 +110,20 @@ access skycli instead of using user account.
 
 ### ./.skyclirc
 - current app
+
+## Discussion
+
+- Current `skycli app view-config` and `skycli app update-config` give the
+greatest flexible to user to update the config. But user need to understand the
+tenant config structure. I think this case is similar to v1 cms config file.
+- Current tenant config is not a simple key value mapping, so we didn't have a
+single command to update particular value. User need to export the current config
+by `skycli app view-config`, update, and upload by `skycli app update-config`.
+- `skycli app view-config` will mask the auth db url, it is also not editable by
+`skycli app update-config`.
+- I think we should not show the secret value in the list comment. But user may
+want to obtain the db credentials after enabling service?
+
+## Questions
+
+- How to support email template?
