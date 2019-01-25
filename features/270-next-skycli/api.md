@@ -116,10 +116,13 @@ View the current config.
 #### Example
 ```
 $ skycli config view
+[cluster]
 email=user@skygear.io
-app=myapp
-admin-key=
 cluster-server=https://1.2.3.4
+admin-key=
+
+[app]
+app=myapp
 ```
 
 ### skycli config set-app
@@ -283,3 +286,13 @@ function name in config file. Deploy all functions if `[FUNCTION_NAME]` is missi
 `skycli cf logs [FUNCTION_NAME]`
 
 Show cloud functions logs. Aggregate all function logs if `[FUNCTION_NAME]` is missing.
+
+## Config files structure
+
+### ~/.skycli/skyclirc
+
+- cluster controller endpoint
+- user credentials 
+
+### ./.skyclirc
+- current app
