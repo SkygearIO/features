@@ -19,10 +19,6 @@ The following spec will cover the EE version first.
 
 ## Commands
 
-- skycli login (alisa of `skycli auth login`)
-
-- skycli logout (alisa of `skycli auth logout`)
-
 - skycli auth
     - [skycli auth login](#skycli-auth-login)
     - [skycli auth logout](#skycli-auth-logout)
@@ -50,6 +46,15 @@ The following spec will cover the EE version first.
     - [skycli cf list](#skycli-cf-list)
     - [skycli cf deploy [FUNCTION_NAME]](#skycli-cf-deploy)
     - [skycli cf logs [FUNCTION_NAME]](#skycli-cf-logs)
+
+
+## Commands alias
+
+- skycli login -> skycli auth login
+- skycli logout -> skycli auth logout
+- skycli list -> skycli cf list
+- skycli deploy -> skycli cf deploy
+- skycli logs -> skycli cf logs
 
 
 ## Architecture
