@@ -133,33 +133,50 @@ $ skycli app view-config > ./tenant-config.yaml
 $ skycli app update-config -f ./tenant-config.yaml
 ```
 
-### skycli app add-domain
+### skycli domain
 
-`skycli app add-domain [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE]`
+#### Overview
 
-Add new custom domain to app, provide key and cert files to use the custom tls
-certs. Cert and key should be PEM-encoded X.509, RSA (2048) key.
-Key and cert need to be provided at the same time. If there is no key and cert,
-use let's encrypt instead.
+### skycli domain add
 
-#### Flags
+`skycli domain add [CUSTOM_DOMAIN]`
 
-- `--key=[KEY_FILE]`
+This command will only add domain into the app. The domain is not usable in
+this stage. User need to verify the domain.
 
-    Provide custom tls key.
+#### Example
 
+```
+$ skycli domain add api.example.com
+Added domain api.example.com successfully!
 
-- `--cert=[CERT_FILE]`
+1. Add the TXT record below to your DNS provider to verify your own example.com
 
-    Provide custom tls cert.
+    Type    Host            Value
+    TXT     example.com     skygear-cloud-verification=5636486ffc5a4dfebf4a13f480bd9a95
 
+2. Add `CNAME` record to make sure your domain is pointing to `cf.skygearapis.io`.
 
-### skycli app update-domain
+After updating DNS records, run `skycli domain verify api.example.com` to verify domain.
+```
 
-`skycli app update-domain [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE] --use-letsencrypt`
+### skycli domain verify
 
-Update domain tls certificates. Key and cert need to be provided at the same
-time.
+`skycli domain verify [CUSTOM_DOMAIN]`
+
+Verify the given domain, if the verification fails. Will show the verification
+instructions again.
+
+(Single deployment version) After verification success. The domain will be usable immediately with letsencrypt ssl.
+
+(Immutable deployment version) After verification success. The domain will point the to current active version deployment by default. We can point domain to specific deployment by `skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSION_HASH]`.
+
+### skycli domain update
+
+`skycli domain update [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE] --use-letsencrypt`
+
+Update domain tls certificates. Cert and key should be PEM-encoded X.509, RSA (2048) key.
+Key and cert need to be provided at the same time.
 
 #### Flags
 
@@ -176,9 +193,9 @@ time.
     Configure using let's encrypt certs for the given domain.
 
 
-### skycli app list-domain
+### skycli domain list
 
-`skycli app list-domain`
+`skycli domain list`
 
 List all custom domain of apps.
 

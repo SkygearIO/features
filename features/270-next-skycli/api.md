@@ -40,9 +40,12 @@ The following spec will cover the EE version first.
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-config](commands.md#skycli-app-view-config)
     - [skycli app update-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
-    - [skycli app add-domain [CUSTOM_DOMAIN]](commands.md#skycli-app-add-domain)
-    - [skycli app update-domain [CUSTOM_DOMAIN]](commands.md#skycli-app-update-domain)
-    - [skycli app list-domain](commands.md#skycli-app-add-domain)
+
+- skycli domain
+    - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
+    - [skycli domain verify [CUSTOM_DOMAIN]](commands.md#skycli-domain-verify)
+    - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
+    - [skycli domain list](commands.md#skycli-domain-list)
 
 - skycli cf
     - [skycli cf list](commands.md#skycli-cf-list)
@@ -62,7 +65,6 @@ The following spec will cover the EE version first.
 - skycli list -> skycli cf list
 - skycli deploy -> skycli cf deploy
 - skycli logs -> skycli cf logs
-
 
 ## Architecture
 
