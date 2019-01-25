@@ -59,6 +59,10 @@ The following spec will cover the EE version first.
     - [skycli secret update [SECRET_NAME] [SECRET_VALUE]](commands.md#skycli-secret-update)
     - [skycli secret remove [SECRET_NAME]](commands.md#skycli-secret-remove)
 
+- skycli service
+    - [skycli service list](commands.md#skycli-service-list)
+    - [skycli service enable [SERVICE_NAME] [SERVICE_PARAMS...]](commands.md#skycli-service-enable)
+
 ## Commands alias
 
 - skycli login -> skycli auth login

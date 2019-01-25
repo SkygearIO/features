@@ -288,3 +288,32 @@ Update secret in app
 Remove secret in app
 
 `skycli secret remove [SECRET_NAME]`
+
+### skycli service list
+
+`skycli service list`
+
+Show supported external services, maybe different based on user's plan.
+
+```
+$ skycli service list
+SERVICE NAME        STATUS
+mongodb             true
+mysql               false
+s3                  false
+```
+
+### skycli service enable
+
+`skycli service enable [SERVICE_NAME] [SERVICE_PARAMS...]`
+
+Enable external service like mongodb, postsql... etc. `SERVICE_PARAMS` depends on
+the services. The service credentials will be stored in secret.
+
+#### Example
+```
+$ skycli service enable mongodb --size=50GB
+> Enabling mongodb...
+> Success!
+> Created mongodb secret `mogodb_uri`
+```
