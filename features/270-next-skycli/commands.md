@@ -211,3 +211,43 @@ function name in config file. Deploy all functions if `[FUNCTION_NAME]` is missi
 `skycli cf logs [FUNCTION_NAME]`
 
 Show cloud functions logs. Aggregate all function logs if `[FUNCTION_NAME]` is missing.
+
+## skycli secret
+
+#### Overview
+
+Manage current app secret. To use secret in cloud function, user should update 
+cloud function configure to uses secrets from environment variables. (TBD: when deciding cf config file)
+
+### skycli secret list
+
+`skycli secret list`
+
+Show all secret in app
+
+#### Example
+```
+$skycli secret list
+NAME
+mongo_db_url
+aws_access_id
+aws_access_secret
+```
+
+### skycli secret create
+
+`skycli secret create [SECRET_NAME] [SECRET_VALUE]`
+
+Create new secret in app
+
+### skycli secret update
+
+Update secret in app
+
+`skycli secret update [SECRET_NAME] [SECRET_VALUE]`
+
+### skycli secret remove
+
+Remove secret in app
+
+`skycli secret remove [SECRET_NAME]`

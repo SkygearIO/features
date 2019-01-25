@@ -49,6 +49,12 @@ The following spec will cover the EE version first.
     - [skycli cf deploy [FUNCTION_NAME]](commands.md#skycli-cf-deploy)
     - [skycli cf logs [FUNCTION_NAME]](commands.md#skycli-cf-logs)
 
+- skycli secret
+    - [skycli secret list](commands.md#skycli-secret-list)
+    - [skycli secret create [SECRET_NAME] [SECRET_VALUE]](commands.md#skycli-secret-create)
+    - [skycli secret update [SECRET_NAME] [SECRET_VALUE]](commands.md#skycli-secret-update)
+    - [skycli secret remove [SECRET_NAME]](commands.md#skycli-secret-remove)
+
 ## Commands alias
 
 - skycli login -> skycli auth login
