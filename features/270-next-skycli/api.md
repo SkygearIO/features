@@ -51,6 +51,7 @@ The following spec will cover the EE version first.
     - [skycli cf list](commands.md#skycli-cf-list)
     - [skycli cf deploy [FUNCTION_NAME]](commands.md#skycli-cf-deploy)
     - [skycli cf logs [FUNCTION_NAME]](commands.md#skycli-cf-logs)
+    - [skycli cf invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-cf-invoke)
 
 - skycli secret
     - [skycli secret list](commands.md#skycli-secret-list)

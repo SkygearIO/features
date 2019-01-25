@@ -229,6 +229,26 @@ function name in config file. Deploy all functions if `[FUNCTION_NAME]` is missi
 
 Show cloud functions logs. Aggregate all function logs if `[FUNCTION_NAME]` is missing.
 
+### skycli cf logs
+
+`skycli cf invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
+
+Invoke cloud function.
+
+#### Example
+```
+$skycli cf invoke helloworld --payload {"string": "value", "int": 1}
+{"result":"OK"}
+```
+
+#### Flags
+
+- `--show-log`
+
+    Include the execution log in response.
+
+    *We may not do it in the first version, need structured logs support to filter logs from current request.*
+
 ## skycli secret
 
 #### Overview
