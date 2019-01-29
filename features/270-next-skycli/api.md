@@ -79,6 +79,9 @@ The following spec will cover the EE version first.
     - skycli sms-verification configure
     - skycli sms-verification test
 
+- skycli sso
+    - [skycli sso configure [PROVIDER_NAME]](commands.md#skycli-sso-configure)
+
 ## Commands alias
 
 - skycli login -> skycli auth login

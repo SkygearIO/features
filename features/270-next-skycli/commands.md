@@ -391,3 +391,47 @@ $ skycli welcome-email configure
  preferred editor.)
 ? Send test email:
 ```
+
+## skycli sso
+
+Social login configuration.
+
+### skycli sso configure
+
+`skycli sso configure [PROVIDER(google|facebook|linkedin|instagram)]`
+
+**Using flags**
+- `--enabled=(true/false)` Enable or disable provider social login. If `enabled=true`, user need to provide
+    required parameters.`
+- `--merge-same-email-user=(true/false)` When this is on, users with identical email address, signed in from different auth providers, will be merged as the same user. This setting apply to all sso providers.
+- `--allow-redirect-urls` Comma separated. Skygear will only redirect users to these URLs; Allow all URLs if it is not provided. This setting apply to all sso providers.
+- `--client-id` Provider oauth client id.
+- `--client-secret` Provider oauth client secret.
+- `--default-scopes` Comma separated. The default scopes when calling provider authentication links,
+can be overwritten by providing scopes in client SDK.
+
+**Using flags**
+
+```sh
+$ skycli sso configure google \
+    --enabled=true \
+    --merge-same-email-user=true \
+    --allow-redirect-urls=http://localhost:5000,http://web.myapp.com,myapp://myiosapp.com \
+    --client-id=123456.apps.googleusercontent.com \
+    --client-secret=xxxxx \
+    --default-scopes=email,profile
+```
+
+**Interactive cli**
+
+```sh
+$ skycli sso configure google 
+? Enabled? (y/N)
+? Merge users with identical email addresses? When this is on, users with
+  identical email address, signed in from different auth providers,will be
+  merged as the same user. (y/N)
+? Allow Redirect URLS, allow all URLs if it is empty (Comma separated):
+? Client id:
+? Client secret:
+? Default scopes (Comma separated):
+```
