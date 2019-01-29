@@ -9,14 +9,8 @@ and password interactively.
 
 #### Flags
 
-- `--email=EMAIL`
-
-    Login as cluster user, ask for password interactively.
-
-- `--admin-key=ADMIN_KEY`
-
-    Login as cluster admin, no password is needed.
-
+- `--email=EMAIL` Login as cluster user, ask for password interactively.
+- `--admin-key=ADMIN_KEY` Login as cluster admin, no password is needed.
 
 ### skycli auth logout
 
@@ -180,18 +174,9 @@ Key and cert need to be provided at the same time.
 
 #### Flags
 
-- `--key=[KEY_FILE]`
-
-    Provide custom tls key.
-
-- `--cert=[CERT_FILE]`
-
-    Provide custom tls cert.
-
-- `--use-letsencrypt`
-
-    Configure using let's encrypt certs for the given domain.
-
+- `--key=[KEY_FILE]` Provide custom tls key.
+- `--cert=[CERT_FILE]` Provide custom tls cert.
+- `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
 
 ### skycli domain list
 
@@ -243,9 +228,7 @@ $skycli cf invoke helloworld --payload {"string": "value", "int": 1}
 
 #### Flags
 
-- `--show-log`
-
-    Include the execution log in response.
+- `--show-log` Include the execution log in response.
 
     *We may not do it in the first version, need structured logs support to filter logs from current request.*
 
