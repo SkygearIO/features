@@ -63,6 +63,10 @@ The following spec will cover the EE version first.
     - [skycli service list](commands.md#skycli-service-list)
     - [skycli service enable [SERVICE_NAME] [SERVICE_PARAMS...]](commands.md#skycli-service-enable)
 
+- skycli welcome-email
+    - [skycli welcome-email configure](commands.md#skycli-welcome-email-configure)
+    - [skycli welcome-email test](commands.md#skycli-welcome-email-test)
+
 ## Commands alias
 
 - skycli login -> skycli auth login

@@ -300,3 +300,51 @@ $ skycli service enable mongodb --size=50GB
 > Success!
 > Created mongodb secret `mogodb_uri`
 ```
+
+## skycli welcome-email
+
+Configure welcome email.
+
+### skycli welcome-email configure
+
+Configure welcome email, allow provide parameters by flags or answer question in
+ interactive cli. If the flags are provided, interactive cli will skip
+ the questions.
+
+#### Flags
+
+- `--enabled=(true/false)` Enable or disable welcome email. If `enabled=true`, user need to provide
+    required parameters.
+- `--sender-name` Sender name of the email
+- `--sender-email` Sender email of the email
+- `--reply-to-name` Reply to name of the email
+- `--reply-to-email` Reply to email of the email
+- `--subject` Subject of the email
+- `--email-html-template` Email html template file
+
+
+#### Example
+
+**Using flags**
+
+```sh
+$ skycli welcome-email configure \
+    --enabled=true
+    --sender-email=no-reply@skygeario.com
+    --subject=Welcome!
+    --email-html-template=./welcome-email.html
+```
+
+**Interactive cli**
+
+```sh
+$ skycli welcome-email configure
+? Enabled? (y/N)
+? Sender Name (Optional):
+? Sender Email (Required): (no-reply@skygeario.com)
+? Reply To Name (Optional):
+? Reply To Email (Optional):
+? Subject (Required):
+? Edit email html template. (Press <enter> to launch your
+ preferred editor.)
+```
