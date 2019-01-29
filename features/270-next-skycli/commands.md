@@ -460,3 +460,26 @@ $ skycli sso configure google
 ? Client secret:
 ? Default scopes (Comma separated):
 ```
+
+### skycli sso view-config
+
+`skycli sso view-config [PROVIDER(google|facebook|linkedin|instagram)]`
+
+View given provider sso config.
+
+#### Example
+
+```sh
+$ skycli sso view-config google
+> Status: Enabled
+> Merge users with identical email addresses: Yes
+> Allow Redirect URLS:
+- http://localhost:5000
+- http://web.myapp.com
+- myapp://myiosapp.com
+> Client id: 123456.apps.googleusercontent.com
+> Client secret: xxxxx
+> Default scopes:
+- email
+- profile
+```
