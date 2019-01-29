@@ -392,6 +392,31 @@ $ skycli welcome-email configure
 ? Send test email:
 ```
 
+### skycli welcome-email view-config
+
+`skycli welcome-email view-config`
+
+View welcome email config.
+
+Example
+```sh
+$ skycli welcome-email view-config
+> Status: Enabled
+> Sender Name:
+> Sender Email: no-reply@skygeario.com
+> Reply To Name:
+> Reply To Email:
+> Subject:
+> Email Template:
+<div>
+<p>Hello {% if user.name %}{{ user.name }}{% else %}{{ user.email }}{% endif %},</p>
+
+<p>Welcome to Skygear.</p>
+
+<p>Thanks.</p>
+</div>
+```
+
 ## skycli sso
 
 Social login configuration.

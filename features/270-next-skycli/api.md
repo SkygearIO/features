@@ -66,6 +66,7 @@ The following spec will cover the EE version first.
 - skycli welcome-email
     - [skycli welcome-email configure](commands.md#skycli-welcome-email-configure)
     - [skycli welcome-email test](commands.md#skycli-welcome-email-test)
+    - [skycli welcome-email view-config](commands.md#skycli-welcome-email-view-config)
 
 - skycli forgot-password
     - skycli forgot-password configure
