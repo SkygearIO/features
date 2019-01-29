@@ -67,6 +67,18 @@ The following spec will cover the EE version first.
     - [skycli welcome-email configure](commands.md#skycli-welcome-email-configure)
     - [skycli welcome-email test](commands.md#skycli-welcome-email-test)
 
+- skycli forgot-password
+    - skycli forgot-password configure
+    - skycli forgot-password test
+
+- skycli email-verification
+    - skycli email-verification configure
+    - skycli email-verification test
+
+- skycli sms-verification
+    - skycli sms-verification configure
+    - skycli sms-verification test
+
 ## Commands alias
 
 - skycli login -> skycli auth login
