@@ -88,16 +88,16 @@ app.
 Add user into the current app. Change current app by
 `skycli config set-app`.
 
-### skycli app view-config
+### skycli app view-tenant-config
 
-`skycli app view-config`
+`skycli app view-tenant-config`
 
 View the current app tenant config in yaml format.
 
 #### Example
 
 ```
-$ skycli app view-config
+$ skycli app view-tenant-config
 - APP_NAME: myapp
 - MASTER_KEY: xxxxx
 - API_KEY: xxxxx
@@ -109,22 +109,47 @@ $ skycli app view-config
         CLIENT_SECRET: xxxxx
 ```
 
-### skycli app update-config
+### skycli app update-tenant-config
 
-`skycli app update-config -f [TENANT_CONFIG_YAML_FILE]`
+`skycli app update-tenant-config -f [TENANT_SETTING_YAML_FILE]`
 
-Update tenant config by providing the yaml file.
+Support update interactively or update by providing a file.
 
 #### Example
 
+**Update in editor**
+```sh
+$ skycli app update-tenant-config
+? Edit application tenant config. Press <enter> to launch your preferred editor.
+
+# Enter editor mode with existing config
+- APP_NAME: myapp
+- MASTER_KEY: xxxxx
+- API_KEY: xxxxx
+- DATABASE_URL: xxxxx
+- SSO_CONFIGS:
+    - NAME: google
+        SCOPE: xxxx
+        CLIENT_ID: xxxxx
+        CLIENT_SECRET: xxxxx
+~
+~
+~
+~
+~
+~
+~
+```
+
+**Update by providing a file**
 ```sh
 # 1. If you don't have a copy of the tenant config file, get it from the view command.
-$ skycli app view-config > ./tenant-config.yaml
+$ skycli app view-tenant-config > ./tenant-config.yaml
 
 # 2. Update the tenant-config.yaml file
 
 # 3. Apply the change to the app
-$ skycli app update-config -f ./tenant-config.yaml
+$ skycli app update-tenant-config -f ./tenant-config.yaml
 ```
 
 ### skycli domain

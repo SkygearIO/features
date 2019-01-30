@@ -38,8 +38,8 @@ The following spec will cover the EE version first.
     - [skycli app list](commands.md#skycli-app-list)
     - [skycli app create](commands.md#skycli-app-create)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
-    - [skycli app view-config](commands.md#skycli-app-view-config)
-    - [skycli app update-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
+    - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
 
 - skycli domain
     - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
