@@ -33,10 +33,20 @@ All event payloads follows following payload format:
     "data": {
         "key_name_1": "event_data_key_value",
         "key_name_2": "event_data_key_value",
-        ...
+        ...,
+        "context": {
+            "user": <current user object>,
+            "req": {
+                "path": "request_path",
+                "body": <original_request_body>,
+                "id": "request_id"
+            }
+        }
     }
 }
 ```
+
+Note that, `context` is above format is still under discussion.
 
 ## Responding to a webhook
 
@@ -223,3 +233,4 @@ webhook will retry after 5 seconds, at most total 3 times.
 - Should have a limit number of hooks of a event?
 - ~~Should support wildcard event (`*`, any time any event)?~~
 - ~~Timeout of a `SYNC` hook.~~
+- `context` payload of the webhook request.
