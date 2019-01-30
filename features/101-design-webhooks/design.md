@@ -4,7 +4,7 @@
 
 skygear sends webhooks for events that happen in your app, and are designed to help a developer to monitor events, sync database, and many other use cases.
 
-When one of events is triggered, skygear sends a HTTP POST payload to the webhook's configured URL.
+When one of events is triggered, skygear sends a HTTP POST with a payload to the webhook's configured URL.
 
 ## SYNC and ASYNC hooks
 
@@ -42,19 +42,18 @@ All event payloads follows following payload format:
 
 To acknowledge receipt of a webhook, webhook endpoint should return a 2xx HTTP status code. All response codes outside this range, including 3xx codes, will indicate to skygear the request is failed.
 
-For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. 
+For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. The behavior is defined by each gear, so will not be covered in this spec.
 
 ## Configure webhook
 
 A gear should provide a REST interface for configuring webhooks, and a webhook is configured by following arguments:
 
-
-|  |  | require |
+| argument | description | require |
 | -------- | -------- | -------- | 
-| `events` | A list of gear events, such as: ["after_signup", "before_login"] | ✓ |
-| `url` | The url of the webhook | ✓ |
-| `async` | default: true | |
-| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` | |
+| `events` | A list of gear events, such as: ["after_signup", "before_login"]. | ✓ |
+| `url` | The url of the webhook. | ✓ |
+| `async` | default is `true`. | |
+| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` digest. | |
 
 
 Each gear should provide following REST interfaces:
@@ -168,9 +167,22 @@ EOF
 
 When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
 
+## Timeout of a `SYNC` hook
+
+A `SYNC` hook is considered failed if it can't response within 5 seconds.
+
+## Retry mechanism
+
+If a request got
+
+- 503 Services Unavailable
+- 429 Too Many Requests
+ 
+webhook will retry after 5 seconds, at most total 3 times.
+
 ## TBD
 
-- Should webhook provide retry mechanism?
+- ~~Should webhook provide retry mechanism?~~
 - Should have a limit number of hooks of a event?
-- Should support wildcard event (`*`, any time any event)?
-- Timeout of a `SYNC` hook.
+- ~~Should support wildcard event (`*`, any time any event)?~~
+- ~~Timeout of a `SYNC` hook.~~
