@@ -17,6 +17,24 @@ The following spec will cover the EE version first.
 - Cluster user can update apps custom domain setting, add new custom domain to app
 - Cluster admin can do everything in the cluster
 
+## Commands naming guidelines
+
+**Format**
+
+```
+skycli [group] [verb/action] [parameters]
+```
+
+**Some common operations**
+
+| Operation | Verb        |
+|-----------|-------------|
+| Create    | create      |
+| Read      | view / list |
+| Update    | update      |
+| Delete    | remove      |
+
+
 ## Commands
 
 - skycli auth
