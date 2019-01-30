@@ -1,4 +1,4 @@
-# WIP: next webhooks design
+# next webhooks design
 
 ## Overview
 
@@ -44,6 +44,42 @@ To acknowledge receipt of a webhook, webhook endpoint should return a 2xx HTTP s
 
 For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. The behavior is defined by each gear, so will not be covered in this spec.
 
+Take auth gear as an example, its before family hooks accept that a hook returns a user object to modify current user object.
+
+```javascript=
+var express = require('express');
+var bodyParser = require('body-parser');
+
+var app = express();
+
+app.use(bodyParser.json());
+
+app.post('/before_signup', function(req, res){
+    var user = req.body.data.user;
+
+    user.metadata.loveCat = true;
+
+    res.status(200);
+    res.send(user);
+});
+```
+
+If webhook wants to include additional information for an error case, it could return with payload:
+
+| key | description | require |
+| -------- | -------- | -------- | 
+| `error` | [string] An error message. | ✓ |
+| `code` | [number] An error code. |  |
+
+example:
+
+```
+{
+    "code": 1001,
+    "message": "EVERYONE LOVES CAT!"
+}
+```
+
 ## Configure webhook
 
 A gear should provide a REST interface for configuring webhooks, and a webhook is configured by following arguments:
@@ -54,6 +90,7 @@ A gear should provide a REST interface for configuring webhooks, and a webhook i
 | `url` | The url of the webhook. | ✓ |
 | `async` | default is `true`. | |
 | `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` digest. | |
+| `timeout` | default is 5 (seconds), it allows to be configured up to 10 (seconds).  | |
 
 
 Each gear should provide following REST interfaces:
@@ -169,11 +206,11 @@ When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be a
 
 ## Timeout of a `SYNC` hook
 
-A `SYNC` hook is considered failed if it can't response within 5 seconds.
+A `SYNC` hook is considered failed if it can't response within 5 seconds. Where the value of timeout is configurable of each webhook (up to 10 seconds).
 
 ## Retry mechanism
 
-If a request got
+If a request (both `SYNC` and `ASYNC` hook) got
 
 - 503 Services Unavailable
 - 429 Too Many Requests
