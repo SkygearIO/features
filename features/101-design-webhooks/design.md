@@ -46,9 +46,27 @@ For some events, it may allow to webhook to modify changes (e.x. auth gear's bef
 
 ## Configure webhook
 
-A gear should provide an REST interface for configuring webhooks, it should follow following format:
+A gear should provide a REST interface for configuring webhooks, and a webhook is configured by following arguments:
 
-- create hooks
+
+|  |  | require |
+| -------- | -------- | -------- | 
+| `events` | A list of gear events, such as: ["after_signup", "before_login"] | ✓ |
+| `url` | The url of the webhook | ✓ |
+| `async` | default: true | |
+| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` | |
+
+
+Each gear should provide following REST interfaces:
+
+- `POST /:gear_name/hooks` - create hooks
+- `GET /:gear_name/hooks` - get hooks
+- `PATCH /:gear_name/hooks/:hook_id` - update a hook
+- `DELETE /:gear_name/hooks/:hook_id` - delete a hook
+
+### Usage example:
+
+#### create hooks
 
 ```bash=
 curl -X POST -H "Content-Type: application/json" \
@@ -88,7 +106,8 @@ EOF
 ]
 ```
 
-- Get hooks
+#### get hooks
+
 ```bash=
 curl http://localhost:3000/<gear name>/hooks
 EOF
@@ -112,7 +131,8 @@ EOF
 ]
 ```
 
-- Modify a hook
+#### update a hook
+
 ```bash=
 curl -X PATCH -H "Content-Type: application/json" \
 -d @- http://localhost:3000/<gear name>/hooks/<hook id> <<EOF
@@ -133,7 +153,8 @@ EOF
 }
 ```
 
-- Delete a hook
+#### delete a hook
+
 ```bash=
 curl -X DELETE -H "Content-Type: application/json" \
 http://localhost:3000/<gear name>/hooks/<hook id>/delete 
@@ -145,12 +166,11 @@ EOF
 
 ## Verify Request
 
-`X-Skygear-Webhhok-Signature` is generated the HMAC hex digest value from the `secret` of a hook.
+When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
 
 ## TBD
 
-- How `X-Skygear-Webhhok-Signature` works?
 - Should webhook provide retry mechanism?
 - Should have a limit number of hooks of a event?
 - Should support wildcard event (`*`, any time any event)?
-- Timeout of `SYNC` hooks.
+- Timeout of a `SYNC` hook.
