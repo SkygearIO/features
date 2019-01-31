@@ -273,10 +273,10 @@ Show all secret in app
 #### Example
 ```
 $skycli secret list
-NAME
-mongo_db_url
-aws_access_id
-aws_access_secret
+NAME                    LAST_UPDATED
+mongo_db_url            2019-01-31T15:00:00+08:00
+aws_access_id           2019-01-31T15:00:00+08:00
+aws_access_secret       2019-01-31T15:00:00+08:00
 ```
 
 ### skycli secret create
