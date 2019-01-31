@@ -210,6 +210,36 @@ EOF
 }
 ```
 
+## skycli
+
+A user can also use `skycli` to deploy webhooks with `skycli` configuration.
+
+```yaml=
+webhook:
+    auth_after_signup:
+        gear: auth
+        url: http://example.com/after_signup
+        events:
+            - after_signup
+        async: false
+        secret: secret
+        timeout: 5    
+    auth_before_login:
+        gear: auth
+        url: http://example.com/before_login
+        events:
+            - before_login
+        async: true
+        secret: secret
+        timeout: 10
+```
+
+`skycli` should also have some operation like `skycli webhooks deploy` to deploy webhooks.
+
+## versioning
+
+Like skygear cloud functions, webhooks should be consider as a "moving part". So no mattter a user deploy webhooks by `skycli` or gear REST interface, a new app version should be created as well. Note that, a new app version and a new unit version will be generated when deploy by REST interface every time.
+
 ## Verify Request
 
 When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
