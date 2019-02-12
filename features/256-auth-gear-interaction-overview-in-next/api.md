@@ -78,12 +78,14 @@ if err != nil {
     return response
 }
 
-err = hooks.ExecuteBeforeHooks(&user)
+err = hooks.ExecuteBeforeSyncHooks(&user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
     return response
 }
+
+hooks.ExecuteBeforeAsyncHooks(user)
 
 // DB operation
 err = userStore.update(user)
@@ -93,7 +95,9 @@ if err != nil {
     return response
 }
 
-err = hooks.ExecuteAfterHooks(user)
+hooks.ExecuteAfterAsyncHooks(user)
+
+err = hooks.ExecuteAfterSyncHooks(user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
@@ -111,10 +115,10 @@ In `before_XXX_sync` and `before_XXX`, it may alter user metadata, on the contra
 
 |  | alter metadata | alter auth data | raising an exception to stop operation |
 | -------- | -------- | -------- | ------ |
-| `before_XXX_sync`  | ✓     | 🚫 | ✓ |
-| `before_XXX`  |  ✓    | 🚫 | 🚫 |
-| `after_XXX_sync`  | 🚫     | 🚫 | ✓ |
-| `after_XXX`  |   🚫   | 🚫 | 🚫 |
+| `before_XXX_sync`  | ✓ | 🚫 | ✓ |
+| `before_XXX`  | 🚫 | 🚫 | 🚫 |
+| `after_XXX_sync`  | 🚫 | 🚫 | ✓ |
+| `after_XXX`  | 🚫 | 🚫 | 🚫 |
 
 
 Function signature of `before_XXX_sync` (`after_XXX_sync` is similar) hooked Cloud Function is:
@@ -172,25 +176,38 @@ Followings are hooks of auth actions:
 | -------- | -------- | 
 | `signup` | `before_signup_sync(user, context)`<br/>`before_signup(user, context)`<br/>`after_signup_sync(user, context)`<br/>`after_signup(user, context)`<br/> |
 | `login` | `before_login_sync(user, context)`<br/>`before_login(user, context)`<br/>`after_login_sync(user, context)`<br/>`after_login(user, context)` |
-| `disable` | `before_disable_sync(user, context)`<br/>`before_disable(user, context)`<br/>`after_disable_sync(user, context)`<br/>`after_disable(user, context)` |
-| `enable` | `before_enable_sync(user, context)`<br/>`before_enable(user, context)`<br/>`after_enable_sync(user, context)`<br/>`after_enable(user, context)` |
-| `roles` | `before_change_roles_sync(user, context)`<br/>`before_change_roles(user, context)`<br/>`after_change_roles_sync(user, context)`<br/>`after_change_roles(user, context)` |
 | `logout` | `before_logout_sync(user, context)`<br/>`before_logout(user, context)`<br/>`after_logout_sync(user, context)`<br/>`after_logout(user, context)` |
-| `change_password` | `before_change_password_sync(user, context)`<br/>`before_change_password(user, context)`<br/>`after_change_password_sync(user, context)`<br/>`after_change_password(user, context)` |
-| `reset_password` | `before_reset_password_sync(user, context)`<br/>`before_reset_password(user, context)`<br/>`after_reset_password_sync(user, context)`<br/>`after_reset_password(user, context)` |
-| `verify` | `before_verify_sync(user, context)`<br/>`before_verify(user, context)`<br/>`after_verify_sync(user, context)`<br/>`after_verify(user, context)` |
-| `unverify` | `before_unverify_sync(user, context)`<br/>`before_unverify(user, context)`<br/>`after_unverify_sync(user, context)`<br/>`after_unverify(user, context)` |
-| `update_metadata` | `before_update_metadata_sync(user, original_user, context)`<br/>`before_update_metadata(user, original_user, context)`<br/>`after_update_metadata_sync(user, original_user, context)`<br/>`after_update_metadata(user, original_user, context)` | 
+| `roles` | `before_roles_changed_sync(user, original_user, context)`<br/>`before_roles_changed(user, original_user, context)`<br/>`after_roles_changed_sync(user, original_user, context)`<br/>`after_roles_changed(user, original_user, context)` |
+| `enable` | `before_enable_changed_sync(user, original_user, context)`<br/>`before_enable_changed(user, original_user, context)`<br/>`after_enable_changed_sync(user, original_user, context)`<br/>`after_enable_changed(user, original_user, context)` |
+| `password` | `before_password_changed_sync(user, original_user, context)`<br/>`before_password_changed(user, original_user, context)`<br/>`after_password_changed_sync(user, original_user, context)`<br/>`after_password_changed(user, original_user, context)` |
+| `verify` | `before_verify_changed_sync(user, original_user, context)`<br/>`before_verify_changed(user, original_user, context)`<br/>`after_verify_changed_sync(user, original_user, context)`<br/>`after_verify_changed(user, original_user, context)` |
+| `metadata` | `before_metadata_changed_sync(user, original_user, context)`<br/>`before_metadata_changed(user, original_user, context)`<br/>`after_metadata_changed_sync(user, original_user, context)`<br/>`after_metadata_changed(user, original_user, context)` |
+| `user` | `before_user_changed_sync(user, original_user, context)`<br/>`before_user_changed(user, original_user, context)`<br/>`after_user_changed_sync(user, original_user, context)`<br/>`after_user_changed(user, original_user, context)` |
 
-To avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
+1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
-`context` should contain following information:
+   For example, a user's password changed could be due to:
 
-1. `context.user`: user who triggers the hook, ex: client user or admin.
-2. `context.req.path`: original request path from client, ex: for login, it is `/auth/login`.
-3. `context.req.body`: original request body from client, ex: for login, it would be an object with username and password.
-4. `context.req.id`: original request ID.
-5. `context.secrets`: secrets of the hook.
+   1. admin reset a user's password.
+   2. a user changes password by himself.
+   3. a user forgot password, and reset password via email form.
+
+   They are corresponding to following `context.req.path`:
+
+   1. `/reset_password`
+   2. `/change_passowrd`
+   3. `/forgot_password/reset_password`
+
+2. `user_changed` hooks are useful when a developer isn't sure which hook to implement, or it can be a hook to centralize a business logic that may be crossed over many hooks.
+
+3. And to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
+
+4. `context` should contain following information:
+
+   1. `context.user`: user who triggers the hook, ex: client user or admin.
+   2. `context.req.path`: original request path from client, ex: for login, it is `/auth/login`.
+   3. `context.req.body`: original request body from client, ex: for login, it would be an object with username and password.
+   4. `context.req.id`: original request ID.
 
 ## user metadata
 
