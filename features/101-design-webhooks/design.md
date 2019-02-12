@@ -92,7 +92,7 @@ example:
 
 ## Configure webhook
 
-A gear should provide a REST interface for configuring webhooks, and a webhook is configured by following arguments:
+webhook deploy mechanism will be covered in spec, please refer next cli design for more information. Followings are some variables that are configurable when deploying a webhook.
 
 | argument | description | require |
 | -------- | -------- | -------- | 
@@ -100,141 +100,7 @@ A gear should provide a REST interface for configuring webhooks, and a webhook i
 | `url` | The url of the webhook. | ✓ |
 | `async` | default is `true`. | |
 | `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` digest. | |
-| `timeout` | default is 5 (seconds), it allows to be configured up to 10 (seconds).  | |
-
-
-Each gear should provide following REST interfaces:
-
-- `POST /:gear_name/hooks` - create hooks
-- `GET /:gear_name/hooks` - get hooks
-- `PATCH /:gear_name/hooks/:hook_id` - update a hook
-- `DELETE /:gear_name/hooks/:hook_id` - delete a hook
-
-### Usage example:
-
-#### create hooks
-
-```bash=
-curl -X POST -H "Content-Type: application/json" \
--d @- http://localhost:3000/<gear name>/hooks <<EOF
-[
-    {
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "secret": "secret_string"
-    },
-    {
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "secret": "secret_string"
-    },
-]
-EOF
-[
-    {
-        "id": "<hook id>",
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "updated_at": "2019-01-06T20:39:23Z",
-        "created_at": "2019-01-06T17:26:27Z"
-    },
-    {
-        "id": "<hook id>",
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "updated_at": "2019-01-06T20:39:23Z",
-        "created_at": "2019-01-06T17:26:27Z"
-    },
-]
-```
-
-#### get hooks
-
-```bash=
-curl http://localhost:3000/<gear name>/hooks
-EOF
-[
-    {
-        "id": "<hook id>",
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "updated_at": "2019-01-06T20:39:23Z",
-        "created_at": "2019-01-06T17:26:27Z"
-    },
-    {
-        "id": "<hook id>",
-        "events": ["<name of the event>", "<name of the event>"],
-        "url": "<url of the endpoint>",
-        "async": true|false,
-        "updated_at": "2019-01-06T20:39:23Z",
-        "created_at": "2019-01-06T17:26:27Z"
-    },
-]
-```
-
-#### update a hook
-
-```bash=
-curl -X PATCH -H "Content-Type: application/json" \
--d @- http://localhost:3000/<gear name>/hooks/<hook id> <<EOF
-{
-    "events": ["<name of the event>", "<name of the event>"],
-    "url": "<url of the endpoint>",
-    "async": true|false,
-    "secret": "secret_string"
-}
-EOF
-{
-    "id": "<hook id>",
-    "events": ["<name of the event>", "<name of the event>"],
-    "url": "<url of the endpoint>",
-    "async": true|false,
-    "updated_at": "2019-01-06T20:39:23Z",
-    "created_at": "2019-01-06T17:26:27Z"
-}
-```
-
-#### delete a hook
-
-```bash=
-curl -X DELETE -H "Content-Type: application/json" \
-http://localhost:3000/<gear name>/hooks/<hook id>/delete 
-EOF
-{
-     "result": "OK"
-}
-```
-
-## skycli
-
-A user can also use `skycli` to deploy webhooks with `skycli` configuration.
-
-```yaml=
-webhook:
-    auth_after_signup:
-        gear: auth
-        url: http://example.com/after_signup
-        events:
-            - after_signup
-        async: false
-        secret: secret
-        timeout: 5    
-    auth_before_login:
-        gear: auth
-        url: http://example.com/before_login
-        events:
-            - before_login
-        async: true
-        secret: secret
-        timeout: 10
-```
-
-`skycli` should also have some operation like `skycli webhooks deploy` to deploy webhooks.
+| `timeout` | - default value of sync hook is 5 seconds, it allows to be configured up to 10 seconds.<br/>- default value of async hook is 60 seconds and up to 300 seconds.  | |
 
 ## versioning
 
@@ -244,23 +110,20 @@ Like skygear cloud functions, webhooks should be consider as a "moving part". So
 
 When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
 
-## Timeout of a `SYNC` hook
+## Timeout
 
-A `SYNC` hook is considered failed if it can't response within 5 seconds. Where the value of timeout is configurable of each webhook (up to 10 seconds).
+A `SYNC` hook is considered failed if it can't response within 5 seconds, where the value of timeout is configurable of each hook (up to 10 seconds).
+
+For `ASYNC` hook, it is considered failed if it can't return within 60 seconds, where the value can be configured up to 300 seconds.
 
 ## Retry mechanism
 
-If a request (both `SYNC` and `ASYNC` hook) got
+If a `SYNC` hook got
 
 - 503 Services Unavailable
 - 429 Too Many Requests
+
+The hook will wait certain amount of time, and retry again.
  
-webhook will retry after 5 seconds, at most total 3 times.
-
-## TBD
-
-- ~~Should webhook provide retry mechanism?~~
-- Should have a limit number of hooks of a event?
-- ~~Should support wildcard event (`*`, any time any event)?~~
-- ~~Timeout of a `SYNC` hook.~~
-- `context` payload of the webhook request.
+- When `Retry-After` header is presented, and the delay seconds is less than 30 seconds, the hook will respect the value and retry once.
+- Or, the hook will retry after 5 seconds, at most 3 times.
