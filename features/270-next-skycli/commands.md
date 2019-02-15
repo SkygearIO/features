@@ -186,15 +186,13 @@ After updating DNS records, run `skycli domain verify api.example.com` to verify
 Verify the given domain, if the verification fails. Will show the verification
 instructions again.
 
-(Single deployment version) After verification success. The domain will be usable immediately with letsencrypt ssl.
-
-(Immutable deployment version) After verification success. The domain will point the to current active version deployment by default. We can point domain to specific deployment by `skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSION_HASH]`.
+After verification success. The domain will be usable immediately with letsencrypt ssl.
 
 ### skycli domain update
 
 `skycli domain update [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE] --use-letsencrypt`
 
-Update domain tls certificates. Cert and key should be PEM-encoded X.509, RSA (2048) key.
+Setup or update domain tls certificates. Cert and key should be PEM-encoded X.509, RSA (2048) key.
 Key and cert need to be provided at the same time.
 
 #### Flags
@@ -202,6 +200,17 @@ Key and cert need to be provided at the same time.
 - `--key=[KEY_FILE]` Provide custom tls key.
 - `--cert=[CERT_FILE]` Provide custom tls cert.
 - `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
+
+### skycli domain set-alias
+
+`skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]`
+
+Point the custom domain to specific CF version. Before setting the alias, the
+custom domain will point to the default domain `[APP_NAME].skygear.io`.
+
+#### Example
+
+`skycli domain set-alias api.example.com myapp.[HASH].skygear.io`
 
 ### skycli domain list
 

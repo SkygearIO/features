@@ -63,6 +63,7 @@ skycli [group] [verb/action] [parameters]
     - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
     - [skycli domain verify [CUSTOM_DOMAIN]](commands.md#skycli-domain-verify)
     - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
+    - [skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]](commands.md#skycli-domain-set-alias)
     - [skycli domain list](commands.md#skycli-domain-list)
 
 - skycli cf
