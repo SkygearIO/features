@@ -243,14 +243,14 @@ The structure of user object could be:
 ```
 {
     id: <id>,
-    createdAt: <createdAt>,
-    updatedAt: <updatedAt>,
+    created_at: <createdAt>,
+    updated_at: <updatedAt>,
     disabled: <disabled>,
     roles: [<role>, <role>, <role>, ...],
     metadata: {
-        avatarUrl: <avatarUrl>,
+        avatar_url: <avatarUrl>,
         birthday: <birthday>,
-        preferredLang: <preferredLang>,
+        preferred_lang: <preferredLang>,
         // any other user common attributes
         ...
         // any other arbitrary form attributes
