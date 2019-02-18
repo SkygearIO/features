@@ -178,11 +178,11 @@ Followings are hooks of auth actions:
 | `login` | `before_login_sync(user, context)`<br/>`before_login(user, context)`<br/>`after_login_sync(user, context)`<br/>`after_login(user, context)` |
 | `logout` | `before_logout_sync(user, context)`<br/>`before_logout(user, context)`<br/>`after_logout_sync(user, context)`<br/>`after_logout(user, context)` |
 | `roles` | `before_roles_changed_sync(user, original_user, context)`<br/>`before_roles_changed(user, original_user, context)`<br/>`after_roles_changed_sync(user, original_user, context)`<br/>`after_roles_changed(user, original_user, context)` |
-| `enable` | `before_enable_changed_sync(user, original_user, context)`<br/>`before_enable_changed(user, original_user, context)`<br/>`after_enable_changed_sync(user, original_user, context)`<br/>`after_enable_changed(user, original_user, context)` |
+| `enable` | `before_enable_sync(user, context)`<br/>`before_enable(user, context)`<br/>`after_enable_sync(user, context)`<br/>`after_enable(user, context)`<br/>`before_disable_sync(user, context)`<br/>`before_disable(user, context)`<br/>`after_disable_sync(user, context)`<br/>`after_disable(user, context)` |
 | `password` | `before_password_changed_sync(user, original_user, context)`<br/>`before_password_changed(user, original_user, context)`<br/>`after_password_changed_sync(user, original_user, context)`<br/>`after_password_changed(user, original_user, context)` |
-| `verify` | `before_verify_changed_sync(user, original_user, context)`<br/>`before_verify_changed(user, original_user, context)`<br/>`after_verify_changed_sync(user, original_user, context)`<br/>`after_verify_changed(user, original_user, context)` |
-| `metadata` | `before_metadata_changed_sync(user, original_user, context)`<br/>`before_metadata_changed(user, original_user, context)`<br/>`after_metadata_changed_sync(user, original_user, context)`<br/>`after_metadata_changed(user, original_user, context)` |
-| `user` | `before_user_changed_sync(user, original_user, context)`<br/>`before_user_changed(user, original_user, context)`<br/>`after_user_changed_sync(user, original_user, context)`<br/>`after_user_changed(user, original_user, context)` |
+| `verify` | `before_verified_sync(user, context)`<br/>`before_verified(user, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)`<br/>`before_unverified_sync(user, context)`<br/>`before_unverified(user, context)`<br/>`after_unverified_sync(user, context)`<br/>`after_unverified(user, context)` |
+| `metadata` | `before_metadata_modified_sync(user, original_user, context)`<br/>`before_metadata_modified(user, original_user, context)`<br/>`after_metadata_modified_sync(user, original_user, context)`<br/>`after_metadata_modified(user, original_user, context)` |
+| `user` | `before_user_object_modified_sync(user, original_user, context)`<br/>`before_user_object_modified(user, original_user, context)`<br/>`after_user_object_modified_sync(user, original_user, context)`<br/>`after_user_object_modified(user, original_user, context)` |
 
 1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
@@ -198,7 +198,9 @@ Followings are hooks of auth actions:
    2. `/change_passowrd`
    3. `/forgot_password/reset_password`
 
-2. `user_changed` hooks are useful when a developer isn't sure which hook to implement, or it can be a hook to centralize a business logic that may be crossed over many hooks.
+2. `before_user_object_modified_sync`, `before_user_object_modified`, `after_user_object_modified_sync` and `after_user_modified_updated` are special hooks, they can be used in following situation:
+   1.  implement an external user profile store
+   2.  use one hook to capture all changes of the user auth data or metadata.
 
 3. And to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
 
