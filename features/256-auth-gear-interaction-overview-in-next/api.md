@@ -95,14 +95,14 @@ if err != nil {
     return response
 }
 
-hooks.ExecuteAfterAsyncHooks(user)
-
 err = hooks.ExecuteAfterSyncHooks(user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
     return response
 }
+
+hooks.ExecuteAfterAsyncHooks(user)
 
 // DB commit
 txContext.CommitTx();
