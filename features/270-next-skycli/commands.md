@@ -98,22 +98,21 @@ View the current app tenant config in yaml format.
 
 ```
 $ skycli app view-tenant-config
-- APP_NAME: myapp
 - MASTER_KEY: xxxxx
 - API_KEY: xxxxx
-- DATABASE_URL: xxxxx
-- SSO_CONFIGS:
-    - NAME: google
-        SCOPE: xxxx
-        CLIENT_ID: xxxxx
-        CLIENT_SECRET: xxxxx
+- SSO:
+  ALLOWED_CALLBACK_URLS:
+  - http://127.0.0.1:5000/
+  - http://localhost:5000/
+  MERGE_USERS_WITH_IDENTICAL_EMAIL: true
 ```
 
 ### skycli app update-tenant-config
 
 `skycli app update-tenant-config -f [TENANT_SETTING_YAML_FILE]`
 
-Support update interactively or update by providing a file.
+Update tenant config interactively or by providing a file. For the config format,
+please see [user facing config](user-facing-config.md)
 
 #### Example
 
@@ -123,15 +122,14 @@ $ skycli app update-tenant-config
 ? Edit application tenant config. Press <enter> to launch your preferred editor.
 
 # Enter editor mode with existing config
-- APP_NAME: myapp
 - MASTER_KEY: xxxxx
 - API_KEY: xxxxx
-- DATABASE_URL: xxxxx
-- SSO_CONFIGS:
-    - NAME: google
-        SCOPE: xxxx
-        CLIENT_ID: xxxxx
-        CLIENT_SECRET: xxxxx
+- SSO:
+  ALLOWED_CALLBACK_URLS:
+  - http://127.0.0.1:5000/
+  - http://localhost:5000/
+  MERGE_USERS_WITH_IDENTICAL_EMAIL: true
+  ...
 ~
 ~
 ~
