@@ -127,7 +127,7 @@ Function signature of `before_XXX_sync` (`after_XXX_sync` is similar) hooked Clo
 const skygear = require('skygear');
 
 /* 
- * user: user object to be saved
+ * user: user object to be modified
  * context: current exection context
  */
 function before_XXX_sync(user, context) {
@@ -138,7 +138,7 @@ function before_XXX_sync(user, context) {
     
     /*
      * or rasie exception
-     * throw new Error("some error");
+     * throw new SkygearError("some error");
      */
 
     // return updated user object
@@ -154,17 +154,12 @@ Function signature of `after_XXX` (`before_XXX` is similar) hooked Cloud Functio
 const skygear = require('skygear');
 
 /* 
- * user: user object to be saved
+ * user: user object to be modified
  * context: current exection context
  */
 function after_XXX(user, context) {    
     console.log(body); // { "loveCat": false }
     console.log(user.metadata.loveCat); // true
-    
-    /*
-     * or rasie exception
-     * throw new Error("some error");
-     */
 }
 
 module.exports = skygear.auth.after_XXX(after_XXX);
@@ -334,11 +329,11 @@ To validate changes of user metadata, Cloud Function would hook `before_update_m
 ```javascript
 const skygear = require('skygear');
 
-function before_update_metadata_sync(user, originalUser, context) {    
+function before_update_metadata_sync(user, originalUser, context) {
     if (!user.metadata.loveCat) {
-        throw new Error("EVERYONE LOVES CAT");
+        throw new SkygearError("EVERYONE LOVES CAT");
     }
-        
+
     return user;
 }
 
