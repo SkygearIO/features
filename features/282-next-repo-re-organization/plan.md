@@ -4,10 +4,10 @@
 
 The top level is the git repository.
 
-- skygear-server
+- skygear
     - gateway
     - auth gear
-    - CF gateway and related
+    - cloud functions and microservices
 - skycli
 - skygear-SDK-JS
 - skygear-SDK-iOS
@@ -60,4 +60,3 @@ The top level is the git repository.
     - (When release) Deploy v1 guides and api reference to another domain and deploy v2.0 to docs.skygear.io
 
 - Archive all v1 repositories
-- Decide new name for skygear-server?
