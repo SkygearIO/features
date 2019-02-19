@@ -31,6 +31,7 @@ The top level is the git repository.
     - Change `master` to `v1-record-id`, change `next` to `master`
     - Remove obsolete v1 code (Remove all v1 code, push, pubsub, record... etc. Except auth and gateway)
     - Update ci
+        - When we move `next` to `master`, update quay.io `skygear-server` image deployment script to use `canary` tag in `v1-branch`
         - Only run `next` test
         - Remove upload binary when creating github release
         - Update `docker-hub` and `quay` docker image deployment script to deploy `skygear-auth`, `skygear-gateway` and `skygear-migrate` images.
