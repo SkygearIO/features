@@ -177,7 +177,7 @@ Followings are hooks of auth actions:
 | `password` | `before_password_changed_sync(user, original_user, context)`<br/>`before_password_changed(user, original_user, context)`<br/>`after_password_changed_sync(user, original_user, context)`<br/>`after_password_changed(user, original_user, context)` |
 | `verify` | `before_verified_sync(user, context)`<br/>`before_verified(user, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)`<br/>`before_unverified_sync(user, context)`<br/>`before_unverified(user, context)`<br/>`after_unverified_sync(user, context)`<br/>`after_unverified(user, context)` |
 | `metadata` | `before_metadata_modified_sync(user, original_user, context)`<br/>`before_metadata_modified(user, original_user, context)`<br/>`after_metadata_modified_sync(user, original_user, context)`<br/>`after_metadata_modified(user, original_user, context)` |
-| `user` | `before_user_object_modified_sync(user, original_user, context)`<br/>`before_user_object_modified(user, original_user, context)`<br/>`after_user_object_modified_sync(user, original_user, context)`<br/>`after_user_object_modified(user, original_user, context)` |
+| `user_object` | `user_object_sync(user, original_user, context)`<br/>`user_object_async(user, original_user, context)` |
 
 1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
@@ -193,7 +193,7 @@ Followings are hooks of auth actions:
    2. `/change_passowrd`
    3. `/forgot_password/reset_password`
 
-2. `before_user_object_modified_sync`, `before_user_object_modified`, `after_user_object_modified_sync` and `after_user_modified_updated` are special hooks, they can be used in following situation:
+2. `user_object_sync`, `user_object_async` are special hooks, they are triggered __after__ user object add/changed, they can be used in following situation:
    1.  implement an external user profile store
    2.  use one hook to capture all changes of the user auth data or metadata.
 
