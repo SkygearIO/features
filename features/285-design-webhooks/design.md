@@ -52,7 +52,7 @@ Note that, `context` is above format is still under discussion.
 
 To acknowledge receipt of a webhook, webhook endpoint should return a 2xx HTTP status code. All response codes outside this range, including 3xx codes, will indicate to skygear the request is failed.
 
-For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. The behavior is defined by each gear, so will not be covered in this spec.
+For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. The behavior is defined by each gear, so will not be covered in this spec. Missing field in the return object means unmodified, so empty body is accepted. Another thing is gear will validate return object, if validation failed, gear should return an error to SDK.
 
 Take auth gear as an example, its before family hooks accept that a hook returns a user object to modify current user object.
 
