@@ -34,13 +34,13 @@ All event payloads follows following payload format:
         "key_name_1": "event_data_key_value",
         "key_name_2": "event_data_key_value",
         ...,
-        "context": {
-            "user": <current user object>,
-            "req": {
-                "path": "request_path",
-                "body": <original_request_body>,
-                "id": "request_id"
-            }
+    },
+    "context": {
+        "user": <current user object>,
+        "req": {
+            "path": "request_path",
+            "body": <original_request_body>,
+            "id": "request_id"
         }
     }
 }
