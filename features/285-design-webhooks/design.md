@@ -19,7 +19,7 @@ Following headers will be added to webhook POST request:
 
 - `X-Skygear-Webhook-Req-ID`: an ID of the request.
 - `X-Skygear-Webhook-Async`: if is a `async` hook, then the value is `TRUE` otherwise is `FALSE`. 
-- `X-Skygear-Webhhok-Signature`: a signature string of the webhook event, a develop should can verify the request by skygear's SDK or manually.
+- `X-Skygear-Webhook-Signature`: a signature string of the webhook event, a develop should can verify the request by skygear's SDK or manually.
 
 ## Request Payload
 
@@ -99,7 +99,7 @@ webhook deploy mechanism will be covered in spec, please refer next cli design f
 | `events` | A list of gear events, such as: ["after_signup", "before_login"]. | ✓ |
 | `url` | The url of the webhook. | ✓ |
 | `async` | default is `true`. | |
-| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhhok-Signature` digest. | |
+| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhook-Signature` digest. | |
 | `timeout` | - default value of sync hook is 5 seconds, it allows to be configured up to 10 seconds.<br/>- default value of async hook is 60 seconds and up to 300 seconds.  | |
 
 ## versioning
@@ -108,7 +108,7 @@ Like skygear cloud functions, webhooks should be consider as a "moving part". So
 
 ## Verify Request
 
-When `secret` of a webhook is not empty, `X-Skygear-Webhhok-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
+When `secret` of a webhook is not empty, `X-Skygear-Webhook-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
 
 ## Timeout
 
