@@ -177,7 +177,7 @@ Followings are hooks of auth actions:
 | `password` | `before_password_changed_sync(user, original_user, context)`<br/>`before_password_changed(user, original_user, context)`<br/>`after_password_changed_sync(user, original_user, context)`<br/>`after_password_changed(user, original_user, context)` |
 | `verify` | `before_verified_sync(user, context)`<br/>`before_verified(user, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)`<br/>`before_unverified_sync(user, context)`<br/>`before_unverified(user, context)`<br/>`after_unverified_sync(user, context)`<br/>`after_unverified(user, context)` |
 | `metadata` | `before_metadata_modified_sync(user, original_user, context)`<br/>`before_metadata_modified(user, original_user, context)`<br/>`after_metadata_modified_sync(user, original_user, context)`<br/>`after_metadata_modified(user, original_user, context)` |
-| `user_object` | `sync_user_profile(user, original_user, context)`<br>`async_user_profile(user)` |
+| `user_object` | `blocking_user_sync(user)`<br>`user_sync(user)` |
 
 1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
@@ -193,9 +193,11 @@ Followings are hooks of auth actions:
    2. `/change_passowrd`
    3. `/forgot_password/reset_password`
 
-2. `sync_user_profile` and `async_user_profile` are special hooks, they are triggered __AFTER__ an user object is added or there is any changes to an user object, they can be used to implement an external user profile store. It also can use as one hook to capture all changes of the user auth data or metadata.
+2. `user_sync` and `blocking_user_sync` are special hooks, they are triggered __AFTER__ an user object is added or there is any changes to an user object, they can be used to implement an external user profile store. It also can use as one hook to capture all changes of the user auth data or metadata.
 
-   Note that `async_user_profile` as an `AFTER`, `ASYNC` hook, its implementaion could be a simple after async hook like other hooks, or it can be optimized by other mechanisms (batching data update), so the `original_user` and `context` arguments are removed.
+   Note that `user_sync` as an `AFTER`, `ASYNC` hook, its implementaion could be a simple after async hook like other hooks, or it can be optimized by other mechanisms (batching data update), so the `original_user` and `context` arguments are removed.
+
+   `blocking_user_sync` is an `AFTER`, `SYNC` hook. `blocking_user_sync` is especially useful when consistency is important to the application. Skygear next will rollback DB if hook failed.
 
 3. And to avoid spiral request loop, it is forbidden to send request to auth gear in hooked Cloud Function.
 
