@@ -612,6 +612,27 @@ We have two options:
 
 - If a pod needs to be discovered by external network, services need to be setup
 - CF Gateway may block function request from outside if a function is marked as private
+- If a `http-service` needs to be discovered another one, services need to be setup, and developer need specify which functions need to discover that `http-serivce`, network policy may be setup to restrict the discoverability. The config should be something like `link` in docker-compose config file.
+
+```yaml
+cf:
+  service-internal:
+    type: http-service
+    private: true
+    # other config
+  api-server:
+    type: http-service
+    path: /api/
+    link:
+      - service-internal
+    # other config
+```
+
+*Need to prove if this feature can be implemented in a user-friendly way, i.e. wheather one service can connect to another one by a custom hostname, or they must use one given by k8s. Please see the notes below.*
+
+Notes:
+- DNS for service for internal discoverability: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#services
+- Feature request: support dns aliases for service: https://github.com/kubernetes/kubernetes/issues/39792
 
 ## Parameterised Paths in HTTP handler
 
