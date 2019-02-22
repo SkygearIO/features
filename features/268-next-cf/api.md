@@ -395,13 +395,25 @@ The following is a platform independent approach:
 static:
   - src: build/index.html
     path: /
-  - src: build/asset
+  - src: build
     path: /static
 ```
 
-Following the route order, request path that matches `/static/*` would be served with the content in folder `build/asset` and the all other request would be served with `build/index.html`.
+Following the route order, request path that matches `/static/*` would be served with the content in folder `build` and the all other request would be served with `build/index.html`.
 
 For example, if someone enter url `myapp.skygear.io/page/1` in the browser, `build/index.html` will serve the request. In the html file, there will be a script element with src, for example, `https://myapp.skygear.io/static/bundle.js`. The js runtime would handle the path `/page/1` at client side and route to the corresponding page.
+
+Since the `index.html` is also placed in the `build` directory, the path `https://myapp.skygear.io/static/bundle.js` would also be served, which may not be the ideal behaviour. We may provide an `exclude` config to exclude the file from being uploaded when deploy.
+
+```yaml
+static:
+  - src: build/index.html
+    path: /
+  - src: build
+    exclude:
+      - index.html  # so build/index.html would not be uploaded
+    path: /static
+```
 
 # Route matching
 
@@ -514,13 +526,15 @@ cf:
 static:
   - src: build/index.html
     path: /
-  - src: build/asset
+  - src: build
+    exclude:
+      - index.html
     path: /static
 ```
 
 There is one `http-service` which is the api server, and two static asset configurations.
 
-To achieve client side routing in an SPA, all page routes should be served with `build/index.html`. On the other hand, js files, stylesheets, images and any static assets are put in the `build/asset` folder and would be served to requests path start with `/static`.
+To achieve client side routing in an SPA, all page routes should be served with `build/index.html`. On the other hand, js files, stylesheets, images and any static assets are put in the `build` folder and would be served to requests path start with `/static`.
 
 A common `index.html` file may look like this
 
