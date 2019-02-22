@@ -414,8 +414,8 @@ Here is the route matching rules when a request enter the cluster:
 - If the path starts with `_`, it would try find the gear by matching `/_{gear_name}` first
   - If a gear is found, the request would be forwarded to that gear
   - Otherwise, return function not found error
-- Path of `http-handler` and http `function` are exact match
-- Path of `http-service` are matched with prefix
+- Path of http `function` are exact match
+- Path of `http-handler` and `http-service` are matched with prefix
 - Longer path will be matched before the shorter ones
 - If none of the registered path is matched, return function not found error
 
@@ -429,7 +429,7 @@ For example, with the following skycli configuration:
 ```yaml
 cf:
   functionABC:
-    type: http-handler
+    type: function
     path: /functionABC
     # other config
   function-server:
