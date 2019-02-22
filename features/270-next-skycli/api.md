@@ -58,6 +58,7 @@ skycli [group] [verb/action] [parameters]
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
     - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app deploy](commands.md#skycli-app-update-config)
 
 - skycli domain
     - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
@@ -65,6 +66,11 @@ skycli [group] [verb/action] [parameters]
     - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
     - [skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]](commands.md#skycli-domain-set-alias)
     - [skycli domain list](commands.md#skycli-domain-list)
+
+- skycli cloudcode
+    - [skycli cloudcode list](commands.md#skycli-cloudcode-list)
+    - [skycli cloudcode logs [FUNCTION_NAME]](commands.md#skycli-cloudcode-logs)
+    - [skycli cloudcode invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-cloudcode-invoke)
 
 - skycli secret
     - [skycli secret list](commands.md#skycli-secret-list)

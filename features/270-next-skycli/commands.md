@@ -196,6 +196,20 @@ $ skycli app view-tenant-config
 Update tenant config interactively or by providing a file. For the config format,
 please see [user facing config](user-facing-config.md)
 
+### skycli app deploy
+
+`skycli app deploy [FUNCTION_NAME]`
+
+Deploy cloud functions by reading CF config file. `[FUNCTION_NAME]` is the
+function name in config file. If `[FUNCTION_NAME]` is missing, the commands will
+update everything based on the config. (e.g. cloud code, static asset... etc)
+
+#### Flags
+
+- `--cloud-code=[FUNCTION_KEY]` Deploy specific cloud code item.
+- `--all-cloud-code` Deploy all cloud code items (e.g. static asset is not included).
+- `--static` Deploy static asset.
+
 #### Example
 
 **Update in editor**
@@ -306,6 +320,37 @@ DOMAIN              CUSTOM_CERTS            SSL_CERT_EXPIRY
 api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
 test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
 ```
+
+## skycli cloudcode
+
+### skycli cloudcode list
+
+`skycli cloudcode list`
+
+List the cloud code items of current application.
+
+### skycli cloudcode logs
+
+`skycli cloudcode logs [FUNCTION_NAME]`
+
+Show logs of specific cloud code item.
+
+### skycli cloudcode invoke
+
+`skycli cloudcode invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
+
+Invoke cloudcode function.
+
+#### Example
+```
+$skycli cloudcode invoke helloworld --payload {"string": "value", "int": 1}
+{"result":"OK"}
+```
+
+#### Flags
+
+- `--payload` Invoke function with payload
+- `--access-key` Skygear auth access token
 
 ## skycli secret
 
