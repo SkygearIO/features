@@ -1,4 +1,4 @@
-# CF versioning
+# Versioning
 
 ## Use case
 
@@ -18,6 +18,7 @@ It is unavoidable that an app may rely on external services. This spec would ony
   - permission
   - secrets
   - resource management, e.g. sleep vs non-sleep, cpu, memory
+- Static assets
 - Secrets
 - Pricing plan
   - total resource provided to a user
@@ -35,6 +36,7 @@ So the moving parts of an app for skygear user would be,
 
 - Tenant configuration
 - CF functions configuration
+- Static assets
 - Secrets
 
 ### Moving unit
@@ -44,6 +46,7 @@ Moving unit represents a logical unit of a moving part.
 - The tenant configuration is a moving unit
 - One function configuration is a moving unit
 - One list of secrets is a moving unit
+- One static asset configuration is a moving unit
 
 Although tenant configuration contains bunch of keys and nested dictionaries, one of the value changes means the whole tenant config is changed. Same applies to function configuration, change of code base, no matter how small it is, means the function configuration is changed.
 
@@ -128,4 +131,31 @@ abcdef 2018-12-31 15:00:00 update tenant configuration | Release qwerty, latest,
 abcdee 2018-12-30 15:00:00 deploy functions            | Release qwertx, tag: live
 abcded 2018-12-30 14:50:00 update tenant configuration |
 abcdec 2018-11-30 15:00:00 update secrets              | Release qwertv
+```
+
+## Static assets versioning
+
+Use s3 as example storage, each version can be held in a folder with version id as name.
+
+### Storage and upload time optimisation
+
+Since each static assets configuration item is one moving unit, if the files of an item does not change (maybe done by looking the last modified date), the upload can be skipped.
+
+To further optimise, developers can put files in different static assets configuration items to skip not-updated file as much as possible, for example,
+
+```yaml
+static:
+  - src: build/index.html
+    path: /
+  # js files are most likely updated in each deployment
+  - src: build/js
+    path: /static/js
+  # assets are not updated as frequently as js files
+  - src: build/public
+    exclude:
+      - public/video/very-large-one.mp4
+    path: /static
+  # the very large file is even less likely to be updated
+  - src: build/public/video/very-large-one.mp4
+    path: /static/public/video/very-large-one.mp4
 ```

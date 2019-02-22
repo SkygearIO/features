@@ -339,9 +339,6 @@ In skygear v1 cloud, requests with path `/static/*` will go to s3 endpoint with 
 - these requests will be served with the same domain of the api server
 - the content data will always pass through the skygear cluster
 
-Next cloud will serve the content with another domain, e.g. `myapp.skygear.io` for static assets v.s. `myapp.api.skygear.io` for functions and gear api, because
-- we would not provide versioning for static assets
-
 Besides, there will be another top level skycli configuration for static assets.
 
 Example:
@@ -427,14 +424,9 @@ Here is the route matching rules when a request enter the cluster:
   - If a gear is found, the request would be forwarded to that gear
   - Otherwise, return function not found error
 - Path of http `function` are exact match
-- Path of `http-handler` and `http-service` are matched with prefix
+- Path of `http-handler`, `http-service` and items in `static` are matched with prefix
 - Longer path will be matched before the shorter ones
-- If none of the registered path is matched, return function not found error
-
-Static assets share another domain, so routing is done separately, the rules are similar:
-- Path are matched with prefix
-- Longer path will be matched before shorter ones
-- If none of the registered path is matched, return asset not found error
+- If none of the registered path is matched, return function or asset not found error
 
 For example, with the following skycli configuration:
 
@@ -460,16 +452,16 @@ static:
     path: /static
 ```
 
-- `https://myapp.api.skygear.io/function/ABC` -> `function-server`, forwarded path `/ABC`
-- `https://myapp.api.skygear.io/functionABC` -> `functionABC`
-- `https://myapp.api.skygear.io/functionABCD` -> `function-server`, forwarded path `ABCD`
-- `https://myapp.api.skygear.io/function/` -> `function-server`, forwarded path `/`
-- `https://myapp.api.skygear.io/function` -> `function-server`, forwarded path ``
-- `https://myapp.api.skygear.io/api/function` -> `api-server`, forwarded path `/function`
-- `https://myapp.api.skygear.io/api/` -> `api-server`, forwarded path `/`
-- `https://myapp.api.skygear.io/api` -> `api-server`, forwarded path ``
-- `https://myapp.api.skygear.io/static` -> function not found
-- `https://myapp.api.skygear.io/` -> function not found
+- `https://myapp.skygear.io/function/ABC` -> `function-server`, forwarded path `/ABC`
+- `https://myapp.skygear.io/functionABC` -> `functionABC`
+- `https://myapp.skygear.io/functionABCD` -> `function-server`, forwarded path `ABCD`
+- `https://myapp.skygear.io/function/` -> `function-server`, forwarded path `/`
+- `https://myapp.skygear.io/function` -> `function-server`, forwarded path ``
+- `https://myapp.skygear.io/api/function` -> `api-server`, forwarded path `/function`
+- `https://myapp.skygear.io/api/` -> `api-server`, forwarded path `/`
+- `https://myapp.skygear.io/api` -> `api-server`, forwarded path ``
+- `https://myapp.skygear.io/static` -> function not found
+- `https://myapp.skygear.io/` -> function not found
 
 - `https://myapp.skygear.io/static/abc/cde.jpg` -> static assets with path `/abc/cde.jpg` in `asset`
 - `https://myapp.skygear.io/static/abc` -> static assets with path `/abc` in `asset`
