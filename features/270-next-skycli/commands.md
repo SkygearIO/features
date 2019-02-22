@@ -225,45 +225,6 @@ api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
 test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
 ```
 
-## skycli cf
-
-### skycli cf list
-
-`skycli cf list`
-
-List the cloud functions of current application.
-
-### skycli cf deploy
-
-`skycli cf deploy [FUNCTION_NAME]`
-
-Deploy cloud functions by reading CF config file. `[FUNCTION_NAME]` is the
-function name in config file. Deploy all functions if `[FUNCTION_NAME]` is missing.
-
-### skycli cf logs
-
-`skycli cf logs [FUNCTION_NAME]`
-
-Show cloud functions logs. Aggregate all function logs if `[FUNCTION_NAME]` is missing.
-
-### skycli cf logs
-
-`skycli cf invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
-
-Invoke cloud function.
-
-#### Example
-```
-$skycli cf invoke helloworld --payload {"string": "value", "int": 1}
-{"result":"OK"}
-```
-
-#### Flags
-
-- `--show-log` Include the execution log in response.
-
-    *We may not do it in the first version, need structured logs support to filter logs from current request.*
-
 ## skycli secret
 
 #### Overview

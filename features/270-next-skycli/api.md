@@ -66,12 +66,6 @@ skycli [group] [verb/action] [parameters]
     - [skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]](commands.md#skycli-domain-set-alias)
     - [skycli domain list](commands.md#skycli-domain-list)
 
-- skycli cf
-    - [skycli cf list](commands.md#skycli-cf-list)
-    - [skycli cf deploy [FUNCTION_NAME]](commands.md#skycli-cf-deploy)
-    - [skycli cf logs [FUNCTION_NAME]](commands.md#skycli-cf-logs)
-    - [skycli cf invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-cf-invoke)
-
 - skycli secret
     - [skycli secret list](commands.md#skycli-secret-list)
     - [skycli secret create [SECRET_NAME] [SECRET_VALUE]](commands.md#skycli-secret-create)
@@ -86,9 +80,6 @@ skycli [group] [verb/action] [parameters]
 
 - skycli login -> skycli auth login
 - skycli logout -> skycli auth logout
-- skycli list -> skycli cf list
-- skycli deploy -> skycli cf deploy
-- skycli logs -> skycli cf logs
 
 ## Architecture
 
