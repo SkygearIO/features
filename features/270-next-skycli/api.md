@@ -82,27 +82,6 @@ skycli [group] [verb/action] [parameters]
     - [skycli service list](commands.md#skycli-service-list)
     - [skycli service enable [SERVICE_NAME] [SERVICE_PARAMS...]](commands.md#skycli-service-enable)
 
-- skycli welcome-email
-    - [skycli welcome-email configure](commands.md#skycli-welcome-email-configure)
-    - [skycli welcome-email test](commands.md#skycli-welcome-email-test)
-    - [skycli welcome-email view-config](commands.md#skycli-welcome-email-view-config)
-
-- skycli forgot-password
-    - skycli forgot-password configure
-    - skycli forgot-password test
-
-- skycli email-verification
-    - skycli email-verification configure
-    - skycli email-verification test
-
-- skycli sms-verification
-    - skycli sms-verification configure
-    - skycli sms-verification test
-
-- skycli sso
-    - [skycli sso configure [PROVIDER_NAME]](commands.md#skycli-sso-configure)
-    - [skycli sso view-config [PROVIDER_NAME]](commands.md#skycli-sso-view-config)
-
 ## Commands alias
 
 - skycli login -> skycli auth login
