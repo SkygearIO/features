@@ -42,7 +42,7 @@ app=myapp
 
 `skycli config set-app [APP_NAME]`
 
-Change skycli current app context to `APP_NAME`
+Change skycli current app context to `APP_NAME` by creating or updating `./skygear.yaml`.
 
 ### skycli config set-cluster-server
 

@@ -113,13 +113,36 @@ access skycli instead of using user account.
 
 ## Config files structure
 
-### ~/.skycli/skyclirc
+### ${XDG_CONFIG_HOME:-$HOME/.config}/skycli/config
 
 - cluster controller endpoint
 - user credentials 
 
-### ./.skyclirc
+### ./skygear.yaml
+
+- config version (If we have new config version in future, skycli will read the
+  version and convert the previous config to the current version.)
 - current app
+- cloud functions configuration
+
+#### Example
+```
+config_version: 1
+app: myapp
+cf:
+  function1:
+    type: http-handler
+    path: /hello-world
+    env: node
+    src: js/hellow-world
+    secrets:
+      - DATABASE_URL
+    permission:
+      - name: key_required
+      - name: user_required
+static:
+  ...
+```
 
 ## Discussion
 
