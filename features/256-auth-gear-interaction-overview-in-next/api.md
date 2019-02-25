@@ -210,6 +210,18 @@ Followings are hooks of auth actions:
    3. `context.req.body`: original request body from client, ex: for login, it would be an object with username and password.
    4. `context.req.id`: original request ID.
 
+5. There could be concurrent issue for after hook opersion, consider folowing case:
+
+   | Req 1 | Req 2| Remarks 
+   | ---- | ---- | ---- |
+   | enable_op |  | Req 1 called |
+   | after_enabled_sync() | disable_op | Req 2 called |
+   |  | after_disabled_sync() | |
+   |  | [external system update user status to disabled] | For network latency reason, req 2's hook got called first |
+   | [external system update user status to enabled] | | Oops
+
+   Req 1 and Re1 2 are two requests happens concurrently in race condition, e.g. one users logged in two devices at the same time. This would cause external DB and auth gear data inconsistency.
+
 ## user metadata
 
 For future advanced management requirements, auth gear should have user metadata, it includes common user attributes, such as avatar, first name, last name, display name, preferred language, ..., etc. 
