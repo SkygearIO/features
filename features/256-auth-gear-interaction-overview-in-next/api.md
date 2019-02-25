@@ -222,6 +222,8 @@ Followings are hooks of auth actions:
 
    Req 1 and Re1 2 are two requests happens concurrently in race condition, e.g. one users logged in two devices at the same time. This would cause external DB and auth gear data inconsistency.
 
+6. For `user_sync`, `blocking_user_sync` and concurrent hook data inconsistency problem, please refer [#287](https://github.com/SkygearIO/features/issues/287) for more information.
+
 ## user metadata
 
 For future advanced management requirements, auth gear should have user metadata, it includes common user attributes, such as avatar, first name, last name, display name, preferred language, ..., etc. 
