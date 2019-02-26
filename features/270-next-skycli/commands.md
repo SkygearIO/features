@@ -38,12 +38,6 @@ admin-key=
 app=myapp
 ```
 
-### skycli config set-app
-
-`skycli config set-app [APP_NAME]`
-
-Change skycli current app context to `APP_NAME` by creating or updating `./skygear.yaml`.
-
 ### skycli config set-cluster-server
 
 `skycli config set-cluster-server [CLUSTER_SERVER_URL]`
@@ -67,19 +61,79 @@ Cluster admin only. List all cluster user.
 
 ## skycli app
 
+### skycli app create
+
+`skycli app create`
+
+Create app and create `skygear.yaml` in the root of app directory, the config
+file is required to update app by using `skycli`.
+
+```
+$ skycli app create
+
+? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+Confirm? (Y/n)
+
+? What is your app name? myapp
+
+Creating app...
+Your API endpoint: https://myapp.api.skygear.io
+Your Client API Key: DSOJSDOSDKOJASNLSLC
+Your Master API Key: FJOADJOFAJOFJOASDJK
+
+Initializing project files...
+Fetching examples...
+? Select example: (Use arrow keys)
+  empty
+> js-cloud-function
+  js-handler
+  nodejs-service
+  auth-gear-hooks
+
+Fetching js-cloud-function and initializing..
+> Success! Initialized "js-cloud-function" example in /Users/ubuntu/myapp.
+```
+
+### skycli app init
+
+`skycli app init`
+
+Create `skygear.yaml` in the root of app directory, the config file is required
+to update app by using `skycli`.
+
+#### Example
+
+```
+$ skycli app init
+
+? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+Confirm? (Y/n)
+
+Fetching the list of your apps...
+? Select an app to associate with the directory: (Use arrow keys)
+> myapp1
+  myapp2
+  myapp3
+(Move up and down to reveal more choices)
+
+Fetching examples...
+? Select example: (Use arrow keys)
+  empty
+> js-cloud-function
+  js-handler
+  nodejs-service
+  auth-gear-hooks
+
+Fetching js-cloud-function and initializing..
+> Success! Initialized "js-cloud-function" example in /Users/ubuntu/myapp.
+```
+
 ### skycli app list
 
 `skycli app list`
 
 List all user's app. If using admin key to call this app, list all the apps in
 the cluster instead.
-
-### skycli create app
-
-`skycli create app`
-
-Create app, the skycli current app context will be updated to the newly created
-app.
 
 ### skycli app add-user
 

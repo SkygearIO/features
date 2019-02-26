@@ -43,7 +43,6 @@ skycli [group] [verb/action] [parameters]
 
 - skycli config
     - [skycli config view](commands.md#skycli-config-view)
-    - [skycli config set-app [APP_NAME]](commands.md#skycli-config-set-app)
     - [skycli config set-cluster-server [https://1.2.3.4]](commands.md#skycli-config-set-cluster-server)
 
 - skycli user (Admin only, cluster user management)
@@ -53,8 +52,9 @@ skycli [group] [verb/action] [parameters]
 #### Application commands
 
 - skycli app
-    - [skycli app list](commands.md#skycli-app-list)
     - [skycli app create](commands.md#skycli-app-create)
+    - [skycli app init](commands.md#skycli-app-init)
+    - [skycli app list](commands.md#skycli-app-list)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
     - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
