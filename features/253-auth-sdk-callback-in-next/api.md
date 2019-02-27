@@ -94,9 +94,12 @@ Note that auth gear and client SDK won't provide following functionalities:
 
 Such requirements can be implemented via cloud function or external user DB.
 
-SDK will add an API to help update user metadata:
+SDK will add two APIs:
 
-- `Promise<user> updateMetadata(<user>);`
+- `Promise<user> updateMetadata(<user>);`  
+  use for updating user metadata.
+- `Promise<user> changeUserAuthInfoKeys({<key>: <value>})`
+  use for changing a user's principal, where `key` should match `AuthRecordKeys` configuration.
 
 And remove following admin APIs:
 
@@ -183,6 +186,35 @@ skygear.auth.updateMetadata(user).then((user) => {
 }, (error) => {
   console.error(error);
 });
+```
+
+## update user principal
+
+`AuthRecordkeys` is `[["username"],["email"]]`
+
+```javascript=
+skygear.auth.signup({
+  username: "johndoe",
+  email: "johndoe@example.com"
+});
+
+// can use "username" OR "email" to login
+
+skygear.auth.login({
+  username: "johndoe"
+})
+
+// after login successfully
+skygear.auth.changeUserAuthInfoKeys({
+  username: "janedoe",
+  email: "janedoe@example.com"
+});
+
+// can use new "username" OR "email" to login
+
+skygear.auth.login({
+  username: "janedoe"
+})
 ```
 
 # access current user auth info and metadata
