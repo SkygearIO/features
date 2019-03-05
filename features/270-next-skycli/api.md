@@ -53,7 +53,7 @@ skycli [group] [verb/action] [parameters]
 
 - skycli app
     - [skycli app create](commands.md#skycli-app-create)
-    - [skycli app init](commands.md#skycli-app-init)
+    - [skycli app scaffold](commands.md#skycli-app-scaffold)
     - [skycli app list](commands.md#skycli-app-list)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
@@ -144,19 +144,113 @@ static:
   ...
 ```
 
-## Discussion
+## Use cases
 
-- Current `skycli app view-config` and `skycli app update-config` give the
-greatest flexible to user to update the config. But user need to understand the
-tenant config structure. I think this case is similar to v1 cms config file.
-- Current tenant config is not a simple key value mapping, so we didn't have a
-single command to update particular value. User need to export the current config
-by `skycli app view-config`, update, and upload by `skycli app update-config`.
-- `skycli app view-config` will mask the auth db url, it is also not editable by
-`skycli app update-config`.
-- I think we should not show the secret value in the list comment. But user may
-want to obtain the db credentials after enabling service?
+- User creates app and uses skycli for app configuration without CF
 
-## Questions
+    ```sh
+    # Create app
+    $ skycli app create
 
-- How to support email template?
+    ? What is your app name? myapp
+    Creating app...
+    Your API endpoint: https://myapp.api.skygear.io
+    Your Client API Key: DSOJSDOSDKOJASNLSLC
+    Your Master API Key: FJOADJOFAJOFJOASDJK
+    Created app successfully!
+
+    To setup app project directory, run:
+        skycli app scaffold
+
+    # Add user to app
+    $ skycli app add-user dev@example.com --app=myapp
+
+    # Update tenant config to enable welcome email
+    $ skycli app update-tenant-config WELCOME_EMAIL --app=myapp
+    ? Edit application tenant config. Press <enter> to launch your preferred editor.
+    # Enter editor mode with existing config
+    ENABLED: false
+    SENDER: no-reply@skygeario.com
+    SENDER_NAME: ''
+    REPLY_TO: ''
+    REPLY_TO_NAME: ''
+    SUBJECT: Welcome!
+    EMAIL_HTML: |-
+      <p>Hello {% if user.name %}{{ user.name }}{% else %}{{ user.email }}{% endif %},</p>
+
+      <p>Welcome to Skygear.</p>
+
+      <p>Thanks.</p>
+    ~
+    ~
+    ~
+
+    # User don't want to specify app for every commands, create app directory by scaffold command
+    $ skycli app scaffold
+    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+    Confirm? (Y/n)
+
+    Fetching the list of your apps...
+    ? Select an app to associate with the directory: (Use arrow keys)
+    > myapp
+      myapp2
+      myapp3
+    (Move up and down to reveal more choices)
+
+    Fetching examples...
+    ? Select example: (Use arrow keys)
+    > empty
+      js-cloud-function
+      js-handler
+      nodejs-service
+      auth-gear-hooks
+
+    > Success! Initialized skygear.yaml config file in /Users/ubuntu/myapp.
+    ```
+
+
+- User creates app and wants to define auth hooks
+
+    ```sh
+    # Create app
+    $ skycli app create
+
+    ? What is your app name? myapp
+    Creating app...
+    Your API endpoint: https://myapp.api.skygear.io
+    Your Client API Key: DSOJSDOSDKOJASNLSLC
+    Your Master API Key: FJOADJOFAJOFJOASDJK
+    Created app successfully!
+
+    To setup app project directory, run:
+        skycli app scaffold
+    
+    # Create app directory with template example
+    $ skycli app scaffold
+    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+    Confirm? (Y/n)
+
+    Fetching the list of your apps...
+    ? Select an app to associate with the directory: (Use arrow keys)
+    > myapp
+      myapp2
+      myapp3
+    (Move up and down to reveal more choices)
+
+    Fetching examples...
+    ? Select example: (Use arrow keys)
+      empty
+      js-cloud-function
+      js-handler
+      nodejs-service
+    > auth-gear-hooks
+
+    Fetching auth-gear-hooks and initializing..
+    > Success! Initialized "auth-gear-hooks" example in /Users/ubuntu/myapp.
+
+    # Deploy application
+    $ skycli cf deploy
+
+    # Other application operations
+    $ skycli app add-user dev@example.com
+    ```

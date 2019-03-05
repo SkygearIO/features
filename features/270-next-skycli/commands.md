@@ -1,3 +1,18 @@
+## skycli overview
+
+### Global flags
+
+`skycli [GROUP] [--app=APP_NAME] [ACTION]`
+
+#### Flags
+
+- `--app=APP_NAME` Provide app name for commands. Overrides the app provided in `skygear.yaml`.
+
+#### Example
+```
+$ skycli app --app=myapp add-user [USER_EMAIL]
+```
+
 ## skycli auth
 
 ### skycli auth login
@@ -65,14 +80,10 @@ Cluster admin only. List all cluster user.
 
 `skycli app create`
 
-Create app and create `skygear.yaml` in the root of app directory, the config
-file is required to update app by using `skycli`.
+Create new app.
 
 ```
 $ skycli app create
-
-? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
-Confirm? (Y/n)
 
 ? What is your app name? myapp
 
@@ -80,31 +91,29 @@ Creating app...
 Your API endpoint: https://myapp.api.skygear.io
 Your Client API Key: DSOJSDOSDKOJASNLSLC
 Your Master API Key: FJOADJOFAJOFJOASDJK
+Created app successfully!
 
-Initializing project files...
-Fetching examples...
-? Select example: (Use arrow keys)
-  empty
-> js-cloud-function
-  js-handler
-  nodejs-service
-  auth-gear-hooks
-
-Fetching js-cloud-function and initializing..
-> Success! Initialized "js-cloud-function" example in /Users/ubuntu/myapp.
+To setup app project directory, run:
+    skycli app scaffold
 ```
 
-### skycli app init
+### skycli app scaffold
 
-`skycli app init`
+`skycli app scaffold [--app=APP_NAME] [--template=TEMPLATE]`
 
 Create `skygear.yaml` in the root of app directory, the config file is required
 to update app by using `skycli`.
 
+#### Flags
+
+- `--app=APP_NAME` Provide app name.
+- `--template=TEMPLATE` Provide template name.
+
 #### Example
 
-```
-$ skycli app init
+```sh
+# Interactive mode when app and template flags are not provided
+$ skycli app scaffold
 
 ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
 Confirm? (Y/n)
