@@ -1,6 +1,6 @@
 # Description
 
-In skygear v1, auth related API in SDK often returns a `user<record>` as the result. e.g.
+In skygear v1, auth related API in SDK often returns a `user<Record>` as the result. e.g.
 
 ```javascript=
 skygear.auth.signupWithUsername(username, password).then((user) => {
@@ -25,29 +25,24 @@ skygear.publicDB.save(user).then((user) => {
 });
 ```
 
-In this spec, it will describe the structure of user object in skygear next, and how the client SDK handles it.
+In this spec, it will describe the structure of user object in skygear next, and how to update user object.
 
 # Glossary
 
 - skygear next: next generation skygear.
 - auth gear: skygear next component for user authentication and authorization.
+- `LOGIN_ID_METADATA_KEYS`: a list of keys which defines which keys can be used for authentication (previously called `AUTH_RECORD_KEYS` in skygear v1), this list is mainly used for multi-provider login.
+- `loginIDs`: a **flattened** dictionary which use `LOGIN_ID_METADATA_KEYS` as a key and its associated values.
 - auth info: any data that may affect or affected by user authentication status or authorized status, such as disabled, last login at, roles, ..., etc.
-- metadata: any user attributes that are not auth info specified, by default, it contains some pre-defined common user attributes, and a developer is allowed to add custom user attributes here .
-- user object: an object combines auth info and metadata and represents as an user.
+- user custom attributes: any user attributes that are not auth info related.
+- metadata: a dictionary combines `loginIDs` and user custom attributes.
+- user object: an object combines auth info and metadata that represents an user.
 
-# Pre-defined common attributes
+# User object overview
 
-```
-avatar_url text
-name text
-nickname text
-birthday timestamp
-preferred_lang text
-```
+Following is a illustration of a user object's structure.
 
-- `preferred_lang` is a string in RFC 5646, ex: 'en', 'zh-TW', 'zh-CN', 'zh-HK'.
-
-# User object response from backend
+![user object](./user_object.png "user object diagram")
 
 ```
 {
@@ -58,50 +53,202 @@ preferred_lang text
     verified: <verified>,
     verify_info: <verified_info>,
     roles: [<role>, <role>, <role>, ...],
-    username: <username>,
-    email: <email>,
     metadata: {
-        avatar_url: <avatarUrl>,
-        name: <name>,
-        nickname: <nickname>,
-        birthday: <birthday>,
-        preferred_lang: <preferred_lang>,
-        
-        // any other custom attributes
-        ...
+      // loginIDs
+      username: <username>,
+      email: <email>,
+      // custom user attributes
+      avatar_url: <avatarUrl>,
+      name: <name>,
+      nickname: <nickname>,
+      birthday: <birthday>,
+      preferred_lang: <preferred_lang>,
     }
 }
 ```
 
-Note that, `username` and `email` key may vary because of `AUTH_RECORD_KEYS` configuration. By default, `AUTH_RECORD_KEYS` is set as `[["username"], ["email"]]`, so `username` and `email` may not in response payload at the same time.
+Note that, `metadata` in user object is a merged dictionary from two dictionaries, the two dictionaries are `loginIDs` and user custom attributes.
+
+# `LOGIN_ID_METADATA_KEYS` and `loginIDs`
+
+`LOGIN_ID_METADATA_KEYS` is a list of a list of keys, which defines which keys can be used for user authentication. Default `LOGIN_ID_METADATA_KEYS` is `[['username'], ['email']]`. `LOGIN_ID_METADATA_KEYS` is a global config for an app, it can be configured via `skycli`.
+
+Note that, it wouldn't allow to have duplicate keys, for example `[['username'], ['username', 'email']]` is prohibited, in such situation, please give each key a distinct name, for example `[['username'], ['nickname', 'email']]`.
+
+Each item in `LOGIN_ID_METADATA_KEYS` defines a set of values for user authentication, for example, `[['username'], ['email']]` indicates that a user can be authicated by username or email.
+
+Take `[['username'], ['email'], ['nickname', 'business_email']]` as another example, here, user can be authicated by
+
+- `username`
+- `email`
+- `nickname` and `business_email`
+
+any one of them works.
+
+`loginIDs` is a **flattened** dictionary which contains `LOGIN_ID_METADATA_KEYS` and its associated values, for example:
+
+```json
+// `LOGIN_ID_METADATA_KEYS` = [["username"], ["email"]]
+{
+  "username": "example",
+  "email": "example@example.com"
+}
+```
+
+or
+
+```json
+// `LOGIN_ID_METADATA_KEYS` = [["username"], ["email"], ["nickname", "business_email"]]
+{
+  "username": "example",
+  "email": "example@example.com",
+  "nickname": "john.doe",
+  "busniess_email": "john.doe@example.com"
+}
+```
+
+# `updateMetadata` and `loginIDs`
+
+`updateMetadata` is a newly added API for user to update its metadata, due to user object's `metadata` object contains both user custom attributes and `loginIDs`, so any changes from `updateMetadata` may directly impact user authentication behavior.
+
+- Modify: if a value of `loginIDs` updated, a user's login ID is also updated. 
+- Add: if a value associated to `LOGIN_ID_METADATA_KEYS` added, a user implicitly add a new login ID.
+- Remove: if a value assciated to `LOGIN_ID_METADATA_KEYs` removed, a connected user login ID is removed as well.
+
+## Example scenario:
+
+Scenario Info: 
+
+- `LOGIN_ID_METADATA_KEYS = [['username'], ['email'], ['nickname', 'business_email']]`
+- user's existing login ID:
+  - `username` = "example"
+  - `password` = "password" 
+- user object's `metadata` is
+  ```javascript
+  {
+    // loginIDs:
+    "username": "example",
+    // user custom attributes:
+    "gender": "none"
+  }
+  ```
+
+Case 1: Modify
+
+```javascript
+const currentUser = skygear.auth.currentUser;
+currentUser['metadata']['username'] = 'new_example';
+skygear.auth.updateMetadata(currentUser);
+// user has to use "new_example"(username) + "password"(password) to login next time
+```
+
+Case 2: Add
+
+```javascript
+const currentUser = skygear.auth.currentUser;
+currentUser['metadata']['email'] = 'example@example.com';
+skygear.auth.updateMetadata(currentUser);
+// user has following two login IDs:
+// - "new_example"(username) + "password"(password)
+// - "example@example.com"(email) + "password"(password)
+
+currentUser['metadata']['nickname'] = 'john.doe';
+skygear.auth.updateMetadata(currentUser);
+// user has following two login IDs:
+// - "new_example"(email) + "password"(password)
+// - "example@example.com"(username) + "password"(password)
+// user object's metadata is
+// {
+//   //------ `loginIDs`:
+//   "username": "new_example",
+//   "email": "example@example.com",
+//   //------ user custom attributes:
+//   "nickname": "john.doe",
+//   "gender": "none"
+// }
+
+currentUser['metadata']['business_email'] = 'john.doe@example.com';
+skygear.auth.updateMetadata(currentUser);
+// user has following three login IDs, because business_email added:
+// - "new_example"(username) + "password"(password)
+// - "example@example.com"(email) + "password"(password)
+// - "john.doe"(nickname) + "john.doe@example.com"(nickname) + "password"(password)
+// user object's metadata is
+// {
+//   //------ `loginIDs`:
+//   "username": "new_example",
+//   "email": "example@example.com",
+//   "nickname": "john.doe",
+//   "business_email": "john.doe@example.com",
+//   //------ user custom attributes:
+//   "gender": "none"
+// }
+```
+
+Case 3: Remove
+
+```javascript
+const currentUser = skygear.auth.currentUser;
+delete currentUser['metadata']['username'];
+skygear.auth.updateMetadata(currentUser);
+// user has following two login IDs:
+// - "example@example.com"(email) + "password"(password)
+// - "john.doe"(nickname) + "john.doe@example.com"(nickname) + "password"(password)
+// user object's metadata is
+// {
+//   //------ `loginIDs`:
+//   "email": "example@example.com",
+//   "nickname": "john.doe",
+//   "business_email": "john.doe@example.com",
+//   //------ user custom attributes:
+//   "gender": "none"
+// }
+```
+
+# `updateMetadata` and user custom attributes
+
+`updateMetadata` also supports to update user's custom attributes, any data in `metadata` does not belong to `loginIDs` is saved properly when the user invokes `updateMetadata`.
 
 # Changes on Client JS SDK
 
 Because user object is not a `record` object anymore, client SDK has to treat user object as a plain object, and a user can access user attributes via regular way.
 
-In JS SDK, `container`'s `UserRecord` is defined as
+In skygear v1 JS SDK, `container`'s `UserRecord` is defined as
 
 ```
 export const UserRecord = Record.extend('user');
 ```
 
-`UserRecord` should be replaced as plain JavaScript class.
+Since `Record` is removed, `UserRecord` in APIs should be replaced as `User` class (a simple plain JavaScript class), they are:
 
-Note that auth gear and client SDK won't provide following functionalities:
+```
+- currentUser: User
+- async changePassword(oldPassword: String, newPassword: String, invalidate: Boolean): Promise<User>
+- async fetchUserRole(users: User[] | String[]): Promise<Object>
+- async login(loginIDs: Object, password: String): Promise<User>
+- async loginWithEmail(email: String, password: String): Promise<User>
+- async loginWithProvider(provider: String, loginIDs: Object): Promise<User>
+- async loginWithUsername(username: String, password: String): Promise<User>
+- async signup(loginIDs: Object, password: String, data: Object): Promise<User>
+- async signupAnonymously(): Promise<User>
+- async signupWithEmail(email: String, password: String, data: Object): Promise<User>
+- async signupWithUsername(username: String, password: String, data: Object): Promise<User>
+- async whoami(): Promise<User>
+```
+
+## New API on Client JS SDK
+
+- `Promise<User> updateMetadata(<User>);`  
+  use for updating a user's metadata.
+
+## Removal APIs on Client JS SDK
+
+Due to the removal of record gear, auth gear and client SDK won't provide below functionalities:
 
 1. user query
 2. admin related API (disable user, change role, ...)
 
-Such requirements can be implemented via cloud function or external user DB.
-
-SDK will add two APIs:
-
-- `Promise<user> updateMetadata(<user>);`  
-  use for updating user metadata.
-- `Promise<user> changeUserAuthInfoKeys({<key>: <value>})`
-  use for changing a user's principal, where `key` should match `AuthRecordKeys` configuration.
-
-And remove following admin APIs:
+And so below APIs are removed from client SDK:
 
 - `adminDisableUser`
 - `adminEnableUser`
@@ -109,23 +256,35 @@ And remove following admin APIs:
 - `assignUserRole`
 - `revokeUserRole`
 - `setDefaultRole`
+- `setAdminRole`
+- `onUserChanged`
+
+Those requirements can be implemented via cloud function or external user DB.
+
+## API argument naming chages on Client JS SDK:
+
+- `public async requestVerification(recordKey: String): Promise`  
+  `public async requestVerification(loginIDKeys: [String]): Promise`
+- `async login(authData: Object, password: String): Promise<Record>`  
+  `async login(loginIDs: Object, password: String): Promise<User>`
+- `async loginWithProvider(provider: String, authData: Object): Promise<Record>`  
+  `async loginWithProvider(provider: String, loginIDs: Object): Promise<User>`
+- `async signup(authData: Object, password: String, data: Object): Promise<Record>`  
+  `async signup(loginIDs: Object, password: String, data: Object): Promise<User>`
 
 # Changes on auth gear
 
-For pre-defined user metadata, auth gear will add a table.
+auth gear will support a new interface `/auth/me/update_metadata`, the following is a demonstration usage:
 
-```sql=
-CREATE TABLE _auth_user_metadata (
-  user_id text REFERENCES _core_user(id),
-  avatar_url text,
-  name text,
-  nickname text,
-  birthday timestamp without time zone,
-  preferred_lang text
-  data jsonb, /* custom user attributes */
-  PRIMARY KEY(user_id),
-  UNIQUE (user_id)
-);
+```
+curl -X POST -H "Content-Type: application/json" \
+     -d @- http://<skygear>/auth/me/update_metadata <<EOF
+{
+  "email": "example@example.com",
+  "nickname": "john.doe",
+  "business_email": "john.doe@example.com",
+  "gender": "none"
+}
 ```
 
 auth gear also needs to update `AuthResponse`:
@@ -162,66 +321,4 @@ type AuthResponse struct {
 }
 ```
 
-# More usage example
-
-## signup
-
-```javascript=
-skygear.auth.signupWithUsername(username, password).then((user) => {
-  console.log(user); // user is an user record
-  console.log(user["username"]); // username of the user
-}, (error) => {
-  ;
-});
-```
-
-## update user metadata
-
-```javascript=
-var user = skygear.auth.currentUser;
-user["metadata"]["name"] = "johnny";
-skygear.auth.updateMetadata(user).then((user) => {
-  console.log('name is changed to: ', user["metadata"]["name"]);
-  return user;
-}, (error) => {
-  console.error(error);
-});
-```
-
-## update user principal
-
-`AuthRecordkeys` is `[["username"],["email"]]`
-
-```javascript=
-skygear.auth.signup({
-  username: "johndoe",
-  email: "johndoe@example.com"
-});
-
-// can use "username" OR "email" to login
-
-skygear.auth.login({
-  username: "johndoe"
-})
-
-// after login successfully
-skygear.auth.changeUserAuthInfoKeys({
-  username: "janedoe",
-  email: "janedoe@example.com"
-});
-
-// can use new "username" OR "email" to login
-
-skygear.auth.login({
-  username: "janedoe"
-})
-```
-
-# access current user auth info and metadata
-
-```javascript=
-console.log(skygear.auth.currentUser['verified']);
-console.log(skygear.auth.currentUser['disabled']);
-console.log(skygear.auth.currentUser['roles']);
-console.log(skygear.auth.currentUser["metadata"]["gender"]);
-```
+`Metadata` is a JSON object which contains `loginIDs` and user custom attributes.
