@@ -325,6 +325,37 @@ cf:
   - `admin_required`, if true, need the user have admin role
   - `role_required` with `roles` tells the function require specified roles
 
+# Request authentication and authorisation
+
+Use case:
+
+- Authorise request according to function config, e.g. user required, role required
+- Get current auth session in function
+
+Gateway will be responsible for injecting the user data. Here is the flow:
+
+- Gateway receive request
+- The request is identified that will be forwarded to a cloud function
+- If access token is found in the request, gateway would verify the access token
+  - If the access token is valid, gateway would connect to auth db and query the user data and inject the data to the request
+- If `permission` of the function to be invoked is specified, gateway may reject the request if the user does not have enough privilage
+
+## Protecting the user function
+
+In openfaas, every function would expose a cluster ip, thus accessible by other programs on the cluster.
+
+Since authentication is done in the gateway, the request forwarded from that point requires protection, otherwise other functions may invoke another function with a fake user.
+
+There are two way to protect the function:
+- sign (and encrypt) the user data, and any data that permission is needed to access
+- set network policy to restrict the flow of request
+
+Since network policy is fairly new and different k8s provider may have different behaviour, I propose we first sign and encrypt the user data.
+
+This has several advantages
+- this implementation can work out of k8s, e.g. we do no support k8s in CE
+- this works even if we support deploying the function outside the k8s
+
 # Serving content
 
 ## Server side rendering
