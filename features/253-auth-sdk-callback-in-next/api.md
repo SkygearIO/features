@@ -73,15 +73,14 @@ Note that, `metadata` in user object is a merged dictionary from two dictionarie
 
 `LOGIN_ID_METADATA_KEYS` is a list of a list of keys, which defines which keys can be used for user authentication. Default `LOGIN_ID_METADATA_KEYS` is `[['username'], ['email']]`. `LOGIN_ID_METADATA_KEYS` is a global config for an app, it can be configured via `skycli`.
 
-Note that, it wouldn't allow to have duplicate keys, for example `[['username'], ['username', 'email']]` is prohibited, in such situation, please give each key a distinct name, for example `[['username'], ['nickname', 'email']]`.
-
 Each item in `LOGIN_ID_METADATA_KEYS` defines a set of values for user authentication, for example, `[['username'], ['email']]` indicates that a user can be authicated by username or email.
 
-Take `[['username'], ['email'], ['nickname', 'business_email']]` as another example, here, user can be authicated by
+Take `[['username'], ['email'], ['username', 'email'], ['nickname', 'role']]` as another example, here, user can be authicated by
 
 - `username`
 - `email`
-- `nickname` and `business_email`
+- `username` and `email`
+- `nickname` and `role`
 
 any one of them works.
 
@@ -250,14 +249,15 @@ Due to the removal of record gear, auth gear and client SDK won't provide below 
 
 And so below APIs are removed from client SDK:
 
-- `adminDisableUser`
-- `adminEnableUser`
-- `adminResetPassword`
-- `assignUserRole`
-- `revokeUserRole`
-- `setDefaultRole`
-- `setAdminRole`
-- `onUserChanged`
+| API | RESTful API |
+| ------------- |:-------------:|
+| `adminDisableUser` | `/auth/disable/set` |
+| `adminEnableUser` | `/auth/disable/set` |
+| `adminResetPassword` | `/auth/reset_password` |
+| `assignUserRole` | `/auth/role/assign` |
+| `revokeUserRole` | `/auth/role/revoke` |
+| `setDefaultRole` | `/auth/role/default` |
+| `setAdminRole` | `/auth/role/admin` |
 
 Those requirements can be implemented via cloud function or external user DB.
 
