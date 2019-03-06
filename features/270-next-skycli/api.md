@@ -162,6 +162,10 @@ static:
     To setup app project directory, run:
         skycli app scaffold
 
+    # User can choose whether to setup the project folder now.
+    ? Do you want to setup the project folder now or you can do it later by
+    `skycli app scaffold` command? (Y/n) n
+
     # Add user to app
     $ skycli app add-user dev@example.com --app=myapp
 
@@ -200,10 +204,7 @@ static:
     Fetching examples...
     ? Select example: (Use arrow keys)
     > empty
-      js-cloud-function
-      js-handler
-      nodejs-service
-      auth-gear-hooks
+      js-example
 
     > Success! Initialized skygear.yaml config file in /Users/ubuntu/myapp.
     ```
@@ -224,29 +225,21 @@ static:
 
     To setup app project directory, run:
         skycli app scaffold
-    
-    # Create app directory with template example
-    $ skycli app scaffold
-    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
-    Confirm? (Y/n)
 
-    Fetching the list of your apps...
-    ? Select an app to associate with the directory: (Use arrow keys)
-    > myapp
-      myapp2
-      myapp3
-    (Move up and down to reveal more choices)
+    # User can choose whether to setup the project folder now.
+    ? Do you want to setup the project folder now or you can do it later by
+    `skycli app scaffold` command? (Y/n) Y
+
+    # Create app directory with template example
+    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
 
     Fetching examples...
     ? Select example: (Use arrow keys)
       empty
-      js-cloud-function
-      js-handler
-      nodejs-service
-    > auth-gear-hooks
+    > js-example
 
-    Fetching auth-gear-hooks and initializing..
-    > Success! Initialized "auth-gear-hooks" example in /Users/ubuntu/myapp.
+    Fetching js-example and initializing..
+    > Success! Initialized "js-example" example in /Users/ubuntu/myapp.
 
     # Deploy application
     $ skycli cf deploy
