@@ -53,11 +53,15 @@ admin.
 
 ## skycli user
 
-### skycli user create
+### skycli user signup
 
-`skycli user create`
+`skycli user signup`
 
-Cluster admin only. Create cluster user, need to provide email and password interactively.
+Signup cluster user, command will ask for password interactively.
+
+#### Flags
+
+- `--email=[EMAIL]` Provide user email.
 
 ### skycli user list
 
