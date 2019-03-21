@@ -54,27 +54,40 @@ Should also avoid ambiguous signup. Assume `loginIDMetadataKeys=[["username"], [
 
 ## Proposal 2 - meaningless login ID
 
-Allow a user to signup with arbitrary string with an arbitrary key as `loginIDMetadataKey`, and then the user can use the string to do authentication. 
+Allow a user to signup with multiple `loginID`s, each `loginID` can be a string or an object. And to identify each `loginID`, a developer should give it a name (`loginIDSource`). 
 
-`<loginIDMetadataKey>: <loginID>`
+`<loginIDSource>: <loginID>`
+
+Then user can login with the `loginID`.
+
+`login(loginID: String||dict, password: string)`
+
+In response HTTP headers, it includes a header which includes current user `loginIDSource`.
+
+```
+LoginID-Source: <loginIDSource>
+Passcode-ID: <passcodeID>
+```
+
+About `Passcode-ID`, refer to [#293](https://github.com/SkygearIO/features/issues/293)
 
 ### Sample use case: signup with email
 
 ```javascript
-// user can signup with arbitrary string
-// `loginIDMetadataKey=email` is inserted implicitly
-skygear.auth.signupWithEmail('example@example.com', 'password');
+// add `loginIDSource=email` implicitly
+skygear.auth.signupWithEmail(
+  'example@example.com', 'password'
+);
 skygear.auth.login(
   'example@example.com', 'password'
 ).then((user) => {
   console.log(user);
   /*
+  LoginID-Source: email,
   {
       user_id: <id>,
-      loginID_source: 'email'
-      metadata: {
-        email: 'example@example.com',
-      }
+      email: 'example@example.com',
+      metadata: {}
   }
   */
 });
@@ -83,20 +96,20 @@ skygear.auth.login(
 ### Sample use case: signup with username
 
 ```javascript
-// `loginIDMetadataKey=username` is inserted implicitly
-skygear.auth.signupWithUsername('example', 'password');
+// add `loginIDSource=username` implicitly
+skygear.auth.signupWithUsername(
+  'example', 'password'
+);
 skygear.auth.login(
   'example', 'password'
 ).then((user) => {
   console.log(user);
   /*
+  LoginID-Source: username,
   {
       user_id: <id>,
-      loginID_source: 'username'
-      metadata: {
-        // loginIDs
-        username: 'example',
-      }
+      username: 'example',
+      metadata: {}
   }
   */
 });
@@ -105,46 +118,63 @@ skygear.auth.login(
 ### Sample use case: signup with custom loginID
 
 ```javascript
-// signup with a dict of loginIDs
 skygear.auth.signup({
-  role: 'example',
-  phone: '8912345',
-}, 'password');
+  "role-phone": {
+    role: 'example',
+    phone: '8912345',
+  },
+  username: 'exmaple',
+  email: 'example@example.com'
+}, 'password', {age: 18});
+// creates 3 loginIDs
+// 1. username: 'example',
+// 2. email: 'example@example.com'
+// 3. role-phone: { role: 'example , phone: '8912345' }
 skygear.auth.login(
-  'example', 'password'
+  {
+    role: 'example',
+    phone: '8912345',
+  }
 ).then((user) => {
   console.log(user);
   /*
+  LoginID-Source: role-phone,
   {
       user_id: <id>,
-      loginID_source: 'role'
-      metadata: {
-        // loginIDs
+      "role-phone": {
         role: 'example',
-        phone: '8912345'
+        phone: '8912345',
+      },
+      username: 'example',
+      email: 'example@example.com'
+      metadata: {
+        age: 18
       }
   }
   */
 });
+// or
 skygear.auth.login(
-  '8912345', 'password'
+  'example'
 ).then((user) => {
   console.log(user);
   /*
+  LoginID-Source: username,
   {
       user_id: <id>,
-      loginID_source: 'phone'
-      metadata: {
-        // loginIDs
+      "role-phone": {
         role: 'example',
-        phone: '8912345'
+        phone: '8912345',
+      },
+      username: 'example',
+      email: 'example@example.com'
+      metadata: {
+        age: 18
       }
   }
   */
 });
 ```
-
-As shown in above, the user object will list all `loginID`s in `metadata`.
 
 ### Code change
 
@@ -154,13 +184,16 @@ As shown in above, the user object will list all `loginID`s in `metadata`.
 
    | Old | New |
    | -------- | -------- |
-   | `login(authData: Object, password: String)` | `login(loginID: String, password: String)` |
+   | `login(authData: dict, password: String)` | `login(loginID: String/dict, password: String)` |
    | `loginWithEmail(email: String, password: String)` | Remove |
    | `loginWithUsername(username: String, password: String)` | Remove |
-   | `requestVerification(recordKey: String)` | `requestVerificationByEmail(email: String)`<br/>`requestVerificationByPhone(phone: String)` |
-   |  | `createPasscode(loginIDSource: String, password: String, skip2FA: Boolean)`<br/>`updatePasscode(loginIDSource: String, password: String, skip2FA: Boolean`<br/>`deletePasscode(loginIDSource: String)` |
-4. [skygear-server] Update login handler to handle the new form of the `loginID`.
-5. Implement `createPasscode`, `updatePasscode` and `deletePasscode` to allow user to add `loginID` to an existing user.
+   | ` signup(authData: dict, password: String, data: dict)` | ` signup(loginIDs: dict, password: String, data: dict)` |
+   | `requestVerification(recordKey: String)` | `requestVerification(LoginIDSource: String, type: "email, phone")` |
+   | N/A | `createLoginID(loginIDSource: String, loginID: String/dict)`<br/>`updateLoginID(loginIDSource: String, loginID: String/dict)`<br/>`removeLoginID(loginIDSource: String)` |
+   | N/A | `createPasscode(loginIDSource: String, password: String, skip2FA: Boolean)`<br/>`updatePasscode(loginIDSource: String, password: String, skip2FA: Boolean`<br/>`deletePasscode(loginIDSource: String)` |
+1. [skygear-server] Update signup and login handler to handle the `loginID` concept.
+2. [skygear-server] Include `LoginID-Source` in response header.
+3. [skygear-server] Implement `requestVerification(LoginIDSource: String, type: "email"|"phone")`
 
 ### SSO auto-link
 
@@ -173,44 +206,3 @@ For SSO auto-link user feature, have following possible solutions:
    2. if ther is a `email`, that email will be matched against the SSO login.
 
 Solution 3 may have uniqueness issue, i.e. two user could have identical email or overlapping email in `sso_matching_emails`.
-
-### Login with a dict
-
-In V1, with proper setting, user can login with a dictionary, for example:
-
-```javascript
-loginIDMetadataKeys=[["username", "email"]]
-
-skygear.auth.signup({
-  username: 'example',
-  email: 'example@example.com',
-}, 'password');
-
-// auth gear saves: {username: 'example', email: 'example@example.com'} as the authData
-
-skygear.auth.login({
-  username: 'example',
-  email: 'example@example.com',
-}, 'password');
-```
-
-For supporting this proposal, user may modify as:
-
-```javascript
-skygear.auth.signup({
-  username_email: 'example_example@example.com',
-}, 'password');
-
-skygear.auth.login('example_example@example.com', 'password');
-console.log(skygear.auth.currentUser);
-/*
-{
-    user_id: <id>,
-    loginID_source: 'username_email'
-    metadata: {
-      // loginIDs
-      username_email: 'example_example@example.com',
-    }
-}
-*/
-```
