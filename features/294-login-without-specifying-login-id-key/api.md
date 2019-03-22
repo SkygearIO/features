@@ -215,10 +215,10 @@ Solution 3 may have uniqueness issue, i.e. two user could have identical email o
 
 ## Proposal 3
 
-Adjust `LOGIN_ID_METADATA_KEYS` definition, allows one level string `loginID` only.
+Adjust current `LOGIN_ID_METADATA_KEYS` definition, rename it `LOGIN_IDS_KEY_WHITELIST` and allow one level string `loginID` only.
 
 ```
-LOGIN_SOURCES = ["username", "email"]
+LOGIN_IDS_KEY_WHITELIST = ["username", "email"]
 ```
 
 And `loginID` must be following form:
@@ -230,7 +230,7 @@ And `loginID` must be following form:
 }
 ```
 
-For example, for `LOGIN_SOURCES = ["username", "email"]`,
+For example, for `LOGIN_IDS_KEY_WHITELIST = ["username", "email"]`,
 
 ```
 signup({
@@ -269,7 +269,7 @@ signup({
 For app wants to use compound keys as `loginID`, we suggest it encodes compound keys to a JSON string.
 
 ```
-LOGIN_SOURCES = ["email", "role_phone"]
+LOGIN_IDS_KEY_WHITELIST = ["email", "role_phone"]
 
 signup({
   email: 'example@example.com',
@@ -286,10 +286,10 @@ which creates two `loginID`s:
 
 It's developer's responsibility to ensure the encoded string uniqueness ('["admin","phone"]' and '["phone","admin"]' are two different `loginID`). 
 
-And a user can't signup a `login_id_source` not in the `LOGIN_SOURCES` as well.
+And a user can't signup a `login_id_source` not in the `LOGIN_IDS_KEY_WHITELIST` as well.
 
 ```
-LOGIN_SOURCES = ["email", "username"]
+LOGIN_IDS_KEY_WHITELIST = ["email", "username"]
 
 signup({
   email: 'example@example.com',
