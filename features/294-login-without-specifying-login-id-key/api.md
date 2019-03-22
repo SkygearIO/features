@@ -86,7 +86,9 @@ skygear.auth.login(
   LoginID-Source: email,
   {
       user_id: <id>,
-      email: 'example@example.com',
+      login_ids: {
+        email: 'example@example.com',
+      },
       metadata: {}
   }
   */
@@ -108,7 +110,9 @@ skygear.auth.login(
   LoginID-Source: username,
   {
       user_id: <id>,
-      username: 'example',
+      login_ids: { 
+        username: 'example',
+      },
       metadata: {}
   }
   */
@@ -141,12 +145,14 @@ skygear.auth.login(
   LoginID-Source: role-phone,
   {
       user_id: <id>,
-      "role-phone": {
-        role: 'example',
-        phone: '8912345',
+      login_ids: {
+        "role-phone": {
+          role: 'example',
+          phone: '8912345',
+        },
+        username: 'example',
+        email: 'example@example.com'
       },
-      username: 'example',
-      email: 'example@example.com'
       metadata: {
         age: 18
       }
@@ -162,12 +168,14 @@ skygear.auth.login(
   LoginID-Source: username,
   {
       user_id: <id>,
-      "role-phone": {
-        role: 'example',
-        phone: '8912345',
+        login_ids: {
+        "role-phone": {
+          role: 'example',
+          phone: '8912345',
+        },
+        username: 'example',
+        email: 'example@example.com'
       },
-      username: 'example',
-      email: 'example@example.com'
       metadata: {
         age: 18
       }
@@ -185,15 +193,13 @@ skygear.auth.login(
    | Old | New |
    | -------- | -------- |
    | `login(authData: dict, password: String)` | `login(loginID: String/dict, password: String)` |
-   | `loginWithEmail(email: String, password: String)` | Remove |
-   | `loginWithUsername(username: String, password: String)` | Remove |
    | ` signup(authData: dict, password: String, data: dict)` | ` signup(loginIDs: dict, password: String, data: dict)` |
    | `requestVerification(recordKey: String)` | `requestVerification(LoginIDSource: String, type: "email, phone")` |
    | N/A | `createLoginID(loginIDSource: String, loginID: String/dict)`<br/>`updateLoginID(loginIDSource: String, loginID: String/dict)`<br/>`removeLoginID(loginIDSource: String)` |
    | N/A | `createPasscode(loginIDSource: String, password: String, skip2FA: Boolean)`<br/>`updatePasscode(loginIDSource: String, password: String, skip2FA: Boolean`<br/>`deletePasscode(loginIDSource: String)` |
-1. [skygear-server] Update signup and login handler to handle the `loginID` concept.
-2. [skygear-server] Include `LoginID-Source` in response header.
-3. [skygear-server] Implement `requestVerification(LoginIDSource: String, type: "email"|"phone")`
+4. [skygear-server] Update signup and login handler to handle the `loginID` concept.
+5. [skygear-server] Include `LoginID-Source` in response header.
+6. [skygear-server] Implement `requestVerification(LoginIDSource: String, type: "email"|"phone")`
 
 ### SSO auto-link
 
@@ -206,3 +212,159 @@ For SSO auto-link user feature, have following possible solutions:
    2. if ther is a `email`, that email will be matched against the SSO login.
 
 Solution 3 may have uniqueness issue, i.e. two user could have identical email or overlapping email in `sso_matching_emails`.
+
+## Proposal 3
+
+Adjust `LOGIN_ID_METADATA_KEYS` definition, allows one level string `loginID` only.
+
+```
+LOGIN_SOURCES = ["username", "email"]
+```
+
+And `loginID` must be following form:
+
+```
+{
+  <loginSource: String>: <loginId: String>,
+  <loginSource: String>: <loginId: String>
+}
+```
+
+For example, for `LOGIN_SOURCES = ["username", "email"]`,
+
+```
+signup({
+  username: 'example',
+  email: 'example@example.com'
+}, 'password')
+```
+
+which creates two `lingID`s:
+
+| login_id_source:String | login_id:String (`UNIQUE`) |
+| --- | --- |
+| username | example |
+| email | example@example.com |
+
+User can login by `username` or `email`, but not `username` and `email`.
+
+```
+login('example', 'password'); ==> OK
+login('example@example', 'password'); ==> OK
+login({
+  username: 'example',
+  email: 'example@example.com'
+}, 'password') ==> won't support this.
+```
+
+Since `loginID` is defined with `UNIQUE` constraint, which means another user **can't** signup as
+
+```
+signup({
+  username: 'example@example.com',
+  email: 'example'
+}, 'password') ==> error: Duplicated loginID
+```
+
+For app wants to use compound keys as `loginID`, we suggest it encodes compound keys to a JSON string.
+
+```
+LOGIN_SOURCES = ["email", "role_phone"]
+
+signup({
+  email: 'example@example.com',
+  role_phone: '["admin","phone"]'
+}, 'password') ==> OK
+```
+
+which creates two `lingID`s:
+
+| login_id_source:String | login_id:String (`UNIQUE`) |
+| --- | --- |
+| email | example@example.com |
+| role_phone | ["admin","phone"] |
+
+It's developer's responsibility to ensure the encoded string uniqueness ('["admin","phone"]' and '["phone","admin"]' are two different `loginID`). 
+
+And a user can't signup a `login_id_source` not in the `LOGIN_SOURCES` as well.
+
+```
+LOGIN_SOURCES = ["email", "username"]
+
+signup({
+  email: 'example@example.com',
+  role_phone: '[\"admin\", \"1234567\"]'
+}, 'password') ==> error: Unknow loginIDSource
+```
+
+The response user object is:
+
+```
+LoginID-Source: username,
+Passcode-ID: null,
+{
+    user_id: <id>,
+    login_ids: {
+      "role-phone": {
+        role: 'example',
+        phone: '8912345',
+      },
+      username: 'example',
+      email: 'example@example.com'
+    },
+    metadata: {
+      age: 18
+    }
+}
+```
+
+### Code change
+
+1. [skygear-server] Update `loginIDMetadataKeys` definition setting.
+2. [skygear-server] Change `_auth_provider_password.authData` to `text` type and add `_auth_provider_password.source` field.
+3. [skygear-JS-SDK] Update SDK APIs
+
+   | Old | New |
+   | -------- | -------- |
+   | `login(authData: dict, password: String)` | `login(loginID: String, password: String)` |
+   | N/A | `createLoginID(loginIDSource: String, loginID: String)`<br/>`updateLoginID(loginIDSource: String, loginID: String)`<br/>`removeLoginID(loginIDSource)` |
+   | N/A | `createPasscode(loginIDSource: String, password: String, skip2FA: Boolean)`<br/>`updatePasscode(loginIDSource: String, password: String, skip2FA: Boolean`<br/>`deletePasscode(loginIDSource: String)` |
+4. [skygear-server] Update signup and login handler to handle the updated `loginID` concept.
+5. [skygear-server] Include `LoginID-Source` in response header.
+
+## Compare proposal 2 and proposal 3
+
+### form of loginIDs
+
+Proposal 2 allows to use free form `loginID`s, proposal 3 not.
+
+```javascript
+signup({
+  username: 'exmaple',
+  email: 'example@example.com',
+  "role-phone": {
+    role: 'example',
+    phone: '8912345',
+  }
+}, 'password'); ===> proposal 2: OK, proposal 3: error: Incorrect loginID format
+```
+
+### Compound Keys
+
+Proposal 3 allows String loginID only, for compound keys loginID, it needs to use a work-around.
+
+```javascript
+signup({
+  username: 'exmaple',
+  email: 'example@example.com',
+  "role-phone": '["example", "example@example.com"]'
+}, 'password'); 
+```
+
+## User verification
+
+Proposal 2 need another API (`requestVerification(LoginIDSource: String, type: ["email", "phone"])`) to find `email` or `phone` to verify user.
+
+### SSO auto-link
+
+Proposal 2 need aother mechanism to find `email` of a user to support auto-link user.
