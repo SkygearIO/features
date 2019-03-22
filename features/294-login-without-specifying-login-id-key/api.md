@@ -239,7 +239,7 @@ signup({
 }, 'password')
 ```
 
-which creates two `lingID`s:
+which creates two `loginID`s:
 
 | login_id_source:String | login_id:String (`UNIQUE`) |
 | --- | --- |
@@ -277,7 +277,7 @@ signup({
 }, 'password') ==> OK
 ```
 
-which creates two `lingID`s:
+which creates two `loginID`s:
 
 | login_id_source:String | login_id:String (`UNIQUE`) |
 | --- | --- |
