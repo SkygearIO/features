@@ -215,13 +215,17 @@ Solution 3 may have uniqueness issue, i.e. two user could have identical email o
 
 ## Proposal 3
 
-Adjust current `LOGIN_ID_METADATA_KEYS` definition, rename it `LOGIN_IDS_KEY_WHITELIST` and allow one level string `loginID` only.
+Adjust current `LOGIN_ID_METADATA_KEYS` definition, rename it `LOGIN_IDS_KEY_WHITELIST` and allow one level string `loginID` only. `LOGIN_IDS_KEY_WHITELIST` default to empty, which allows to use any string as the `loginIDSouce`.
 
 ```
+LOGIN_IDS_KEY_WHITELIST = []
+==> allows any string as loginIDSouce
+
 LOGIN_IDS_KEY_WHITELIST = ["username", "email"]
+==> allows "username" and "email" as loginIDSouce
 ```
 
-And `loginID` must be following form:
+And `loginIDData` must be following form:
 
 ```
 {
@@ -230,7 +234,7 @@ And `loginID` must be following form:
 }
 ```
 
-For example, for `LOGIN_IDS_KEY_WHITELIST = ["username", "email"]`,
+For example, for `LOGIN_IDS_KEY_WHITELIST = []`,
 
 ```
 signup({
@@ -246,7 +250,7 @@ which creates two `loginID`s:
 | username | example |
 | email | example@example.com |
 
-User can login by `username` or `email`, but not `username` and `email`.
+User can login by `username` **OR** `email`, but not `username` **AND** `email`.
 
 ```
 login('example', 'password'); ==> OK
@@ -284,9 +288,9 @@ which creates two `loginID`s:
 | email | example@example.com |
 | role_phone | ["admin","phone"] |
 
-It's developer's responsibility to ensure the encoded string uniqueness ('["admin","phone"]' and '["phone","admin"]' are two different `loginID`). 
+It's developer's responsibility to ensure the encoded string uniqueness ('["admin","phone"]' and '["phone","admin"]' are considered as two different `loginID`). 
 
-And a user can't signup a `login_id_source` not in the `LOGIN_IDS_KEY_WHITELIST` as well.
+If `LOGIN_IDS_KEY_WHITELIST ` contains some string (not empty), a user can't signup with a `loginIDSouce` not in the list.
 
 ```
 LOGIN_IDS_KEY_WHITELIST = ["email", "username"]
@@ -294,7 +298,7 @@ LOGIN_IDS_KEY_WHITELIST = ["email", "username"]
 signup({
   email: 'example@example.com',
   role_phone: '[\"admin\", \"1234567\"]'
-}, 'password') ==> error: Unknow loginIDSource
+}, 'password') ==> error: Unknow loginIDSource ("role_phone")
 ```
 
 The response user object is:
