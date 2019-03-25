@@ -46,8 +46,8 @@ skycli [group] [verb/action] [parameters]
     - [skycli config set-app [APP_NAME]](commands.md#skycli-config-set-app)
     - [skycli config set-cluster-server [https://1.2.3.4]](commands.md#skycli-config-set-cluster-server)
 
-- skycli user (Admin only, cluster user management)
-    - [skycli user create](commands.md#skycli-user-create)
+- skycli user
+    - [skycli user signup](commands.md#skycli-user-signup)
     - [skycli user list](commands.md#skycli-user-list)
 
 #### Application commands

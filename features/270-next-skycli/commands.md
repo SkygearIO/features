@@ -2,15 +2,14 @@
 
 ### skycli auth login
 
-`skycli auth login [--email=EMAIL] [--admin-key=ADMIN_KEY]`
+`skycli auth login [--email=EMAIL]`
 
-Login as cluster admin or user, if no flags are provided. Will ask for email
+Login as cluster user, if no flags are provided. Will ask for email
 and password interactively.
 
 #### Flags
 
 - `--email=EMAIL` Login as cluster user, ask for password interactively.
-- `--admin-key=ADMIN_KEY` Login as cluster admin, no password is needed.
 
 ### skycli auth logout
 
@@ -46,24 +45,34 @@ Change skycli current app context to `APP_NAME`
 
 ### skycli config set-cluster-server
 
-`skycli config set-cluster-server [CLUSTER_SERVER_URL]`
+`skycli config set-cluster-server --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
 
-Change current cluster controller server endpoint, it is provided by cluster
-admin.
+Change current cluster controller server endpoint and api key, it is provided
+by cluster admin. If cluster admin want to use admin only api, they should provide
+master key in the api key flag.
+
+#### Flags
+
+- `--endpoint=[CLUSTER_SERVER_URL]` Provide cluster controller endpoint url.
+- `--api-key=[API_KEY|MASTER_KEY]` Provide api key.
 
 ## skycli user
 
-### skycli user create
+### skycli user signup
 
-`skycli user create`
+`skycli user signup`
 
-Cluster admin only. Create cluster user, need to provide email and password interactively.
+Signup cluster user, command will ask for password interactively.
+
+#### Flags
+
+- `--email=[EMAIL]` Provide user email.
 
 ### skycli user list
 
 `skycli user list`
 
-Cluster admin only. List all cluster user.
+Master key only. List all cluster user.
 
 ## skycli app
 
