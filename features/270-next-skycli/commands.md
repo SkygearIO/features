@@ -1,3 +1,18 @@
+## skycli overview
+
+### Global flags
+
+`skycli [GROUP] [--app=APP_NAME] [ACTION]`
+
+#### Flags
+
+- `--app=APP_NAME` Provide app name for commands. Overrides the app provided in `skygear.yaml`.
+
+#### Example
+```
+$ skycli app --app=myapp add-user [USER_EMAIL]
+```
+
 ## skycli auth
 
 ### skycli auth login
@@ -37,12 +52,6 @@ admin-key=
 app=myapp
 ```
 
-### skycli config set-app
-
-`skycli config set-app [APP_NAME]`
-
-Change skycli current app context to `APP_NAME`
-
 ### skycli config set-cluster-server
 
 `skycli config set-cluster-server --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
@@ -76,19 +85,83 @@ Master key only. List all cluster user.
 
 ## skycli app
 
+### skycli app create
+
+`skycli app create`
+
+Create new app.
+
+```
+$ skycli app create
+
+? What is your app name? myapp
+
+Creating app...
+Your API endpoint: https://myapp.api.skygear.io
+Your Client API Key: DSOJSDOSDKOJASNLSLC
+Your Master API Key: FJOADJOFAJOFJOASDJK
+Created app successfully!
+
+To setup app project directory, run:
+    skycli app scaffold
+
+? Do you want to setup the project folder now or you can do it later by
+`skycli app scaffold` command? (Y/n) Y
+
+You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+
+Fetching examples...
+? Select example: (Use arrow keys)
+  empty
+> js-example
+
+Fetching js-example and initializing..
+> Success! Initialized "js-example" example in /Users/ubuntu/myapp.
+```
+
+### skycli app scaffold
+
+`skycli app scaffold [--app=APP_NAME] [--template=TEMPLATE]`
+
+Create `skygear.yaml` in the root of app directory, the config file is required
+to update app by using `skycli`.
+
+#### Flags
+
+- `--app=APP_NAME` Provide app name.
+- `--template=TEMPLATE` Provide template name.
+
+#### Example
+
+```sh
+# Interactive mode when app and template flags are not provided
+$ skycli app scaffold
+
+? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+Confirm? (Y/n)
+
+Fetching the list of your apps...
+? Select an app to associate with the directory: (Use arrow keys)
+> myapp1
+  myapp2
+  myapp3
+(Move up and down to reveal more choices)
+
+Fetching examples...
+? Select example: (Use arrow keys)
+  empty
+> js-example
+
+Fetching js-example and initializing..
+> Success! Initialized "js-example" example in /Users/ubuntu/myapp.
+```
+
 ### skycli app list
 
 `skycli app list`
 
 List all user's app. If using admin key to call this app, list all the apps in
 the cluster instead.
-
-### skycli create app
-
-`skycli create app`
-
-Create app, the skycli current app context will be updated to the newly created
-app.
 
 ### skycli app add-user
 

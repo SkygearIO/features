@@ -43,7 +43,6 @@ skycli [group] [verb/action] [parameters]
 
 - skycli config
     - [skycli config view](commands.md#skycli-config-view)
-    - [skycli config set-app [APP_NAME]](commands.md#skycli-config-set-app)
     - [skycli config set-cluster-server [https://1.2.3.4]](commands.md#skycli-config-set-cluster-server)
 
 - skycli user
@@ -53,8 +52,9 @@ skycli [group] [verb/action] [parameters]
 #### Application commands
 
 - skycli app
-    - [skycli app list](commands.md#skycli-app-list)
     - [skycli app create](commands.md#skycli-app-create)
+    - [skycli app scaffold](commands.md#skycli-app-scaffold)
+    - [skycli app list](commands.md#skycli-app-list)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
     - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
@@ -113,27 +113,137 @@ access skycli instead of using user account.
 
 ## Config files structure
 
-### ~/.skycli/skyclirc
+### ${XDG_CONFIG_HOME:-$HOME/.config}/skycli/config
 
 - cluster controller endpoint
 - user credentials 
 
-### ./.skyclirc
+### ./skygear.yaml
+
+- config version (If we have new config version in future, skycli will read the
+  version and convert the previous config to the current version.)
 - current app
+- cloud functions configuration
 
-## Discussion
+#### Example
+```
+config_version: 1
+app: myapp
+cf:
+  function1:
+    type: http-handler
+    path: /hello-world
+    env: node
+    src: js/hellow-world
+    secrets:
+      - DATABASE_URL
+    permission:
+      - name: key_required
+      - name: user_required
+static:
+  ...
+```
 
-- Current `skycli app view-config` and `skycli app update-config` give the
-greatest flexible to user to update the config. But user need to understand the
-tenant config structure. I think this case is similar to v1 cms config file.
-- Current tenant config is not a simple key value mapping, so we didn't have a
-single command to update particular value. User need to export the current config
-by `skycli app view-config`, update, and upload by `skycli app update-config`.
-- `skycli app view-config` will mask the auth db url, it is also not editable by
-`skycli app update-config`.
-- I think we should not show the secret value in the list comment. But user may
-want to obtain the db credentials after enabling service?
+## Use cases
 
-## Questions
+- User creates app and uses skycli for app configuration without CF
 
-- How to support email template?
+    ```sh
+    # Create app
+    $ skycli app create
+
+    ? What is your app name? myapp
+    Creating app...
+    Your API endpoint: https://myapp.api.skygear.io
+    Your Client API Key: DSOJSDOSDKOJASNLSLC
+    Your Master API Key: FJOADJOFAJOFJOASDJK
+    Created app successfully!
+
+    To setup app project directory, run:
+        skycli app scaffold
+
+    # User can choose whether to setup the project folder now.
+    ? Do you want to setup the project folder now or you can do it later by
+    `skycli app scaffold` command? (Y/n) n
+
+    # Add user to app
+    $ skycli app add-user dev@example.com --app=myapp
+
+    # Update tenant config to enable welcome email
+    $ skycli app update-tenant-config WELCOME_EMAIL --app=myapp
+    ? Edit application tenant config. Press <enter> to launch your preferred editor.
+    # Enter editor mode with existing config
+    ENABLED: false
+    SENDER: no-reply@skygeario.com
+    SENDER_NAME: ''
+    REPLY_TO: ''
+    REPLY_TO_NAME: ''
+    SUBJECT: Welcome!
+    EMAIL_HTML: |-
+      <p>Hello {% if user.name %}{{ user.name }}{% else %}{{ user.email }}{% endif %},</p>
+
+      <p>Welcome to Skygear.</p>
+
+      <p>Thanks.</p>
+    ~
+    ~
+    ~
+
+    # User don't want to specify app for every commands, create app directory by scaffold command
+    $ skycli app scaffold
+    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+    Confirm? (Y/n)
+
+    Fetching the list of your apps...
+    ? Select an app to associate with the directory: (Use arrow keys)
+    > myapp
+      myapp2
+      myapp3
+    (Move up and down to reveal more choices)
+
+    Fetching examples...
+    ? Select example: (Use arrow keys)
+    > empty
+      js-example
+
+    > Success! Initialized skygear.yaml config file in /Users/ubuntu/myapp.
+    ```
+
+
+- User creates app and wants to define auth hooks
+
+    ```sh
+    # Create app
+    $ skycli app create
+
+    ? What is your app name? myapp
+    Creating app...
+    Your API endpoint: https://myapp.api.skygear.io
+    Your Client API Key: DSOJSDOSDKOJASNLSLC
+    Your Master API Key: FJOADJOFAJOFJOASDJK
+    Created app successfully!
+
+    To setup app project directory, run:
+        skycli app scaffold
+
+    # User can choose whether to setup the project folder now.
+    ? Do you want to setup the project folder now or you can do it later by
+    `skycli app scaffold` command? (Y/n) Y
+
+    # Create app directory with template example
+    ? You're about to initialize a Skygear project in this directory: /Users/ubuntu/myapp
+
+    Fetching examples...
+    ? Select example: (Use arrow keys)
+      empty
+    > js-example
+
+    Fetching js-example and initializing..
+    > Success! Initialized "js-example" example in /Users/ubuntu/myapp.
+
+    # Deploy application
+    $ skycli cf deploy
+
+    # Other application operations
+    $ skycli app add-user dev@example.com
+    ```
