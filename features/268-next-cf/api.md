@@ -42,12 +42,12 @@ Here is the diagram of all components. Intereactions between components will be 
 
 
                                   +-------------------------------------------------------------------+
-                                  |OpenFaas                                                           |
+                                  |OpenFaas/Fission                                                   |
                                   |           +-------------------+                                   |
                                   |           |                   |                                   |
                                   |           |                   |                                   |
-                                  |           |   OpenFaas        |                                   |
                                   |           |   Gateway         |                                   |
+                                  |           |                   |                                   |
                                   |           |                   |                                   |
                                   |           +-------------------+                                   |
                                   |                                                                   |
@@ -92,12 +92,12 @@ Here is the diagram of all components. Intereactions between components will be 
                                                                                                                         |Call corresponding api to
                                                                                                                         |OpenFaas gateway or k8s cluster
                                   +-------------------------------------------------------------------+                 |
-                                  |OpenFaas                                                           |                 |
+                                  |OpenFaas/Fission                                                   |                 |
                                   |           +-------------------+                                   |                 |
                                   |           |                   |                                   |                 |
                                   |           |                   |                                   |                 |
-                                  |           |   OpenFaas        <-----------------------------------------------------+
-                                  |           |   Gateway         |                                   |
+                                  |           |   Gateway         <-----------------------------------------------------+
+                                  |           |                   |                                   |
                                   |           |                   |                                   |
                                   |           +-------------------+                                   |
                                   |                                                                   |
@@ -146,12 +146,12 @@ Here is the diagram of all components. Intereactions between components will be 
                                                       |Route to the
                                                       |corresponding function
                                   +-------------------------------------------------------------------+
-                                  |OpenFaas           |                                               |
+                                  |OpenFaas/Fission   |                                               |
                                   |           +-------v-----------+                                   |
                                   |           |                   |                                   |
                                   |           |                   |                                   |
-                                  |           |   OpenFaas        |                                   |
                                   |           |   Gateway         |                                   |
+                                  |           |                   |                                   |
                                   |           |                   |                                   |
                                   |           +-------------------+                                   |
                                   |                                                                   |
@@ -171,44 +171,6 @@ Here is the diagram of all components. Intereactions between components will be 
 ```
 
 # Components
-
-## OpenFaas
-
-As the base faas platform of CF, it provides the fundamental work of deploying and managing functions on a cluster.
-Details of OpenFaas would not be included here. Briefly speaking what OpenFaas provides us are:
-- function deployment
-- a watchdog program that wrap function to a http server
-- routing
-- scaling functions down to zero (like hibernater in skygear v1)
-- monitoring (with prometheus)
-
-Extra features of CF we may or may not use in the future:
-- async function invocation
-
-However, one key feature OpenFaas does not provide which we need in skygear is multi-tenancy. Once you can access to the OpenFaas Gateway, you can manage all functions managed by the gateway.
-
-So skygear user would not access the OpenFaas directly to manage their functions.
-
-### Setup
-
-The OpenFaas would be installed with helm, because configuration and maintainance is more managable.
-
-src: https://github.com/openfaas/faas-netes/tree/master/chart/openfaas
-
-Some key configuration:
-- external services would NOT be exposed
-  - skygear admin may need to connect to the gateway through port forwarding
-  - thus gateway basic auth may be optional
-- imagePullPolicy => IfNotPresent, to optimise for function reboot
-  - when the cluster grow, we may need to consider how to further optimise for function boot time
-- scaleFromZero => true, faasIdler.dryRun => false, to scale down function to zero when needed
-- faasIdler.inactivityDuration affects when functions would be scale down to zero, however we will have mainly two types of deployed function, short-lived functions and long-running micro-services, scaling strategy would be discussed in later sections
-
-#### Kubernetes CRD
-
-src: https://github.com/openfaas/faas-netes/tree/master/chart/openfaas#openfaas-operator--crd-controller
-
-CRD may be considered in the future, but as suggested the more reliable faas-netes controller would be used.
 
 ## CF Controller
 
