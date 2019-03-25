@@ -12,6 +12,8 @@ The top level is the git repository.
 - skygear-SDK-JS
 - skygear-SDK-iOS
 - skygear-SDK-Android
+- skygear-cloud-node
+    - cloud sdk for auth hooks and cloud functions
 - skygear-controller
     - skycli and portal backend
     - manage cluster users
