@@ -116,6 +116,8 @@ About `Passcode-ID`, refer to [#293](https://github.com/SkygearIO/features/issue
 4. [skygear-server] Update signup and login handler to handle the updated `loginID` concept.
 5. [skygear-server] Include `LoginID-Key` in response header.
 
+Note that `signupWithLoginIDs` and `signup` may have different implementions for different SDK, such as different functions or function overloading on Java.
+
 ## Compare to [meaningless loginID](appendix.md#proposal-2---meaningless-login-id)
 
 
