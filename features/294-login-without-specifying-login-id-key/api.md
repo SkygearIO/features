@@ -49,11 +49,11 @@ signupWithLoginIDs({
 For app wants to use an object as `loginID`, we suggest it encodes the object to a JSON string.
 
 ```
-LOGIN_IDS_KEY_WHITELIST = ["email", "role_phone"]
+LOGIN_IDS_KEY_WHITELIST = ["email", "role-phone"]
 
 signupWithLoginIDs({
   email: 'example@example.com',
-  role_phone: '["admin","phone"]'
+  'role-phone': '[\"admin\", \"12345\"]'
 }, 'password') ==> OK
 ```
 
@@ -62,9 +62,9 @@ which creates two `loginID`s:
 | loginID key:String | loginID value:String (`UNIQUE`) |
 | --- | --- |
 | email | example@example.com |
-| role_phone | ["admin","phone"] |
+| role-phone | [\\"admin\\", \\"12345\\"] |
 
-It's developer's responsibility to ensure the encoded string uniqueness ('["admin","phone"]' and '["phone","admin"]' are considered as two different `loginID`). 
+It's developer's responsibility to ensure the encoded string uniqueness ('[\\"admin\\", \\"12345\\"]' and '[\\"phone\\", \\"12345\\"]' are considered as two different `loginID`). 
 
 If `LOGIN_IDS_KEY_WHITELIST` contains some string (not empty), a user can't signup with a `loginID` key which is not in the list.
 
@@ -73,8 +73,8 @@ LOGIN_IDS_KEY_WHITELIST = ["email", "username"]
 
 signup({
   email: 'example@example.com',
-  role_phone: '[\"admin\", \"1234567\"]'
-}, 'password') ==> error: Unknow loginID Key ("role_phone")
+  'role-phone': '[\"admin\", \"12345\"]'
+}, 'password') ==> error: Unknown loginID Key ("role-phone")
 ```
 
 The response user object is:
@@ -85,10 +85,7 @@ Passcode-ID: null,
 {
     user_id: <id>,
     login_ids: {
-      "role-phone": {
-        role: 'example',
-        phone: '8912345',
-      },
+      'role-phone': '[\"admin\", \"12345\"]',
       username: 'example',
       email: 'example@example.com'
     },
@@ -116,10 +113,9 @@ About `Passcode-ID`, refer to [#293](https://github.com/SkygearIO/features/issue
 4. [skygear-server] Update signup and login handler to handle the updated `loginID` concept.
 5. [skygear-server] Include `LoginID-Key` in response header.
 
-Note that `signupWithLoginIDs` and `signup` may have different implementions for different SDK, such as different functions or function overloading on Java.
+Note that `signupWithLoginIDs` and `signup` may have different implementations for different SDK, such as different functions or function overloading on Java.
 
 ## Compare to [meaningless loginID](appendix.md#proposal-2---meaningless-login-id)
-
 
 ### Compound Keys
 
@@ -128,18 +124,18 @@ This proposal allows string loginID value only, for compound keys loginID, it ne
 ```javascript
 // loginID value must be a string
 signupWithLoginIDs({
-  username: 'exmaple',
+  username: 'example',
   email: 'example@example.com',
-  "role-phone": '["example", "123456"]'
+  'role-phone': '[\"example\", \"12345\"]'
 }, 'password'); 
 
 // meaningless loginID
 signup({
-  username: 'exmaple',
+  username: 'example',
   email: 'example@example.com',
-  "role-phone": {
-    role: "example",
-    phone: "123456"
+  'role-phone': {
+    role: 'example',
+    phone: '123456'
   }
 }, 'password')
 ```
