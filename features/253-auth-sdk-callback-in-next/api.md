@@ -31,18 +31,13 @@ In this spec, it will describe the structure of user object in skygear next, and
 
 - skygear next: next generation skygear.
 - auth gear: skygear next component for user authentication and authorization.
-- `LOGIN_ID_METADATA_KEYS`: a list of keys which defines which keys can be used for authentication (previously called `AUTH_RECORD_KEYS` in skygear v1), this list is mainly used for multi-provider login.
-- `loginIDs`: a **flattened** dictionary which use `LOGIN_ID_METADATA_KEYS` as a key and its associated values.
+- LOGIN_IDS_KEY_WHITELIST: a list of string which defines what string can be used as loginID key.
+- login_ids: a dictionary of a user's loginIDs.
 - auth info: any data that may affect or affected by user authentication status or authorized status, such as disabled, last login at, roles, ..., etc.
-- user custom attributes: any user attributes that are not auth info related.
-- metadata: a dictionary combines `loginIDs` and user custom attributes.
-- user object: an object combines auth info and metadata that represents an user.
+- metadata: any user attributes that are not auth info related.
+- user object: an object combines auth info, login_ids and metadata that represents an user.
 
 # User object overview
-
-Following is a illustration of a user object's structure.
-
-![user object](./user_object.png "user object diagram")
 
 ```
 {
@@ -53,10 +48,11 @@ Following is a illustration of a user object's structure.
     verified: <verified>,
     verify_info: <verified_info>,
     roles: [<role>, <role>, <role>, ...],
-    metadata: {
-      // loginIDs
+    login_ids: {
       username: <username>,
       email: <email>,
+    },
+    metadata: {
       // custom user attributes
       avatar_url: <avatarUrl>,
       name: <name>,
@@ -67,146 +63,73 @@ Following is a illustration of a user object's structure.
 }
 ```
 
-Note that, `metadata` in user object is a merged dictionary from two dictionaries, the two dictionaries are `loginIDs` and user custom attributes.
+# `LOGIN_IDS_KEY_WHITELIST` and `login_ids`
 
-# `LOGIN_ID_METADATA_KEYS` and `loginIDs`
+`LOGIN_IDS_KEY_WHITELIST` is an empty list by default, which allows to use any string as loginID key. If it contains some strings, it restricts what strings can be used as loginID key. For example, `['username', 'email']` indicates that a user can be authenticated by username or email.
 
-`LOGIN_ID_METADATA_KEYS` is a list of a list of keys, which defines which keys can be used for user authentication. Default `LOGIN_ID_METADATA_KEYS` is `[['username'], ['email']]`. `LOGIN_ID_METADATA_KEYS` is a global config for an app, it can be configured via `skycli`.
-
-Each item in `LOGIN_ID_METADATA_KEYS` defines a set of values for user authentication, for example, `[['username'], ['email']]` indicates that a user can be authicated by username or email.
-
-Take `[['username'], ['email'], ['username', 'email'], ['nickname', 'role']]` as another example, here, user can be authicated by
-
-- `username`
-- `email`
-- `username` and `email`
-- `nickname` and `role`
-
-any one of them works.
-
-`loginIDs` is a **flattened** dictionary which contains `LOGIN_ID_METADATA_KEYS` and its associated values, for example:
+For compound keys, we suggest to use JSON string as the loginID value, such as
 
 ```json
-// `LOGIN_ID_METADATA_KEYS` = [["username"], ["email"]]
 {
-  "username": "example",
-  "email": "example@example.com"
+  "nickname_business_email": "[\"john.doe\", \"john.doe@example.com\"]"
 }
 ```
 
-or
+`login_ids` is a dictionary which contains loginIDs. For example:
 
-```json
-// `LOGIN_ID_METADATA_KEYS` = [["username"], ["email"], ["nickname", "business_email"]]
-{
+```javascript
+login_ids: {
   "username": "example",
   "email": "example@example.com",
-  "nickname": "john.doe",
-  "busniess_email": "john.doe@example.com"
+  "nickname_business_email": "[\"john.doe\", \"john.doe@example.com\"]"
 }
 ```
 
-# `updateMetadata` and `loginIDs`
+Please refer implementation detail at [#296](https://github.com/SkygearIO/features/issues/296).
 
-`updateMetadata` is a newly added API for user to update its metadata, due to user object's `metadata` object contains both user custom attributes and `loginIDs`, so any changes from `updateMetadata` may directly impact user authentication behavior.
+# Modify loginID
 
-- Modify: if a value of `loginIDs` updated, a user's login ID is also updated. 
-- Add: if a value associated to `LOGIN_ID_METADATA_KEYS` added, a user implicitly add a new login ID.
-- Remove: if a value assciated to `LOGIN_ID_METADATA_KEYs` removed, a connected user login ID is removed as well.
+We will have following APIs to allow user to manipulate loginIDs of a user.
 
-## Example scenario:
+- `async createLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
+- `async updateLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
+- `async removeLoginID(loginIDKey): Promise<User>`
 
-Scenario Info: 
+# Support multiple password
 
-- `LOGIN_ID_METADATA_KEYS = [['username'], ['email'], ['nickname', 'business_email']]`
-- user's existing login ID:
-  - `username` = "example"
-  - `password` = "password" 
-- user object's `metadata` is
-  ```javascript
-  {
-    // loginIDs:
-    "username": "example",
-    // user custom attributes:
-    "gender": "none"
-  }
-  ```
+- `async createPasscode(passcodeID: String, loginIDKey: String, password: String, skip2FA: Boolean): Promise<User>`
+- `async updatePasscode(passcodeID: String, password: String, skip2FA: Boolean): Promise<User>`
+- `async deletePasscode(passcodeID: String): Promise<User>`
 
-Case 1: Modify
+# `Login-ID-Key`
 
-```javascript
-const currentUser = skygear.auth.currentUser;
-currentUser['metadata']['username'] = 'new_example';
-skygear.auth.updateMetadata(currentUser);
-// user has to use "new_example"(username) + "password"(password) to login next time
+An additional HTTP response header carries the information about which loginIDKey the user used when login.
+
+# `Passcode-ID`
+
+An additional HTTP response header carries the information about which passcodeID the user used when login.
+
+For more detail about modify loginID, supporting multiple passwords and additional HTTP headers, please refer [#293](https://github.com/SkygearIO/features/issues/293) for more information.
+
+# `updateMetadata` 
+
+`updateMetadata` is a newly added API for user to update its metadata, metadata is saved properly when the user invokes `updateMetadata`. For admin, they can invoke `/auth/update_metadata` endpoint with master key to update any user's metadata.
+
+## JS SDK
+
+`async skygear.auth.updateMetadata(metadata: Object): Promise<User>`
+
+## auth gear
+
 ```
-
-Case 2: Add
-
-```javascript
-const currentUser = skygear.auth.currentUser;
-currentUser['metadata']['email'] = 'example@example.com';
-skygear.auth.updateMetadata(currentUser);
-// user has following two login IDs:
-// - "new_example"(username) + "password"(password)
-// - "example@example.com"(email) + "password"(password)
-
-currentUser['metadata']['nickname'] = 'john.doe';
-skygear.auth.updateMetadata(currentUser);
-// user has following two login IDs:
-// - "new_example"(email) + "password"(password)
-// - "example@example.com"(username) + "password"(password)
-// user object's metadata is
-// {
-//   //------ `loginIDs`:
-//   "username": "new_example",
-//   "email": "example@example.com",
-//   //------ user custom attributes:
-//   "nickname": "john.doe",
-//   "gender": "none"
-// }
-
-currentUser['metadata']['business_email'] = 'john.doe@example.com';
-skygear.auth.updateMetadata(currentUser);
-// user has following three login IDs, because business_email added:
-// - "new_example"(username) + "password"(password)
-// - "example@example.com"(email) + "password"(password)
-// - "john.doe"(nickname) + "john.doe@example.com"(nickname) + "password"(password)
-// user object's metadata is
-// {
-//   //------ `loginIDs`:
-//   "username": "new_example",
-//   "email": "example@example.com",
-//   "nickname": "john.doe",
-//   "business_email": "john.doe@example.com",
-//   //------ user custom attributes:
-//   "gender": "none"
-// }
+curl -X POST -H "Content-Type: application/json" \
+     -H "X-Skygear-Api-Key: <api_key|master_key>" \
+     -d @- http://<skygear>/auth/update_metadata <<EOF
+{
+  user_id: <user_id: String>,
+  metadata: <metadata: Object>
+}
 ```
-
-Case 3: Remove
-
-```javascript
-const currentUser = skygear.auth.currentUser;
-delete currentUser['metadata']['username'];
-skygear.auth.updateMetadata(currentUser);
-// user has following two login IDs:
-// - "example@example.com"(email) + "password"(password)
-// - "john.doe"(nickname) + "john.doe@example.com"(nickname) + "password"(password)
-// user object's metadata is
-// {
-//   //------ `loginIDs`:
-//   "email": "example@example.com",
-//   "nickname": "john.doe",
-//   "business_email": "john.doe@example.com",
-//   //------ user custom attributes:
-//   "gender": "none"
-// }
-```
-
-# `updateMetadata` and user custom attributes
-
-`updateMetadata` also supports to update user's custom attributes, any data in `metadata` does not belong to `loginIDs` is saved properly when the user invokes `updateMetadata`.
 
 # Changes on Client JS SDK
 
@@ -220,27 +143,29 @@ export const UserRecord = Record.extend('user');
 
 Since `Record` is removed, `UserRecord` in APIs should be replaced as `User` class (a simple plain JavaScript class), they are:
 
-```
-- currentUser: User
-- async changePassword(oldPassword: String, newPassword: String, invalidate: Boolean): Promise<User>
-- async fetchUserRole(users: User[] | String[]): Promise<Object>
-- async login(loginIDs: Object, password: String): Promise<User>
-- async loginWithEmail(email: String, password: String): Promise<User>
-- async loginWithProvider(provider: String, loginIDs: Object): Promise<User>
-- async loginWithUsername(username: String, password: String): Promise<User>
-- async signup(loginIDs: Object, password: String, data: Object): Promise<User>
-- async signupAnonymously(): Promise<User>
-- async signupWithEmail(email: String, password: String, data: Object): Promise<User>
-- async signupWithUsername(username: String, password: String, data: Object): Promise<User>
-- async whoami(): Promise<User>
-```
+- `currentUser: User`
+- `async changePassword(oldPassword: String, newPassword: String, invalidate: Boolean): Promise<User>`
+- `async login(loginIDValue: String, password: String): Promise<User>`
+- `async loginWithEmail(email: String, password: String): Promise<User>`
+- `async loginWithUsername(username: String, password: String): Promise<User>`
+- `async signup(loginIDKey: String, loginIDValue: String, password: String, data: Object): Promise<User>`
+- `async signupAnonymously(): Promise<User>`
+- `async signupWithEmail(email: String, password: String, data: Object): Promise<User>`
+- `async signupWithUsername(username: String, password: String, data: Object): Promise<User>`
+- `async whoami(): Promise<User>`
 
-## New API on Client JS SDK
+## New APIs
 
-- `Promise<User> updateMetadata(<User>);`  
-  use for updating a user's metadata.
+- `async updateMetadata(<metadata>): Promise<User>`
+- `async signupWithLoginIDs(loginIDs: Object, password: String, data: Object): Promise<User>`
+- `async createLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
+- `async updateLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
+- `async removeLoginID(loginIDKey): Promise<User>`
+- `async createPasscode(loginIDKey: String, password: String, skip2FA: Boolean)`
+- `async updatePasscode(loginIDKey: String, password: String, skip2FA: Boolean)`
+- `async deletePasscode(loginIDKey: String)`
 
-## Removal APIs on Client JS SDK
+## Removal APIs
 
 Due to the removal of record gear, auth gear and client SDK won't provide below functionalities:
 
@@ -250,7 +175,7 @@ Due to the removal of record gear, auth gear and client SDK won't provide below 
 And so below APIs are removed from client SDK:
 
 | API | RESTful API |
-| ------------- |:-------------:|
+| ------------- |-------------|
 | `adminDisableUser` | `/auth/disable/set` |
 | `adminEnableUser` | `/auth/disable/set` |
 | `adminResetPassword` | `/auth/reset_password` |
@@ -261,33 +186,16 @@ And so below APIs are removed from client SDK:
 
 Those requirements can be implemented via cloud function or external user DB.
 
-## API argument naming chages on Client JS SDK:
+## API argument naming changes:
 
-- `public async requestVerification(recordKey: String): Promise`  
-  `public async requestVerification(loginIDKeys: [String]): Promise`
+- `async requestVerification(recordKey: String): Promise`  
+  `async requestVerification(loginIDKey: String): Promise`
 - `async login(authData: Object, password: String): Promise<Record>`  
-  `async login(loginIDs: Object, password: String): Promise<User>`
-- `async loginWithProvider(provider: String, authData: Object): Promise<Record>`  
-  `async loginWithProvider(provider: String, loginIDs: Object): Promise<User>`
+  `async login(loginIDValue: String, password: String): Promise<User>`
 - `async signup(authData: Object, password: String, data: Object): Promise<Record>`  
-  `async signup(loginIDs: Object, password: String, data: Object): Promise<User>`
+  `async signup(loginIDKey: String, loginIDValue: String, password: String, data: Object): Promise<User>`
 
-# Changes on auth gear
-
-auth gear will support a new interface `/auth/me/update_metadata`, the following is a demonstration usage:
-
-```
-curl -X POST -H "Content-Type: application/json" \
-     -d @- http://<skygear>/auth/me/update_metadata <<EOF
-{
-  "email": "example@example.com",
-  "nickname": "john.doe",
-  "business_email": "john.doe@example.com",
-  "gender": "none"
-}
-```
-
-auth gear also needs to update `AuthResponse`:
+# Update `AuthResponse` of skygear-server
 
 Old:
 
@@ -309,6 +217,7 @@ New:
 ```go=
 type AuthResponse struct {
 	UserID      string                   `json:"user_id,omitempty"`
+	LoginIDs    map[string]string        `json:"login_ids"`
 	Metadata    userprofile.UserMetadata `json:"metadata"`
 	Roles       []string                 `json:"roles,omitempty"`
 	AccessToken string                   `json:"access_token,omitempty"`
@@ -321,4 +230,7 @@ type AuthResponse struct {
 }
 ```
 
-`Metadata` is a JSON object which contains `loginIDs` and user custom attributes.
+# New error response of auth gear
+
+- skyerr.NewError(skyerr.Duplicated, "duplicated loginID")
+- skyerr.NewError(skyerr.BadRequest, "unknown loginID Key (%v)")
