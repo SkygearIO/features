@@ -46,25 +46,7 @@ signupWithLoginIDs({
 }, 'password') ==> error: Duplicated loginID
 ```
 
-For app wants to use an object as `loginID`, we suggest it encodes the object to a JSON string.
-
-```
-LOGIN_IDS_KEY_WHITELIST = ["email", "role-phone"]
-
-signupWithLoginIDs({
-  email: 'example@example.com',
-  'role-phone': '[\"admin\", \"12345\"]'
-}, 'password') ==> OK
-```
-
-which creates two `loginID`s:
-
-| loginID key:String | loginID value:String (`UNIQUE`) |
-| --- | --- |
-| email | example@example.com |
-| role-phone | [\\"admin\\", \\"12345\\"] |
-
-It's developer's responsibility to ensure the encoded string uniqueness ('[\\"admin\\", \\"12345\\"]' and '[\\"phone\\", \\"12345\\"]' are considered as two different `loginID`). 
+It's developer's responsibility to ensure the encoded string uniqueness ('[\\"admin\\", \\"12345\\"]' and '[\\"phone\\", \\"12345\\"]' are considered as two different `loginID`).
 
 If `LOGIN_IDS_KEY_WHITELIST` contains some string (not empty), a user can't signup with a `loginID` key which is not in the list.
 
@@ -73,8 +55,8 @@ LOGIN_IDS_KEY_WHITELIST = ["email", "username"]
 
 signup({
   email: 'example@example.com',
-  'role-phone': '[\"admin\", \"12345\"]'
-}, 'password') ==> error: Unknown loginID Key ("role-phone")
+  role: 'admin'
+}, 'password') ==> error: Unknown loginID Key ("role")
 ```
 
 The response user object is:
@@ -85,7 +67,8 @@ Passcode-ID: null,
 {
     user_id: <id>,
     login_ids: {
-      'role-phone': '[\"admin\", \"12345\"]',
+      role: 'admin',
+      phone: '12345',
       username: 'example',
       email: 'example@example.com'
     },
@@ -119,7 +102,9 @@ Note that `signupWithLoginIDs` and `signup` may have different implementations f
 
 ### Compound Keys
 
-This proposal allows string loginID value only, for compound keys loginID, it needs to use a workaround (JSON formatted string).
+This proposal allows string loginID value only, for compound keys loginID, it needs to use a workaround, one possible workaround is using JSON formatted string. Note that a developer should careful about JSON serialization result, the JSON string output may differ from platform to platform.
+
+Full compound keys support will be supported later, please refer [#296](https://github.com/SkygearIO/features/issues/296) for more detail.
 
 ```javascript
 // loginID value must be a string
