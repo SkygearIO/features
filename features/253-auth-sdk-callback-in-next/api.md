@@ -63,17 +63,21 @@ In this spec, it will describe the structure of user object in skygear next, and
 }
 ```
 
-# `LOGIN_IDS_KEY_WHITELIST` and `login_ids`
+# `LOGIN_IDS_KEY_WHITELIST`
 
 `LOGIN_IDS_KEY_WHITELIST` is an empty list by default, which allows to use any string as loginID key. If it contains some strings, it restricts what strings can be used as loginID key. For example, `['username', 'email']` indicates that a user can be authenticated by username or email.
 
-For compound keys, we suggest to use JSON string as the loginID value, such as
-
-```json
-{
-  "nickname_business_email": "[\"john.doe\", \"john.doe@example.com\"]"
-}
 ```
+LOGIN_IDS_KEY_WHITELIST = []
+==> allows any string as loginID key
+
+LOGIN_IDS_KEY_WHITELIST = ["username", "email"]
+==> allows "username" and "email" as loginID key
+```
+
+Refer [#294](https://github.com/SkygearIO/features/issues/294) for more detail.
+
+# `login_ids`
 
 `login_ids` is a dictionary which contains loginIDs. For example:
 
@@ -84,8 +88,6 @@ login_ids: {
   "nickname_business_email": "[\"john.doe\", \"john.doe@example.com\"]"
 }
 ```
-
-Please refer implementation detail at [#296](https://github.com/SkygearIO/features/issues/296).
 
 # Modify loginID
 
@@ -157,6 +159,7 @@ Since `Record` is removed, `UserRecord` in APIs should be replaced as `User` cla
 ## New APIs
 
 - `async updateMetadata(<metadata>): Promise<User>`
+- `async loginWithLoginID(key: String, value: String, password: String): Promise<User>`
 - `async signupWithLoginIDs(loginIDs: Object, password: String, data: Object): Promise<User>`
 - `async createLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
 - `async updateLoginID(loginIDKey: String, loginIDValue: String): Promise<User>`
