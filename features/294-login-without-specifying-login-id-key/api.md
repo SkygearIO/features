@@ -88,7 +88,7 @@ About `Passcode-ID`, refer to [#293](https://github.com/SkygearIO/features/issue
 
    | Old | New |
    | -------- | -------- |
-   | `login(authData: dict, password: String)` | `login(loginIDValue: String, password: String)` |
+   | `login(authData: dict, password: String)` | `login(loginIDValue: String, password: String)`<br/>`loginWithLoginID(key: String, value: String, password: String)`|
    | `signup(authData: dict, password: String, data: dict)` | `signup(loginIDKey: String, loginIDValue: String, password: String, data: dict)` |
    | N/A | `signupWithLoginIDs(loginIDs: dict, password: String, data: dict)` |
    | N/A | `createLoginID(loginIDKey: String, loginIDValue: String)`<br/>`updateLoginID(loginIDKey: String, loginIDValue: String)`<br/>`removeLoginID(loginIDKey)` |
