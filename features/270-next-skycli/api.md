@@ -38,6 +38,7 @@ skycli [group] [verb/action] [parameters]
 ## Commands
 
 - skycli auth
+    - [skycli auth signup](commands.md#skycli-auth-signup)
     - [skycli auth login](commands.md#skycli-auth-login)
     - [skycli auth logout](commands.md#skycli-auth-logout)
 
@@ -46,7 +47,6 @@ skycli [group] [verb/action] [parameters]
     - [skycli config set-cluster-server [https://1.2.3.4]](commands.md#skycli-config-set-cluster-server)
 
 - skycli user
-    - [skycli user signup](commands.md#skycli-user-signup)
     - [skycli user list](commands.md#skycli-user-list)
 
 #### Application commands

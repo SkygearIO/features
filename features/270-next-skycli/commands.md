@@ -15,6 +15,16 @@ $ skycli app --app=myapp add-user [USER_EMAIL]
 
 ## skycli auth
 
+### skycli auth signup
+
+`skycli auth signup`
+
+Signup cluster user, command will ask for password interactively.
+
+#### Flags
+
+- `--email=[EMAIL]` Provide user email.
+
 ### skycli auth login
 
 `skycli auth login [--email=EMAIL]`
@@ -66,16 +76,6 @@ master key in the api key flag.
 - `--api-key=[API_KEY|MASTER_KEY]` Provide api key.
 
 ## skycli user
-
-### skycli user signup
-
-`skycli user signup`
-
-Signup cluster user, command will ask for password interactively.
-
-#### Flags
-
-- `--email=[EMAIL]` Provide user email.
 
 ### skycli user list
 
