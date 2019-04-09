@@ -37,7 +37,6 @@ So the moving parts of an app for skygear user would be,
 - Tenant configuration
 - CF functions configuration
 - Static assets
-- Secrets
 
 ### Moving unit
 
@@ -45,7 +44,6 @@ Moving unit represents a logical unit of a moving part.
 
 - The tenant configuration is a moving unit
 - One function configuration is a moving unit
-- One list of secrets is a moving unit
 - One static asset configuration is a moving unit
 
 Although tenant configuration contains bunch of keys and nested dictionaries, one of the value changes means the whole tenant config is changed. Same applies to function configuration, change of code base, no matter how small it is, means the function configuration is changed.
@@ -66,9 +64,9 @@ Let's say a free user can have 3 accessible release, when the 4th release is cre
 
 Whenever changes applied to a moving unit, a new version would be created.
 
-Practically, skygear users update tenant configuration, deploy functions and manage secrets through skycli, so each skycli operation that updates the moving unit would create a new version.
+Practically, skygear users update tenant configuration and deploy functions through skycli, so each skycli operation that updates the moving unit would create a new version.
 
-For example, a user add a new secret, there will be a new version of secrets.
+For example, a user deploy a function, there will be a new version of function.
 
 At the same time, when one moving unit has a new version, there would be a new app version created.
 
@@ -130,7 +128,6 @@ App versions:
 abcdef 2018-12-31 15:00:00 update tenant configuration | Release qwerty, latest, tag: beta
 abcdee 2018-12-30 15:00:00 deploy functions            | Release qwertx, tag: live
 abcded 2018-12-30 14:50:00 update tenant configuration |
-abcdec 2018-11-30 15:00:00 update secrets              | Release qwertv
 ```
 
 ## Static assets versioning
