@@ -26,7 +26,7 @@ It is unavoidable that an app may rely on external services. This spec would ony
 
 Due to the limitation of the current design of skygear, gears version is controlled by skygear admin.
 
-Pricing plan, by its nature, may not be able to revert to a specifc version. If a user paid for one of the plan, he can choose to use resources provided by that plan or cheaper plans, but not more expensive plans.
+Pricing plan, by its nature, may not be able to revert to a specific version. If a user paid for one of the plan, he can choose to use resources provided by that plan or cheaper plans, but not more expensive plans.
 
 (TBD) Skygear managed external services would be presented to CF functions in the form of secrets. For example, a user opt to use skygear managed redis, the redis url would be added to secrets automatically, once the user include the secret in the functions that require the service would do it.
 
