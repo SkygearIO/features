@@ -16,7 +16,7 @@ This is a HTTP Header containing a [AuthInfo](#AuthInfo) encoded with [base64url
 Example
 
 ```
-x-skygear-auth-info: eyJfaWQiOiAiODdkZmFhY2YtYTg3Mi00NDRhLTk0OGEtMTQ5N2M2YmIyYTAzIiwgImRpc2FibGVkIjogZmFsc2UsICJ2ZXJpZmllZCI6IGZhbHNlfQ==
+x-skygear-auth-info: eyJ1c2VyX2lkIjogIjg3ZGZhYWNmLWE4NzItNDQ0YS05NDhhLTE0OTdjNmJiMmEwMyIsICJkaXNhYmxlZCI6IGZhbHNlLCAidmVyaWZpZWQiOiBmYWxzZX0=
 ```
 
 Note that this representation should be treated as implementation details and subject to changes.
@@ -29,7 +29,7 @@ Therefore, the provided value must use [Option Type](https://en.wikipedia.org/wi
 
 This is a JSON Object of the following fields.
 
-- `_id`: string
+- `user_id`: string
 - `disabled`: boolean
 - `verified`: boolean
 
@@ -37,7 +37,7 @@ Example
 
 ```JSON
 {
-  "_id": "87dfaacf-a872-444a-948a-1497c6bb2a03",
+  "user_id": "87dfaacf-a872-444a-948a-1497c6bb2a03",
   "disabled": false,
   "verified": false
 }
