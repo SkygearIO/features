@@ -49,7 +49,10 @@ This encoding based on https://tools.ietf.org/html/rfc4648#section-5 without any
 
 ## How to provide the [AuthInfo](#AuthInfo) in the cloud code runtime
 
-This is language and framework specific. Suppose cloud code in written in a Express-like framework.
+The cloud code runtime must decode `x-skygear-auth-info` and inject the value into
+the arguments of the cloud function. The format is language and framework specific.
+
+Here is an example. Suppose cloud code in written in a Express-like framework.
 
 ```javascript
 export default function myCloudCode(req, res) {
@@ -62,7 +65,10 @@ Note that `req.ctx` is not an Express feature as Express does not have builtin c
 
 ## How to decode the [AuthInfo](#AuthInfo) manually
 
-Low-level primitives are provided in the SDK to decode the header.
+Alternatively, Low-level primitives are provided in the SDK to decode the header.
+Decoding can be done with the provided primitives.
+
+Example
 
 ```javascript
 import { HEADER_NAME_AUTH_INFO, decodeAuthInfo } from "@skygear/sdk";
@@ -77,7 +83,6 @@ export default function myCloudCode(req, res) {
 ```
 
 ## Design choices
-
 
 ### Why gateway is responsible for this?
 
