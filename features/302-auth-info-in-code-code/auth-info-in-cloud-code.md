@@ -61,6 +61,44 @@ Example
 x-skygear-auth-disabled: false
 ```
 
+## Headers verification
+
+The verification mechanism is the same as https://github.com/SkygearIO/features/blob/2a5333040f8904c3d914ec0b237c09a1323b0b94/features/285-design-webhooks/design.md except the content to be hashed is not the HTTP body but the headers.
+
+The name of signature header is `x-skygear-headers-signature`.
+
+### Algorithm
+
+1. Let `headers` be the original list of headers.
+2. Let `headers` be `headers` with lowercased header name.
+3. Let `headers` be `headers` whose name starts with `x-skygear-`.
+4. Let `headers` be the sorted version `headers` by name alphabetically.
+5. Let `lines` be `headers` with name and value joined with `:`.
+6. Let `content` be `lines` joined with `\r\n`.
+7. If `content` is empty, return.
+8. Otherwise let `bytes` be the UTF-8 encoding of `content`, hash it, take the hex digest, and inject as `x-skygear-headers-signature`.
+
+Example
+
+```python
+headers = [
+    ('content-type', 'application/json'),
+    ('content-length', '100'),
+    ('X-Skygear-Auth-userid', 'a'),
+    ('X-SKYGEAR-AUTH-VERIFIED', 'true'),
+    ('x-skygear-auth-disabled', 'false'),
+]
+
+headers = [(n.lower(), v) for n, v in headers]
+headers = [h for h in headers if h[0].startswith('x-skygear-')]
+headers = sorted(headers, key=lambda h: h[0])
+lines = [n + ':' + v for n, v in headers]
+content = '\r\n'.join(lines)
+bytes_ = content.encode('utf-8')
+
+assert bytes_ == b'x-skygear-auth-disabled:false\r\nx-skygear-auth-userid:a\r\nx-skygear-auth-verified:true'
+```
+
 ## Design choices
 
 ### Why gateway is responsible for this?
