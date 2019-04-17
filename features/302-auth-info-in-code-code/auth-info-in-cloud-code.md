@@ -8,6 +8,9 @@ when the request has been determined to be routed to cloud code.
 
 If `x-skygear-access-token` is absent, then the HTTP headers are absent as well.
 
+The gateway must remove the headers from the original request before
+injecting the headers.
+
 ## AuthInfo
 
 The following fields about the authenticated user are exposed.
