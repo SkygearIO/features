@@ -71,13 +71,6 @@ Following pseudo code demonstrates the execution flow in auth gear:
 // start DB transaction
 txContext.BeginTx()
 
-resp, err := handle(payload, &user)
-if err != nil {
-    response.Err = skyerr.MakeError(err)
-    h.TxContext.RollbackTx()
-    return response
-}
-
 err = hooks.ExecuteBeforeSyncHooks(&user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
@@ -87,8 +80,7 @@ if err != nil {
 
 hooks.ExecuteBeforeAsyncHooks(user)
 
-// DB operation
-err = userStore.update(user)
+resp, err := handle(payload, &user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
@@ -179,6 +171,8 @@ Followings are hooks of auth actions:
 | `metadata` | `before_metadata_modified_sync(user, original_user, context)`<br/>`before_metadata_modified(user, original_user, context)`<br/>`after_metadata_modified_sync(user, original_user, context)`<br/>`after_metadata_modified(user, original_user, context)` |
 | `user_object` | `blocking_user_sync(user)`<br>`user_sync(user)`<br>(P.S. Naming and implementation detail is not confirmed yet. They will be revisit after launch first version.) |
 
+### Design choices
+
 1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
    For example, a user's password changed could be due to:
@@ -223,6 +217,7 @@ Followings are hooks of auth actions:
    Req 1 and Re1 2 are two requests happens concurrently in race condition, e.g. one users logged in two devices at the same time. This would cause external DB and auth gear data inconsistency.
 
 6. For `user_sync`, `blocking_user_sync` and concurrent hook data inconsistency problem, please refer [#287](https://github.com/SkygearIO/features/issues/287) for more information.
+7. Hook execution is "BEFORE" and "AFTER" handler(`handle(payload, &user)`), this design is not the same with skygear v1's record hooks. The reason is because one handler may contain multiple DB operations, so there doesn't exist exactly one DB operation to have before and after hooks. And second the intention is also different from record hooks, record hooks is for before or after DB operation, here is before or after auth operation handles.
 
 ## user metadata
 
