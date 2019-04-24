@@ -614,3 +614,53 @@ Currently, micro-service allow developers to do routing in the app, while others
 - Custom Domains Support #246 (https://github.com/SkygearIO/features/issues/246)
 
 Handled by the k8s ingress controller. Skycli may provide command for skygear user to add these features.
+
+## Secret management
+
+With immutable deployment, secrets are also immutable. For managing secrets,
+following operations are allowed.
+
+- skycli secret create
+- skycli secret remove
+- skycli secret rename
+
+To avoid human error, deployment will be failed if config file is using secrets
+that are not exist. Removing or renaming a secret will not affect existing deployment.
+If skygear user want to update a secret (e.g. key rotation), he will need to rename the
+existing secret to another name. Create a secret with the same name and re-deploy the functions.
+
+### Example: Key rotation
+
+```sh
+$ skycli secret rename MY_SECRET_KEY MY_SECRET_KEY_OLD
+$ skycli secret create MY_SECRET_KEY [KEY_VALUE]
+$ skycli cf deploy
+
+# Test the function and works great
+# Remove the old key
+$ skycli secret remove MY_SECRET_KEY_OLD
+```
+
+### Implementation Details
+
+**Secret Model**
+
+- id
+- name
+- k8s_secret_name
+- created_at
+- app_id
+- deleted
+
+Controller will only store the secret name to k8s secret name mapping. Controller
+will not keep a copy of the secret value, the values will be stored in k8s only.
+`skycli secret remove` will only soft delete the mapping record, the k8s secret
+will still be there, in case some old deployment are using them. After a secret
+is removed, it cannot be used in the new deployment. Rename a secret will soft
+delete the mapping record, and re-create a new secret with new name.
+
+When deploying a cloud function, skygear user can specify the secrets for a
+function. Controller will check the mapping and create fission function with
+k8s secrets. Fission support reading secrets value from files. We will update
+the fission environment runtime to convert those values to environment variable,
+so skygear user can access those secret form env.

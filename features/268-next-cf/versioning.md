@@ -26,7 +26,7 @@ It is unavoidable that an app may rely on external services. This spec would ony
 
 Due to the limitation of the current design of skygear, gears version is controlled by skygear admin.
 
-Pricing plan, by its nature, may not be able to revert to a specifc version. If a user paid for one of the plan, he can choose to use resources provided by that plan or cheaper plans, but not more expensive plans.
+Pricing plan, by its nature, may not be able to revert to a specific version. If a user paid for one of the plan, he can choose to use resources provided by that plan or cheaper plans, but not more expensive plans.
 
 (TBD) Skygear managed external services would be presented to CF functions in the form of secrets. For example, a user opt to use skygear managed redis, the redis url would be added to secrets automatically, once the user include the secret in the functions that require the service would do it.
 
@@ -34,21 +34,17 @@ CF functions code base would be built with docker image, so we can specify the v
 
 So the moving parts of an app for skygear user would be,
 
-- Tenant configuration
 - CF functions configuration
 - Static assets
-- Secrets
 
 ### Moving unit
 
 Moving unit represents a logical unit of a moving part.
 
-- The tenant configuration is a moving unit
 - One function configuration is a moving unit
-- One list of secrets is a moving unit
 - One static asset configuration is a moving unit
 
-Although tenant configuration contains bunch of keys and nested dictionaries, one of the value changes means the whole tenant config is changed. Same applies to function configuration, change of code base, no matter how small it is, means the function configuration is changed.
+Although functions configuration contains bunch of keys and nested dictionaries, one of the value changes means the whole functions config is changed. Change of code base, no matter how small it is, means the function configuration is changed.
 
 ## Version, app version and release
 
@@ -66,18 +62,18 @@ Let's say a free user can have 3 accessible release, when the 4th release is cre
 
 Whenever changes applied to a moving unit, a new version would be created.
 
-Practically, skygear users update tenant configuration, deploy functions and manage secrets through skycli, so each skycli operation that updates the moving unit would create a new version.
+Practically, skygear users deploy functions through skycli, so each skycli operation that updates the moving unit would create a new version.
 
-For example, a user add a new secret, there will be a new version of secrets.
+For example, a user deploy a function, there will be a new version of function.
 
 At the same time, when one moving unit has a new version, there would be a new app version created.
 
 ### Increment of release
 
-Not all app version represents an expected behaviour completely. For example, skygear user may want to update both tenant configuration and CF functions configuration, there would be two app version created, however, only the last one meant to be accessible by app users.
+Not all app version represents an expected behaviour completely. For example, skygear user may want to update two functions one by one, there would be two app version created, however, only the last one meant to be accessible by app users.
 
 Base on the assumption that:
-- it would provide better ux for skygear user that they do not need to learn about the concept of app versoin or release to make a skygear app
+- it would provide better ux for skygear user that they do not need to learn about the concept of app version or release to make a skygear app
 - most of the time, a new release only contains of changes of one moving unit
 
 So skycli would not have a new command like `skycli app create-release`, instead for those skycli commands that create a new version and app version would have an argument like `--no-release`. If a new app version created with the argument `--no-release`, the app version would not be accessible.
@@ -127,10 +123,9 @@ Example:
 $ skycli app list-version # or skycli app list-history
 App name: test-app
 App versions:
-abcdef 2018-12-31 15:00:00 update tenant configuration | Release qwerty, latest, tag: beta
-abcdee 2018-12-30 15:00:00 deploy functions            | Release qwertx, tag: live
-abcded 2018-12-30 14:50:00 update tenant configuration |
-abcdec 2018-11-30 15:00:00 update secrets              | Release qwertv
+abcdef 2018-12-31 15:00:00 deploy function update_blog     | Release qwerty, latest, tag: beta
+abcdee 2018-12-30 15:00:00 deploy functions                | Release qwertx, tag: live
+abcded 2018-12-30 14:50:00 deploy micro service myservice1 |
 ```
 
 ## Static assets versioning
