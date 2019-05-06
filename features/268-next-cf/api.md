@@ -228,11 +228,11 @@ Function configuration may be placed in the file for other skycli configuration.
 Example:
 
 ```yaml
-cf:
+deployments:
   function1:
     type: http-handler
     path: /hello-world
-    env: node
+    env: nodejs
     src: js/hellow-world
     secrets:
       - DATABASE_URL
@@ -241,8 +241,8 @@ cf:
       - name: user_required
 ```
 
-- `cf` indicates the dictionary is the cf configuration in the file
-- `function1` is the name of function, function deployed with the same name will considered as the same function with different version
+- `deployments` indicates the dictionary is the deployments configuration in the file
+- `function1` is the name of deployment item, item deployed with the same name will considered as the same item with different version
 - `type` is the type of the function
   - `http-handler`
     - a single function that accepts http requests from an exact path
@@ -253,16 +253,21 @@ cf:
   - `function`:
     - a single function (in a program) that read input from stdin and write output to stdout
     - anytime may be scaled down to zero
+  - `static`:
+    - static assets configuration
 - `env` indicates the environment that the code would be built with, e.g.
   - `docker` is the base environment that the Dockerfile would be deployed directly, or would be wrapped by another minimal Dockerfile
   - environment of other languages (e.g. `node`, `python`, `golang`) would accept source files from the developers and build with a Dockerfile provided by us
-- `src` may specify where to find Dockerfile or source code files
+  - `http-handler`, `http-service` and `function` only
+- `src` may specify where to find Dockerfile, source code files or static asset files
 - `secrets` list what secrets would be passed to the functions, developer need to set secrets with skycli
+  - `http-handler`, `http-service` and `function` only
 - `permission` describes how the request can access the function
   - `key_required`, if true, need API key or master key
   - `user_required`, if true, need access token of a verified and not disabled user
   - `admin_required`, if true, need the user have admin role
   - `role_required` with `roles` tells the function require specified roles
+  - `http-handler`, `http-service` and `function` only
 
 # Serving content
 
@@ -283,8 +288,10 @@ Besides, there will be another top level skycli configuration for static assets.
 Example:
 
 ```yaml
-static:
-  src: asset
+deployments:
+  static-asset:
+    type: static
+    src: asset
 ```
 
 - `static` indicates the dictionary is the static assets configuration in the file
@@ -299,22 +306,28 @@ Besides serving assets at `/static/*`, we may support serving at custom paths. T
 Example:
 
 ```yaml
-static:
-  src: asset
-  path: /asset
+deployments:
+  static-asset:
+    type: static
+    src: asset
+    path: /asset
 ```
 
 #### Multiple entries
 
-By having custom path, we may allow developer to specify mutliple source at different paths. This also requires updating ingress or handle by gateway.
+By having custom path, we may allow developer to specify multiple source at different paths. This also requires updating ingress or handle by gateway.
 
 Example:
 
 ```yaml
-static:
-  - src: build
+deployments:
+  static-folder:
+    type: static
+    src: build
     path: /static
-  - src: asset
+  asset-folder:
+    type: static
+    src: asset
     path: /asset
 ```
 
@@ -328,10 +341,14 @@ With s3 or cloudfront, they both provide configuration for custom error response
 
 The following is a platform independent approach:
 ```yaml
-static:
-  - src: build/index.html
+deployments:
+  frontend-index:
+    type: static
+    src: build/index.html
     path: /
-  - src: build
+  build-folder:
+    type: static
+    src: build
     path: /static
 ```
 
@@ -342,10 +359,14 @@ For example, if someone enter url `myapp.skygear.io/page/1` in the browser, `bui
 Since the `index.html` is also placed in the `build` directory, the path `https://myapp.skygear.io/static/bundle.js` would also be served, which may not be the ideal behaviour. We may provide an `exclude` config to exclude the file from being uploaded when deploy.
 
 ```yaml
-static:
-  - src: build/index.html
+deployments:
+  frontend-index:
+    type: static
+    src: build/index.html
     path: /
-  - src: build
+  build-folder:
+    type: static
+    src: build
     exclude:
       - index.html  # so build/index.html would not be uploaded
     path: /static
@@ -370,7 +391,7 @@ Here is the route matching rules when a request enter the cluster:
 For example, with the following skycli configuration:
 
 ```yaml
-cf:
+deployments:
   functionABC:
     type: function
     path: /functionABC
@@ -383,11 +404,13 @@ cf:
     type: http-service
     path: /api
     # other config
-
-static:
-  - src: index.html
+  static-index:
+    type: static
+    src: index.html
     path: /
-  - src: asset
+  static-asset:
+    type: static
+    src: asset
     path: /static
 ```
 
@@ -412,7 +435,7 @@ static:
 ## Mixing functions with micro-service
 
 ```yaml
-cf:
+deployments:
   function1:
     type: http-handler
     path: /function1
@@ -445,7 +468,7 @@ There are three separate function configurations here, the `api-server` is a `ht
 ## Typical SPA with api server
 
 ```yaml
-cf:
+deployments:
   api-server:
     type: http-service
     path: /api
@@ -453,11 +476,13 @@ cf:
     src: api
     secrets:
       - DATABASE_URL
-
-static:
-  - src: build/index.html
+  static-index:
+    type: static
+    src: build/index.html
     path: /
-  - src: build
+  static-asset:
+    type: static
+    src: build
     exclude:
       - index.html
     path: /static
@@ -504,7 +529,7 @@ A common `index.html` file may look like this
 ## Server side rendering and api server
 
 ```yaml
-cf:
+deployments:
   ssr-server:
     type: http-server
     path: /
@@ -517,9 +542,9 @@ cf:
     src: api
     secrets:
       - DATABASE_URL
-
-static:
-  - src: asset
+  static-asset:
+    type: static
+    src: asset
     path: /static
 ```
 
@@ -546,7 +571,7 @@ We have two options:
 - If a `http-service` needs to be discovered another one, services need to be setup, and developer need specify which functions need to discover that `http-serivce`, network policy may be setup to restrict the discoverability. The config should be something like `link` in docker-compose config file.
 
 ```yaml
-cf:
+deployments:
   service-internal:
     type: http-service
     private: true
