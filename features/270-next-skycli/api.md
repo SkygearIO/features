@@ -58,7 +58,10 @@ skycli [group] [verb/action] [parameters]
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
     - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
-    - [skycli app deploy](commands.md#skycli-app-update-config)
+    - [skycli app deploy](commands.md#skycli-app-deploy)
+    - [skycli app view-deploy](commands.md#skycli-app-view-deploy)
+    - [skycli app logs [DEPLOYMENT_ITEM_NAME]](commands.md#skycli-app-logs)
+    - [skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-app-invoke-functions)
 
 - skycli domain
     - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
@@ -66,11 +69,6 @@ skycli [group] [verb/action] [parameters]
     - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
     - [skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]](commands.md#skycli-domain-set-alias)
     - [skycli domain list](commands.md#skycli-domain-list)
-
-- skycli cloudcode
-    - [skycli cloudcode list](commands.md#skycli-cloudcode-list)
-    - [skycli cloudcode logs [FUNCTION_NAME]](commands.md#skycli-cloudcode-logs)
-    - [skycli cloudcode invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-cloudcode-invoke)
 
 - skycli secret
     - [skycli secret list](commands.md#skycli-secret-list)
@@ -135,7 +133,7 @@ access skycli instead of using user account.
 ```
 config_version: 1
 app: myapp
-cf:
+deployments:
   function1:
     type: http-handler
     path: /hello-world
@@ -146,7 +144,14 @@ cf:
     permission:
       - name: key_required
       - name: user_required
-static:
+  static-index:
+    type: static
+    src: index.html
+    path: /
+  static-asset:
+    type: static
+    src: asset
+    path: /static
   ...
 ```
 

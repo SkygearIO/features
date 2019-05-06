@@ -196,20 +196,6 @@ $ skycli app view-tenant-config
 Update tenant config interactively or by providing a file. For the config format,
 please see [user facing config](user-facing-config.md)
 
-### skycli app deploy
-
-`skycli app deploy [FUNCTION_NAME]`
-
-Deploy cloud functions by reading CF config file. `[FUNCTION_NAME]` is the
-function name in config file. If `[FUNCTION_NAME]` is missing, the commands will
-update everything based on the config. (e.g. cloud code, static asset... etc)
-
-#### Flags
-
-- `--cloud-code=[FUNCTION_KEY]` Deploy specific cloud code item.
-- `--all-cloud-code` Deploy all cloud code items (e.g. static asset is not included).
-- `--static` Deploy static asset.
-
 #### Example
 
 **Update in editor**
@@ -245,6 +231,85 @@ $ skycli app view-tenant-config > ./tenant-config.yaml
 # 3. Apply the change to the app
 $ skycli app update-tenant-config -f ./tenant-config.yaml
 ```
+
+### skycli app deploy
+
+`skycli app deploy [NAME]`
+
+Deploy cloud functions by reading skygear.yaml config file. `[NAME]` is the name
+of deployment items in the config file. If `[NAME]` is missing, the commands will
+update everything based on the config.
+
+#### Example
+
+Given that we have `skygear.yaml` like this,
+
+```
+app: myapp
+deployments:
+  function1:
+    type: http-handler
+    path: /hello-world
+    env: node
+    src: js/hellow-world
+    secrets:
+      - DATABASE_URL
+    permission:
+      - name: key_required
+      - name: user_required
+  static-index:
+    type: static
+    src: index.html
+    path: /
+  static-asset:
+    type: static
+    src: asset
+    path: /static
+```
+
+1. Running `skycli app deploy`, all deployment items will be deployed.
+2. Running `skycli app deploy function1`, only http-handler `function1` will be deployed.
+
+
+### skycli app view-deploy
+
+`skycli app view-deploy`
+
+List the deployment items of latest application version.
+
+### Example
+
+```
+$skycli app view-deploy
+NAME                TYPE             PATH
+handler1            http-handler     /hello-world
+function1           function         /function1
+static-index        static           /
+static-asset        static           /static
+```
+
+### skycli app logs
+
+`skycli app logs [DEPLOYMENT_ITEM_NAME]`
+
+Show logs of specific cloud code item (e.g. function, http-handler or http-service).
+
+### skycli app invoke-function
+
+`skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
+
+Invoke cloud function.
+
+#### Example
+```
+$skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
+{"result":"OK"}
+```
+
+#### Flags
+
+- `--payload` Invoke function with payload
+- `--access-key` Skygear auth access token
 
 ### skycli domain
 
@@ -315,42 +380,11 @@ List all custom domain of apps.
 ### Example
 
 ```
-$skycli app list-domain
+$skycli domain list
 DOMAIN              CUSTOM_CERTS            SSL_CERT_EXPIRY
 api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
 test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
 ```
-
-## skycli cloudcode
-
-### skycli cloudcode list
-
-`skycli cloudcode list`
-
-List the cloud code items of current application.
-
-### skycli cloudcode logs
-
-`skycli cloudcode logs [FUNCTION_NAME]`
-
-Show logs of specific cloud code item.
-
-### skycli cloudcode invoke
-
-`skycli cloudcode invoke [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
-
-Invoke cloudcode function.
-
-#### Example
-```
-$skycli cloudcode invoke helloworld --payload {"string": "value", "int": 1}
-{"result":"OK"}
-```
-
-#### Flags
-
-- `--payload` Invoke function with payload
-- `--access-key` Skygear auth access token
 
 ## skycli secret
 
