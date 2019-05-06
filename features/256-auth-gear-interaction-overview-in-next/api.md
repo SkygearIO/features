@@ -71,13 +71,6 @@ Following pseudo code demonstrates the execution flow in auth gear:
 // start DB transaction
 txContext.BeginTx()
 
-resp, err := handle(payload, &user)
-if err != nil {
-    response.Err = skyerr.MakeError(err)
-    h.TxContext.RollbackTx()
-    return response
-}
-
 err = hooks.ExecuteBeforeSyncHooks(&user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
@@ -87,8 +80,7 @@ if err != nil {
 
 hooks.ExecuteBeforeAsyncHooks(user)
 
-// DB operation
-err = userStore.update(user)
+resp, err := handle(payload, &user)
 if err != nil {
     response.Err = skyerr.MakeError(err)
     h.TxContext.RollbackTx()
@@ -172,12 +164,14 @@ Followings are hooks of auth actions:
 | `signup` | `before_signup_sync(user, context)`<br/>`before_signup(user, context)`<br/>`after_signup_sync(user, context)`<br/>`after_signup(user, context)`<br/> |
 | `login` | `before_login_sync(user, context)`<br/>`before_login(user, context)`<br/>`after_login_sync(user, context)`<br/>`after_login(user, context)` |
 | `logout` | `before_logout_sync(user, context)`<br/>`before_logout(user, context)`<br/>`after_logout_sync(user, context)`<br/>`after_logout(user, context)` |
-| `roles` | `before_roles_changed_sync(user, original_user, context)`<br/>`before_roles_changed(user, original_user, context)`<br/>`after_roles_changed_sync(user, original_user, context)`<br/>`after_roles_changed(user, original_user, context)` |
+| `roles` | `before_roles_changed_sync(user, context)`<br/>`before_roles_changed(user, context)`<br/>`after_roles_changed_sync(user, context)`<br/>`after_roles_changed(user, context)` |
 | `enable` | `before_enable_sync(user, context)`<br/>`before_enable(user, context)`<br/>`after_enable_sync(user, context)`<br/>`after_enable(user, context)`<br/>`before_disable_sync(user, context)`<br/>`before_disable(user, context)`<br/>`after_disable_sync(user, context)`<br/>`after_disable(user, context)` |
-| `password` | `before_password_changed_sync(user, original_user, context)`<br/>`before_password_changed(user, original_user, context)`<br/>`after_password_changed_sync(user, original_user, context)`<br/>`after_password_changed(user, original_user, context)` |
+| `password` | `before_password_changed_sync(user, context)`<br/>`before_password_changed(user, context)`<br/>`after_password_changed_sync(user, context)`<br/>`after_password_changed(user, context)` |
 | `verify` | `before_verified_sync(user, context)`<br/>`before_verified(user, context)`<br/>`after_verified_sync(user, context)`<br/>`after_verified(user, context)`<br/>`before_unverified_sync(user, context)`<br/>`before_unverified(user, context)`<br/>`after_unverified_sync(user, context)`<br/>`after_unverified(user, context)` |
-| `metadata` | `before_metadata_modified_sync(user, original_user, context)`<br/>`before_metadata_modified(user, original_user, context)`<br/>`after_metadata_modified_sync(user, original_user, context)`<br/>`after_metadata_modified(user, original_user, context)` |
+| `metadata` | `before_metadata_modified_sync(user, context)`<br/>`before_metadata_modified(user, context)`<br/>`after_metadata_modified_sync(user, context)`<br/>`after_metadata_modified(user, context)` |
 | `user_object` | `blocking_user_sync(user)`<br>`user_sync(user)`<br>(P.S. Naming and implementation detail is not confirmed yet. They will be revisit after launch first version.) |
+
+### Design choices
 
 1. Hooks listed presented here are based on a assumption that a developer could use `content.req.path` to know the reason of certain user auth data changed.
 
@@ -195,7 +189,7 @@ Followings are hooks of auth actions:
 
 2. `user_sync` and `blocking_user_sync` are special hooks, they are triggered __AFTER__ an user object is added or there is any changes to an user object, they can be used to implement an external user profile store. It also can use as one hook to capture all changes of the user auth data or metadata.
 
-   Note that `user_sync` as an `AFTER`, `ASYNC` hook, its implementaion could be a simple after async hook like other hooks, or it can be optimized by other mechanisms (batching data update), so the `original_user` and `context` arguments are removed.
+   Note that `user_sync` as an `AFTER`, `ASYNC` hook, its implementaion could be a simple after async hook like other hooks, or it can be optimized by other mechanisms (batching data update), so the `context` arguments are removed.
 
    `blocking_user_sync` is an `AFTER`, `SYNC` hook. `blocking_user_sync` is especially useful when consistency is important to the application. Skygear next will rollback DB if hook failed.
 
@@ -223,6 +217,9 @@ Followings are hooks of auth actions:
    Req 1 and Re1 2 are two requests happens concurrently in race condition, e.g. one users logged in two devices at the same time. This would cause external DB and auth gear data inconsistency.
 
 6. For `user_sync`, `blocking_user_sync` and concurrent hook data inconsistency problem, please refer [#287](https://github.com/SkygearIO/features/issues/287) for more information.
+7. Hook execution is "BEFORE" and "AFTER" handler(`handle(payload, &user)`), this design is not the same with skygear v1's record hooks. The reason is because one handler may contain multiple DB operations, so there doesn't exist exactly one DB operation to have before and after hooks. And second the intention is also different from record hooks, record hooks is for before or after DB operation, here is before or after auth operation handles.
+8. The `user` parameter is `nil` in `before_signup` hooks.
+9. The `user` parameter conveys original `user` object in before hooks. For example, `before_roles_changed_sync(user, context)`, `user` object contains roles before changed.
 
 ## user metadata
 
@@ -347,7 +344,7 @@ To validate changes of user metadata, Cloud Function would hook `before_update_m
 ```javascript
 const skygear = require('skygear');
 
-function before_update_metadata_sync(user, originalUser, context) {
+function before_update_metadata_sync(user, context) {
     if (!user.metadata.loveCat) {
         throw new SkygearError("EVERYONE LOVES CAT");
     }
@@ -365,7 +362,7 @@ const skygear = require('skygear');
 const mongoClient = require('mongodb').MogoClient;
 
 // CF could use after_signup hook to fulfill the requirement
-function after_update_metadata_sync(user, originalUser, context) {
+function after_update_metadata_sync(user, context) {
     // connect to Cloud Function DB
     const secrets = context.secrets;
     const mongoUrl = 'mongodb://' + secrets.MONGODB_HOST + ':' + secrets.MONGODB_PORT + '/' + secrets.MONGODB_DBNAME;
