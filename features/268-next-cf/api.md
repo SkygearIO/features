@@ -689,9 +689,9 @@ have function 1 to 5 after deployment.
 
 #### Models
 
-**`app_version`**
+**`deployment`**
 
-Every deployment (one or multiple items) will create a new app_version.
+Every deployment (one or multiple items) will create a new deployment.
 
 - `id`
 - `created_at`: deployment time
@@ -699,11 +699,11 @@ Every deployment (one or multiple items) will create a new app_version.
 - `version`: deployment version, uuid or hash
 - `tag`: deployment tag, the live version will have tag with `latest`
 
-**`app_version_cloud_code`**
+**`deployment_cloud_code`**
 
-app_version to cloud_code relationship
+deployment to cloud_code relationship
 
-- `app_version_id`
+- `deployment_id`
 - `cloud_code_id`
 
 **`cloud_code_route`**
@@ -712,7 +712,7 @@ Denormalized routing table for gateway routing.
 
 - `id`
 - `created_at`
-- `version`: deployment version, will be the same as `version` of `app_version`
+- `version`: deployment version, will be the same as `version` of `deployment`
 - `path`: user defined path
 - `target_path`: skygear internal path for cloud code routing 
 - `app_id`: skygear app id
@@ -728,17 +728,17 @@ Denormalized routing table for gateway routing.
   - Validate
     - Validate items payload
     - Validate items whether paths have conflict
-  - Create `app_version`, `cloud_code`, `app_version_cloud_code`
-  - Call deploy async task and return app_version id
+  - Create `deployment`, `cloud_code`, `deployment_cloud_code`
+  - Call deploy async task and return deployment id
   - In async task, deploy items sequentially. (Don't deploy them
     simultaneously to avoid high server load.)
-    - If deployment fails in the middle, update app_version status and stop.
-    - If all items are deployed successfully, update app_version status. Unset
+    - If deployment fails in the middle, update deployment status and stop.
+    - If all items are deployed successfully, update deployment status. Unset
       pervious deployment tag and update current deployment as latest. Unset
       pervious cloud_code_route tag, create new cloud_code_route with latest
       tag. Avoid occupying resources, trigger cleanup task to remove old
       deployed resources (Before support multiple version).
-  - skycli use app_version id to keep track the deployment status when the async
+  - skycli use deployment id to keep track the deployment status when the async
     task is running
 
 - Deploy single item
@@ -747,13 +747,13 @@ Denormalized routing table for gateway routing.
     - Validate item payload
     - Get the last deployment (latest tag), validate item whether paths have
       conflict
-  - Create new `app_version` that points to existing cloud codes and the new
+  - Create new `deployment` that points to existing cloud codes and the new
     cloud code
-  - Call deploy async task and return app_version id
-  - In async task, deploy the new function only. Update app_version status. If
+  - Call deploy async task and return deployment id
+  - In async task, deploy the new function only. Update deployment status. If
     deployment success, follow the steps in deploy multiple items to update 
     deployment status and cleanup.
-  - skycli use app_version id to keep track the deployment status when the async
+  - skycli use deployment id to keep track the deployment status when the async
     task is running
 
 #### Improvement
