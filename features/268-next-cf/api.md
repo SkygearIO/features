@@ -698,6 +698,7 @@ Every deployment (one or multiple items) will create a new deployment.
 - `app_id`: skygear app id
 - `version`: deployment version, uuid or hash
 - `tag`: deployment tag, the live version will have tag with `latest`
+- `status`: deployment status (pending, running, deploy failed, stopping, stopped, stop failed)
 
 **`deployment_cloud_code`**
 
@@ -720,6 +721,47 @@ Denormalized routing table for gateway routing.
 - `tag`: deployment tag, the live version will have tag with `latest`
 
 **`static_asset` (TBD)**
+
+
+#### Deployment and Cloud Code Status
+
+Deployment and cloud code status values: pending, running, deploy failed, stopping, stopped, stop failed
+
+Status of deployment flow
+
+```
+          +
+          | Start deploy
++---------v-----------+              +-----------------------------------------+
+| Deployment: pending |  same failed |Deployment: deploy failed                |
+| Cloud code: pending +-------------->Cloud code: running/pending/deploy failed|
++---------+-----------+              +-----------------------------------------+
+          |
+          | all success
+          |
++---------v-----------+
+| Deployment: running |
+| Cloud code: running |
++---------------------+
+```
+
+Status of cleanup flow
+
+```
+         + Start cleanup
+         |
++--------v-----------+             +----------------------------------------+
+|Deployment: stopping| same failed |Deployment: stop failed                 |
+|Cloud code: stopping+------------->Cloud code: stopping/stopped/stop failed|
++--------+-----------+             +----------------------------------------+
+         |
+         | all success
+         |
++--------v-----------+
+|Deployment: stopped |
+|Cloud code: stopped |
++--------------------+
+```
 
 #### Deployment flow
 
