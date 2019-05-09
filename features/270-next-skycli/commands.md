@@ -232,6 +232,93 @@ $ skycli app view-tenant-config > ./tenant-config.yaml
 $ skycli app update-tenant-config -f ./tenant-config.yaml
 ```
 
+### skycli app deploy
+
+`skycli app deploy [NAME] [--all]`
+
+Deploy cloud functions by reading skygear.yaml config file. `[NAME]` is the name
+of deployment items in the config file. Use `--all` to deploy all items. User
+must provide `[NAME]` or `--all`.
+
+#### Positional arguments
+
+- `[NAME]` Deploy item with name
+
+#### Flags
+
+- `--all` Deploy all items in skygear.yaml
+
+#### Example
+
+Given that we have `skygear.yaml` like this,
+
+```
+app: myapp
+deployments:
+  function1:
+    type: http-handler
+    path: /hello-world
+    env: node
+    src: js/hellow-world
+    secrets:
+      - DATABASE_URL
+    permission:
+      - name: key_required
+      - name: user_required
+  static-index:
+    type: static
+    src: index.html
+    path: /
+  static-asset:
+    type: static
+    src: asset
+    path: /static
+```
+
+1. Running `skycli app deploy --all`, all deployment items will be deployed.
+2. Running `skycli app deploy function1`, only http-handler `function1` will be deployed.
+
+
+### skycli app view-deploy
+
+`skycli app view-deploy`
+
+List the deployment items of latest application version.
+
+### Example
+
+```
+$skycli app view-deploy
+NAME                TYPE             PATH
+handler1            http-handler     /hello-world
+function1           function         /function1
+static-index        static           /
+static-asset        static           /static
+```
+
+### skycli app logs
+
+`skycli app logs [DEPLOYMENT_ITEM_NAME]`
+
+Show logs of specific cloud code item (e.g. function, http-handler or http-service).
+
+### skycli app invoke-function
+
+`skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
+
+Invoke cloud function.
+
+#### Example
+```
+$skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
+{"result":"OK"}
+```
+
+#### Flags
+
+- `--payload` Invoke function with payload
+- `--access-key` Skygear auth access token
+
 ### skycli domain
 
 #### Overview
@@ -301,7 +388,7 @@ List all custom domain of apps.
 ### Example
 
 ```
-$skycli app list-domain
+$skycli domain list
 DOMAIN              CUSTOM_CERTS            SSL_CERT_EXPIRY
 api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
 test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
