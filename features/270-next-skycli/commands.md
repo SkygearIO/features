@@ -234,11 +234,19 @@ $ skycli app update-tenant-config -f ./tenant-config.yaml
 
 ### skycli app deploy
 
-`skycli app deploy [NAME]`
+`skycli app deploy [NAME] [--all]`
 
 Deploy cloud functions by reading skygear.yaml config file. `[NAME]` is the name
-of deployment items in the config file. If `[NAME]` is missing, the commands will
-update everything based on the config.
+of deployment items in the config file. Use `--all` to deploy all items. User
+must provide `[NAME]` or `--all`.
+
+#### Positional arguments
+
+- `[NAME]` Deploy item with name
+
+#### Flags
+
+- `--all` Deploy all items in skygear.yaml
 
 #### Example
 
@@ -267,7 +275,7 @@ deployments:
     path: /static
 ```
 
-1. Running `skycli app deploy`, all deployment items will be deployed.
+1. Running `skycli app deploy --all`, all deployment items will be deployed.
 2. Running `skycli app deploy function1`, only http-handler `function1` will be deployed.
 
 
