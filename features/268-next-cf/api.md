@@ -666,3 +666,139 @@ function. Controller will check the mapping and create fission function with
 k8s secrets. Fission support reading secrets value from files. We will update
 the fission environment runtime to convert those values to environment variable,
 so skygear user can access those secret form env.
+
+## Batch deploy items in skygear.yaml
+
+`skycli app deploy` will deploy all deployment items in `skygear.yaml`.
+`skycli app deploy [ITEM_NAME]` will only create or update item with name
+`[ITEM_NAME]`.
+
+When user use `skycli app deploy`, they need to have all items in the
+`skygear.yaml`. The deployment will not keep the previously deployed item, if
+they don't exist in `skygear.yaml`. e.g. User had deployed function 1 to 4. If
+user run deploy with a config file that only has function 1 to 2. The new
+version app will only have function 1 to 2. User has responsibility to keep the
+full version of `skygear.yaml` and codes.
+
+User can create or update particular item by `skycli app deploy [ITEM_NAME]`.
+e.g. User had deployed function 1 to 4. If user use
+`skycli app deploy function5` to deploy function 5, the new app version will
+have function 1 to 5 after deployment.
+
+### Implementation Details
+
+#### Models
+
+**`deployment`**
+
+Every deployment (one or multiple items) will create a new deployment.
+
+- `id`
+- `created_at`: deployment time
+- `app_id`: skygear app id
+- `version`: deployment version, uuid or hash
+- `tag`: deployment tag, the live version will have tag with `latest`
+- `status`: deployment status (pending, running, deploy failed, stopping, stopped, stop failed)
+
+**`deployment_cloud_code`**
+
+deployment to cloud_code relationship
+
+- `deployment_id`
+- `cloud_code_id`
+
+**`cloud_code_route`**
+
+Denormalized routing table for gateway routing.
+
+- `id`
+- `created_at`
+- `version`: deployment version, will be the same as `version` of `deployment`
+- `path`: user defined path
+- `target_path`: skygear internal path for cloud code routing 
+- `app_id`: skygear app id
+- `backend_url`: cloud code backend url
+- `tag`: deployment tag, the live version will have tag with `latest`
+
+**`static_asset` (TBD)**
+
+
+#### Deployment and Cloud Code Status
+
+Deployment and cloud code status values: pending, running, deploy failed, stopping, stopped, stop failed
+
+Status of deployment flow
+
+```
+          +
+          | Start deploy
++---------v-----------+              +-----------------------------------------+
+| Deployment: pending |  same failed |Deployment: deploy failed                |
+| Cloud code: pending +-------------->Cloud code: running/pending/deploy failed|
++---------+-----------+              +-----------------------------------------+
+          |
+          | all success
+          |
++---------v-----------+
+| Deployment: running |
+| Cloud code: running |
++---------------------+
+```
+
+Status of cleanup flow
+
+```
+         + Start cleanup
+         |
++--------v-----------+             +----------------------------------------+
+|Deployment: stopping| same failed |Deployment: stop failed                 |
+|Cloud code: stopping+------------->Cloud code: stopping/stopped/stop failed|
++--------+-----------+             +----------------------------------------+
+         |
+         | all success
+         |
++--------v-----------+
+|Deployment: stopped |
+|Cloud code: stopped |
++--------------------+
+```
+
+#### Deployment flow
+
+- Deploy multiple items
+  - Deploy api accept multiple deploy items
+  - Validate
+    - Validate items payload
+    - Validate items whether paths have conflict
+  - Create `deployment`, `cloud_code`, `deployment_cloud_code`
+  - Call deploy async task and return deployment id
+  - In async task, deploy items sequentially. (Don't deploy them
+    simultaneously to avoid high server load.)
+    - If deployment fails in the middle, update deployment status and stop.
+    - If all items are deployed successfully, update deployment status. Unset
+      pervious deployment tag and update current deployment as latest. Unset
+      pervious cloud_code_route tag, create new cloud_code_route with latest
+      tag. Avoid occupying resources, trigger cleanup task to remove old
+      deployed resources (Before support multiple version).
+  - skycli use deployment id to keep track the deployment status when the async
+    task is running
+
+- Deploy single item
+  - Use deploy single item api
+  - Validate
+    - Validate item payload
+    - Get the last deployment (latest tag), validate item whether paths have
+      conflict
+  - Create new `deployment` that points to existing cloud codes and the new
+    cloud code
+  - Call deploy async task and return deployment id
+  - In async task, deploy the new function only. Update deployment status. If
+    deployment success, follow the steps in deploy multiple items to update 
+    deployment status and cleanup.
+  - skycli use deployment id to keep track the deployment status when the async
+    task is running
+
+#### Improvement
+
+- During deployment, skip the items if there are no change in content
+  (code and static assets) and config. By checking the zip checksum.
