@@ -383,10 +383,11 @@ Here is the route matching rules when a request enter the cluster:
 - If the path starts with `_`, it would try find the gear by matching `/_{gear_name}` first
   - If a gear is found, the request would be forwarded to that gear
   - Otherwise, return function not found error
-- Path of http `function` are exact match
-- Path of `http-handler`, `http-service` and items in `static` are matched with prefix
-- Longer path will be matched before the shorter ones
-- If none of the registered path is matched, return function or asset not found error
+- Trailing slash in `path` is insignificant. That is, `/a` and `/a/` is equivalent.
+- All paths are matched in a longest prefix match fashion.
+- There is no partial match. That is, the pattern `/a` does not match the path `/apple`.
+- The matched prefix of `http-service` is removed.
+- If none of the registered path is matched, return not found error.
 
 For example, with the following skycli configuration:
 
@@ -415,15 +416,16 @@ deployments:
 ```
 
 - `https://myapp.skygear.io/function/ABC` -> `function-server`, forwarded path `/ABC`
+- `https://myapp.skygear.io/function/ABC/` -> `function-server`, forwarded path `/ABC/`
 - `https://myapp.skygear.io/functionABC` -> `functionABC`
-- `https://myapp.skygear.io/functionABCD` -> `function-server`, forwarded path `ABCD`
+- `https://myapp.skygear.io/functionABC/` -> `functionABC`
+- `https://myapp.skygear.io/functionABCD` -> Not found
 - `https://myapp.skygear.io/function/` -> `function-server`, forwarded path `/`
-- `https://myapp.skygear.io/function` -> `function-server`, forwarded path ``
+- `https://myapp.skygear.io/function` -> `function-server`, forwarded path `/`
 - `https://myapp.skygear.io/api/function` -> `api-server`, forwarded path `/function`
 - `https://myapp.skygear.io/api/` -> `api-server`, forwarded path `/`
-- `https://myapp.skygear.io/api` -> `api-server`, forwarded path ``
-- `https://myapp.skygear.io/static` -> function not found
-- `https://myapp.skygear.io/` -> function not found
+- `https://myapp.skygear.io/api` -> `api-server`, forwarded path `/`
+- `https://myapp.skygear.io/static` -> Not found because directory is not served
 
 - `https://myapp.skygear.io/static/abc/cde.jpg` -> static assets with path `/abc/cde.jpg` in `asset`
 - `https://myapp.skygear.io/static/abc` -> static assets with path `/abc` in `asset`
