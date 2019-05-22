@@ -234,53 +234,10 @@ $ skycli app update-tenant-config -f ./tenant-config.yaml
 
 ### skycli app deploy
 
-`skycli app deploy [NAME] [--sync]`
+`skycli app deploy`
 
-By using `skycli app deploy --sync`, user can sync the app deployment with
-skygear.yaml, all deployment items will be deployed. User can also choose to
-update particular item by `skycli app deploy [NAME]`, `[NAME]` is the name of
-deployment items in the config file. `[NAME]` or `--sync` is required, and user
-can only provide either one.
-
-#### Positional arguments
-
-- `[NAME]` Deploy item with name
-
-#### Flags
-
-- `--sync` Deploy all items in skygear.yaml
-
-#### Example
-
-Given that we have `skygear.yaml` like this,
-
-```
-app: myapp
-deployments:
-  function1:
-    type: http-handler
-    path: /hello-world
-    env: node
-    src: js/hellow-world
-    secrets:
-      - DATABASE_URL
-    permission:
-      - name: key_required
-      - name: user_required
-  static-index:
-    type: static
-    src: index.html
-    path: /
-  static-asset:
-    type: static
-    src: asset
-    path: /static
-```
-
-1. Running `skycli app deploy --sync`, all deployment items will be deployed.
-Items that are not in the skygear.yaml will be removed.
-2. Running `skycli app deploy function1`, only http-handler `function1` will be deployed.
-
+Deployment all items in the skygear.yaml. If previously deployed items are
+removed from the config file, there will be a confirmation prompt.
 
 ### skycli app view-deploy
 
