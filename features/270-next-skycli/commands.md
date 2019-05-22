@@ -234,50 +234,10 @@ $ skycli app update-tenant-config -f ./tenant-config.yaml
 
 ### skycli app deploy
 
-`skycli app deploy [NAME] [--all]`
+`skycli app deploy`
 
-Deploy cloud functions by reading skygear.yaml config file. `[NAME]` is the name
-of deployment items in the config file. Use `--all` to deploy all items. User
-must provide `[NAME]` or `--all`.
-
-#### Positional arguments
-
-- `[NAME]` Deploy item with name
-
-#### Flags
-
-- `--all` Deploy all items in skygear.yaml
-
-#### Example
-
-Given that we have `skygear.yaml` like this,
-
-```
-app: myapp
-deployments:
-  function1:
-    type: http-handler
-    path: /hello-world
-    env: node
-    src: js/hellow-world
-    secrets:
-      - DATABASE_URL
-    permission:
-      - name: key_required
-      - name: user_required
-  static-index:
-    type: static
-    src: index.html
-    path: /
-  static-asset:
-    type: static
-    src: asset
-    path: /static
-```
-
-1. Running `skycli app deploy --all`, all deployment items will be deployed.
-2. Running `skycli app deploy function1`, only http-handler `function1` will be deployed.
-
+Deployment all items in the skygear.yaml. If previously deployed items are
+removed from the config file, there will be a confirmation prompt.
 
 ### skycli app view-deploy
 

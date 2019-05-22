@@ -767,38 +767,22 @@ Status of cleanup flow
 
 #### Deployment flow
 
-- Deploy multiple items
-  - Deploy api accept multiple deploy items
-  - Validate
-    - Validate items payload
-    - Validate items whether paths have conflict
-  - Create `deployment`, `cloud_code`, `deployment_cloud_code`
-  - Call deploy async task and return deployment id
-  - In async task, deploy items sequentially. (Don't deploy them
-    simultaneously to avoid high server load.)
-    - If deployment fails in the middle, update deployment status and stop.
-    - If all items are deployed successfully, update deployment status. Unset
-      pervious deployment tag and update current deployment as latest. Unset
-      pervious cloud_code_route tag, create new cloud_code_route with latest
-      tag. Avoid occupying resources, trigger cleanup task to remove old
-      deployed resources (Before support multiple version).
-  - skycli use deployment id to keep track the deployment status when the async
-    task is running
-
-- Deploy single item
-  - Use deploy single item api
-  - Validate
-    - Validate item payload
-    - Get the last deployment (latest tag), validate item whether paths have
-      conflict
-  - Create new `deployment` that points to existing cloud codes and the new
-    cloud code
-  - Call deploy async task and return deployment id
-  - In async task, deploy the new function only. Update deployment status. If
-    deployment success, follow the steps in deploy multiple items to update 
-    deployment status and cleanup.
-  - skycli use deployment id to keep track the deployment status when the async
-    task is running
+- Deploy api accept multiple deploy items
+- Validate
+  - Validate items payload
+  - Validate items whether paths have conflict
+- Create `deployment`, `cloud_code`, `deployment_cloud_code`
+- Call deploy async task and return deployment id
+- In async task, deploy items sequentially. (Don't deploy them
+  simultaneously to avoid high server load.)
+  - If deployment fails in the middle, update deployment status and stop.
+  - If all items are deployed successfully, update deployment status. Unset
+    pervious deployment tag and update current deployment as latest. Unset
+    pervious cloud_code_route tag, create new cloud_code_route with latest
+    tag. Avoid occupying resources, trigger cleanup task to remove old
+    deployed resources (Before support multiple version).
+- skycli use deployment id to keep track the deployment status when the async
+  task is running
 
 #### Improvement
 
