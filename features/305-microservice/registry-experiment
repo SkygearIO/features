@@ -1,0 +1,118 @@
+#!/bin/sh
+
+# This file contains various routines I used to experiment with
+# the docker registry and its expected interaction with
+# any other docker daemons.
+# It serves as a future reference for actual implementation.
+# Do not run this file directly.
+# Nothing here is guaranteed to work.
+
+# Create the testing namespace
+kubectl create -f - <<EOF
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: louis-test
+EOF
+
+# Create the registry
+# The registry should be configured with basic auth
+# The auth file look like
+#
+# testuser:$2y$05$bFjS7heB3Z3JOvObZze7qe1uUbrkAdDJgB/2m9IggJFSW7A1d/DBe
+#
+kubectl create -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: louis-test
+  name: registry
+  labels:
+    app: registry
+spec:
+  containers:
+  - name: registry
+    image: registry:2
+    ports:
+    - containerPort: 5000
+EOF
+
+# Expose the registry
+kubectl create -f - <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: louis-test
+  name: registry
+spec:
+  selector:
+    app: registry
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+EOF
+
+# Test we can push image to the registry locally.
+# Port forwarding itself does not work
+# because Docker for Mac has a VM.
+# We have to configure Docker for Mac to recognize
+# host.docker.internal as insecure registry so that
+# HTTP is used instead of HTTPS.
+docker pull ubuntu:16.04
+docker tag ubuntu:16.04 host.docker.internal:5000/my-ubuntu
+kubectl -n louis-test port-forward pods/registry 5000:5000
+docker push host.docker.internal:5000/my-ubuntu
+
+# Create docker
+# We need to write a config at /etc/docker/daemon.json to allow plain HTTP registry.
+# We must login after we finish exeucuting user provided Dockerfile.
+# The config may be at /etc/docker/config.json
+#
+# {
+#   "auths": {
+#     "localhost:5000": {
+#       "auth": "dGVzdHVzZXI6dGVzdHBhc3N3b3Jk"
+#     }
+#   }
+# }
+#
+# where value is base64 encoded.
+kubectl create -f - <<EOF
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: louis-test
+  name: docker
+  labels:
+    app: docker
+spec:
+  containers:
+  - name: daemon
+    image: docker:18.05-dind
+    command: ["/bin/sh"]
+    args:
+    - "-c"
+    - "mkdir /etc/docker; echo '{\"insecure-registries\":[\"registry.louis-test.svc.cluster.local:5000\"]}' > /etc/docker/daemon.json; dockerd-entrypoint.sh"
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: dind-storage
+      mountPath: /var/lib/docker
+  - name: client
+    image: docker:18.05
+    command: ["sleep"]
+    args: ["86400"]
+    env:
+    - name: DOCKER_HOST
+      value: tcp://localhost:2375
+  volumes:
+  - name: dind-storage
+    emptyDir: {}
+EOF
+
+# Test we can push image to registry in a Pod
+kubectl -n louis-test exec -it -c client docker sh
+docker pull ubuntu:16.04
+docker tag ubuntu:16.04 registry.louis-test.svc.cluster.local:5000/my-ubuntu
+docker push registry.louis-test.svc.cluster.local:5000/my-ubuntu
