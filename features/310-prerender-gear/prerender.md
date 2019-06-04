@@ -56,8 +56,6 @@ Since prerender supports some configuration about cache, when a configuration is
 
 `seo-prerender-capture-wait`: Time. The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run.
 
-`seo-prerender-user-agent`: Comma separated strings. `user-agent` that is considered a search engine.
-
 ### Endpoint
 
 #### Prerender
