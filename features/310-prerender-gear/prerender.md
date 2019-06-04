@@ -69,8 +69,8 @@ Path:
 Query parameters:
 
 - `u`: The url to render. A url with slash at the end and a url without slash at the end are cached separately.
-- `expiry`: Corresponds to `seo-prerender-expiry` in configuration, with the time specified in seconds. i.e. To have an expiry of one hour one should pass `3600`. Optional.
-- `renderWait`: Corresponds to `seo-prerender-capture-wait` in configuration, with the time specified in seconds. i.e. To wait 30 seconds one should pass `30`. Optional.
+- `expiry`: Corresponds to `seo-prerender-expiry` in configuration, with the time specified in seconds. i.e. To have an expiry of one hour one should pass `3600`. Optional. Default value is 3600.
+- `captureWait`: Corresponds to `seo-prerender-capture-wait` in configuration, with the time specified in seconds. i.e. To wait 30 seconds one should pass `30`. Optional. Default value is 0.
 
 Response:
 
