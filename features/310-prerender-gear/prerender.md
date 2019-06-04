@@ -54,7 +54,7 @@ Since prerender supports some configuration about cache, when a configuration is
 
 `seo-prerender-expiry`: Time. The amount of time a prerendrered html is kept in cache.
 
-`seo-prerender-capture-wait`: Time. The amount of time prerender waits before capturing DOM such that javascript, etc can have time to run.
+`seo-prerender-capture-wait`: Time. The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run
 
 `seo-prerender-user-agent`: Comma separated strings. `user-agent` that is considered a search engine.
 
@@ -103,3 +103,17 @@ Request body:
 Response:
 - `200`: The request is processed. Please note that it does not mean the cache had been cleared - even though prerender fails to reset a cach because e.g. there is no cache for the given origins, `200` is still returned.
 - `400`: If request body's json is malformed.
+
+## Appendix
+
+Search engine list:
+```
+[
+                    "googlebot", "yahoo", "bingbot", "yandex", "baiduspider", "facebookexternalhit", "twitterbot", "rogerbot", "linkedinbot", 
+                    "embedly", "quora link preview", "showyoubot", "outbrain", "pinterest/0.", 
+                    "developers.google.com/+/web/snippet", "slackbot", "vkShare", "W3C_Validator", 
+                    "redditbot", "Applebot", "WhatsApp", "flipboard", "tumblr", "bitlybot", 
+                    "SkypeUriPreview", "nuzzel", "Discordbot", "Google Page Speed", "x-bufferbot"
+]
+```
+[Source](https://github.com/greengerong/Prerender_asp_mvc/blob/master/Prerender.io/PrerenderModule.cs)
