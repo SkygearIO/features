@@ -22,7 +22,7 @@ Prerender handles any incoming request by first checking whether there is any ca
     
 The slow path begins by first navigating to the forwarded url using a headless browser, aloowing the browser to proceed according to redirect transparently, then inspect the final response once it settles down to check if the url locates an html document (i.e. `content-type` is `text/html`). If not, prerender returns the response body and headers directly, otherwise it proceeds to capture the response body (the html DOM) and the response header.
 
-To allow scripts to run to its completion or to allow DOM to transform to a specific state, prerender waits for a configurable period of time before capturing the resultant DOM. The resultant DOM will have all of its script tags removed, and a `<base>` tag is inserted to the DOM appropriately to fix relative links.
+To allow scripts to run to its completion or to allow DOM to transform to a specific state, prerender waits for a configurable period of time before capturing the resultant DOM. The resultant DOM will have all of its script tags removed, and a `<base>` tag is inserted to the DOM appropriately to fix relative links in case the domain of the forwarded url is not skygear's domain.
 
 Response headers are then modified. Specifically, `content-length` and `content-encoding` will be removed.
 
