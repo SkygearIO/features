@@ -52,9 +52,9 @@ Since prerender supports some configuration about cache, when a configuration is
 
 `seo-prerender`: Boolean. `true` to enable prerender, `false` to disable.
 
-`seo-prerender-expiry`: Time. The amount of time a prerendrered html is kept in cache.
+`seo-prerender-expiry`: Time. The amount of time, specified in seconds, a prerendrered html is kept in cache.
 
-`seo-prerender-capture-wait`: Time. The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run
+`seo-prerender-capture-wait`: Time. The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run.
 
 `seo-prerender-user-agent`: Comma separated strings. `user-agent` that is considered a search engine.
 
