@@ -8,7 +8,7 @@ Prerender's main use case is to optimize response time for single-page-applicati
 
 ## Terminology
 
-- **Prerendered html** - An html document that is the result of running some or all of an html's javascript and without any script tag. By definition, an html without any javascript is a prerendered html.
+- **Prerendered html** - An html document that is the result of running some or all of an html's javascript and without any script tag. By definition, an html without any javascript is a prerendered html. In this document "cached DOM", "modified DOM" and "cached prerendered html" are used interchangeably.
 
 - **Prerendered html cache** - A volatile or persistent cache that stores prerendered html.
 
@@ -20,13 +20,13 @@ When skygear's gateway receives a request, before redirecting the traffic to a s
 
 Prerender handles any incoming request by first checking whether there is any cached DOM for the forwarded url. It there is a cache hit, prerender "hits the fast path" and returns the cached DOM as-is. Otherwise it proceeds to the slow path.
     
-The slow path begins by first navigating to the forwarded url using a headless browser, aloowing the browser to proceed according to redirect transparently, then inspect the final response once it settles down to check if the url locates an html document (i.e. `content-type` is `text/html`). If not, prerender returns the response body and headers directly, otherwise it proceeds to capture the response body (the html DOM) and the response header.
+The slow path begins by first navigating to the forwarded url using a headless browser, aloowing the browser to proceed according to redirect transparently, then inspect the final response once it settles down to check if the url locates an html document (i.e. `content-type` is `text/html`). If not, prerender returns the response body and headers directly, otherwise it proceeds to capture the response body (the html) and the response header.
 
-To allow scripts to run to its completion or to allow DOM to transform to a specific state, prerender waits for a configurable period of time before capturing the resultant DOM. The resultant DOM will have all of its script tags removed, and a `<base>` tag is inserted to the DOM appropriately to fix relative links in case the domain of the forwarded url is not skygear's domain.
+Getting a prerendered html involves several steps. To allow scripts to run to its completion or to allow DOM to transform to a specific state, prerender waits for a configurable period of time before capturing the resultant DOM. The resultant DOM will then have all of its script tags removed, and a `<base>` tag is inserted to the DOM appropriately to fix relative links in case the domain of the forwarded url is not skygear's domain. The modified DOM is now a prerendered html ready to be cached.
 
-Response headers are then modified. Specifically, `content-length` and `content-encoding` will be removed.
+Response headers also have to be cached alonsgisde the modified DOM but some modifications are needed. Specifically, `content-encoding` will be removed, and a new `content-length` will be calculated based on the modified DOM.
 
-Finally, the modified DOM and headers are put into prerendered html cache using the forwarded url as keys before being sent back to gateway. A configurable expiry time is also applied to the cache such that they expire automatically.
+Finally, the modified DOM and response headers are put into prerendered html cache using the forwarded url as keys before being sent back to gateway. A configurable expiry time is also applied to the cache such that they expire automatically.
 
 #### Redirect
 
