@@ -115,6 +115,15 @@ Response:
 - `200`: The request is processed. Please note that it does not mean the cache had been cleared - even though prerender fails to reset a cach because e.g. there is no cache for the given origins, `200` is still returned.
 - `400`: If request body's json is malformed.
 
+#### Cache prewarming
+
+In the future, Prerender may include a crawler to visit `entrypoints` to prewarm the cache.
+
+- The crawler should respect `/robots.txt` if it exists.
+- The crawler should start with each entrypoint, follow the links within the same domain.
+- The crawler must be able to detect cycle.
+- The crawler must have limit on maximum number of URL to visit.
+
 ## Appendix
 
 Search engine list:
