@@ -50,11 +50,24 @@ Since prerender supports some configuration about cache, when a configuration is
 
 ### Configuration
 
-`seo-prerender`: Boolean. `true` to enable prerender, `false` to disable.
-
-`seo-prerender-expiry`: Time. The amount of time, specified in seconds, a prerendrered html is kept in cache.
-
-`seo-prerender-capture-wait`: Time. The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run.
+```yaml
+type: http-service
+path: /
+seo_prerender:
+  # Default is true
+  enabled: true
+  # The amount of time, specified in seconds, a prerendrered html is kept in cache.
+  # Default is 3600
+  expiry: 3600
+  # The amount of time, specified in seconds, prerender waits before capturing DOM such that javascript, etc can have time to run.
+  # Default is 0
+  capture_wait: 5
+  # The entrypoints to prewarm the cache
+  # Default is [path] if unspecified
+  entrypoints:
+  - /
+  - /path-unreachable-from-root
+```
 
 ### Endpoint
 
