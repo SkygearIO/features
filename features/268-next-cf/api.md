@@ -269,6 +269,47 @@ deployments:
   - `role_required` with `roles` tells the function require specified roles
   - `http-handler`, `http-service` and `function` only
 
+**Configure auth hooks**
+
+Both function, http-handler, http-service or external links can accept auth
+hooks, hooks can be defined in the `hooks` section in `skygear.yaml`.
+
+```
+deployments:
+  function1:
+    type: http-handler
+    path: /hello-world
+    env: nodejs
+    src: js/hellow-world
+    secrets:
+      - DATABASE_URL
+  api:
+    type: http-service
+    path: /api
+    context: express
+    port: 8080
+
+hooks:
+  - url: /api/after_signup
+    event: after_signup
+    async: true
+    timeout: 60
+  - url: http://external-service.com/signup-hook
+    event: after_signup
+    async: true
+    timeout: 60
+
+```
+
+- `hooks` defines list of auth hooks event listener. Auth gear will make http
+    `POST` request to the url when the event happens.
+  - `url` is the endpoint that accepts the auth event. If the value is full url,
+    auth gear will call the provided url directly. If the value is path only,
+    api endpoint url (e.g. https://myapp.skygear.io) will be added.
+  - `event` is the name of the listening event
+  - `async` indicates the event call is synchronous or asynchronous
+  - `timeout` is the timeout of hook http request
+
 # Serving content
 
 ## Server side rendering
