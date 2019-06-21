@@ -170,48 +170,46 @@ the cluster instead.
 Add user into the current app. Change current app by
 `skycli config set-app`.
 
-### skycli app view-tenant-config
+### skycli app view-user-config
 
-`skycli app view-tenant-config`
+`skycli app view-user-config`
 
-View the current app tenant config in yaml format.
+View the current app user config in yaml format.
 
 #### Example
 
 ```
-$ skycli app view-tenant-config
-- MASTER_KEY: xxxxx
-- API_KEY: xxxxx
-- SSO:
-  ALLOWED_CALLBACK_URLS:
+$ skycli app view-user-config
+masterkey: xxxxx
+apikey: xxxxx
+sso:
+  allowedcallbackurls:
   - http://127.0.0.1:5000/
   - http://localhost:5000/
-  MERGE_USERS_WITH_IDENTICAL_EMAIL: true
+  mergeuserswithidenticalemail: true
 ```
 
-### skycli app update-tenant-config
+### skycli app update-user-config
 
-`skycli app update-tenant-config -f [TENANT_SETTING_YAML_FILE]`
+`skycli app update-user-config -f [USER_CONFIG_YAML_FILE]`
 
-Update tenant config interactively or by providing a file. For the config format,
-please see [user facing config](user-facing-config.md)
+Update user config interactively or by providing a file.
 
 #### Example
 
 **Update in editor**
 ```sh
-$ skycli app update-tenant-config
-? Edit application tenant config. Press <enter> to launch your preferred editor.
+$ skycli app update-user-config
+? Edit user config. Press <enter> to launch your preferred editor.
 
 # Enter editor mode with existing config
-- MASTER_KEY: xxxxx
-- API_KEY: xxxxx
-- SSO:
-  ALLOWED_CALLBACK_URLS:
+masterkey: xxxxx
+apikey: xxxxx
+sso:
+  allowedcallbackurls:
   - http://127.0.0.1:5000/
   - http://localhost:5000/
-  MERGE_USERS_WITH_IDENTICAL_EMAIL: true
-  ...
+  mergeuserswithidenticalemail: true
 ~
 ~
 ~
@@ -223,13 +221,13 @@ $ skycli app update-tenant-config
 
 **Update by providing a file**
 ```sh
-# 1. If you don't have a copy of the tenant config file, get it from the view command.
-$ skycli app view-tenant-config > ./tenant-config.yaml
+# 1. If you don't have a copy of the user config file, get it from the view command.
+$ skycli app view-user-config > ./user-config.yaml
 
-# 2. Update the tenant-config.yaml file
+# 2. Update the user-config.yaml file
 
 # 3. Apply the change to the app
-$ skycli app update-tenant-config -f ./tenant-config.yaml
+$ skycli app update-user-config -f ./user-config.yaml
 ```
 
 ### skycli app deploy

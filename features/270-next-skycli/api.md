@@ -56,8 +56,8 @@ skycli [group] [verb/action] [parameters]
     - [skycli app scaffold](commands.md#skycli-app-scaffold)
     - [skycli app list](commands.md#skycli-app-list)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
-    - [skycli app view-tenant-config](commands.md#skycli-app-view-config)
-    - [skycli app update-tenant-config -f [TENANT_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app view-user-config](commands.md#skycli-app-view-config)
+    - [skycli app update-user-config -f [USER_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
     - [skycli app deploy](commands.md#skycli-app-deploy)
     - [skycli app view-deploy](commands.md#skycli-app-view-deploy)
     - [skycli app logs [DEPLOYMENT_ITEM_NAME]](commands.md#skycli-app-logs)
@@ -181,16 +181,16 @@ deployments:
     $ skycli app add-user dev@example.com --app=myapp
 
     # Update tenant config to enable welcome email
-    $ skycli app update-tenant-config WELCOME_EMAIL --app=myapp
-    ? Edit application tenant config. Press <enter> to launch your preferred editor.
+    $ skycli app update-user-config welcomeemail --app=myapp
+    ? Edit user config. Press <enter> to launch your preferred editor.
     # Enter editor mode with existing config
-    ENABLED: false
-    SENDER: no-reply@skygeario.com
-    SENDER_NAME: ''
-    REPLY_TO: ''
-    REPLY_TO_NAME: ''
-    SUBJECT: Welcome!
-    EMAIL_HTML: |-
+    enabled: false
+    sender: no-reply@skygeario.com
+    sendername: ''
+    replyto: ''
+    replytoname: ''
+    subject: 'Welcome!'
+    emailhtml: |-
       <p>Hello {% if user.name %}{{ user.name }}{% else %}{{ user.email }}{% endif %},</p>
 
       <p>Welcome to Skygear.</p>
