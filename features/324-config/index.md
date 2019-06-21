@@ -47,6 +47,10 @@ All keys consist of alphanumeric characters only. No `_` is allowed. For example
 
 To derive the new TenantConfiguration, we need AppConfiguration, UserConfiguration and the incoming HTTP request.
 
+### Remaining issues
+
+- How to handle inline content in UserConfiguration? For now we can just store them as is but in the future we may want to store them in a private storage.
+
 ## References
 
 This idea of forbidding `_` in key name is borrowed from [the configuration of docker registry](https://docs.docker.com/registry/configuration/)
