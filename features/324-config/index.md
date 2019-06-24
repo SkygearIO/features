@@ -10,6 +10,17 @@ TenantConfiguration serves the following purposes.
 
 ## Problems
 
+### Stored deployment-specific data
+
+`HOOKS` is an example. Hooks should be derived from the incoming request. When we support serving multiple active deployments, the deployment-specific hooks should be invoked.
+
+Suppose we have two deployments
+
+- `https://tag1.myapp.skygearapis.com`
+- `https://tag2.myapp.skygearapis.com`
+
+If the signup request is `https://tag1.myapp.skygearapis.com/_auth/signup`, the hooks configuration injected by the gatway for the auth gear should be specific to the `tag1`.
+
 ### Mixed app configuration and user configuration
 
 This is confusing and error-prone because we could accidentally allow user to modify app configuration.
@@ -22,35 +33,28 @@ It stores derivable data like `APP_NAME` where the source of truth is `app.name`
 
 The organization is not user-facing, for example there is `SOO_SETTING` and `SSO_CONFIGS`.
 
-### Non environment variable friendly name
-
-`_` is used in key name as aesthetic separator. This introduces ambiguity when we need to support loading configuration from environment variable where `_` is used to denote structure.
-
-### Stored deployment-specific data
-
-`HOOKS` is an example. Hooks should be derived from the incoming request. When we support serving multiple active deployments, the deployment-specific hooks should be invoked.
-
-Suppose we have two deployments
-
-- `https://tag1.myapp.skygearapis.com`
-- `https://tag2.myapp.skygearapis.com`
-
-If the signup request is `https://tag1.myapp.skygearapis.com/_auth/signup`, the hooks configuration injected by the gatway for the auth gear should be specific to the `tag1`.
-
 ## Proposed solution
 
-The new TenantConfiguration is solely for gear consumption. When it is injected by the gateway, it is msgpack serialized. It can also be deserialized from environment variable in case the gear is running in standalone mode.
+### Remove deployment-specific data from TenantConfiguration
 
-The old TenantConfiguration will be splitted into AppConfiguration and UserConfiguration. AppConfiguration is used to store non-editable configuration while UserConfiguration is intended to be edited by the developer.
+`HOOKS` is removed from TenantConfiguration because it is deployment specific.
 
-All keys consist of alphanumeric characters only. No `_` is allowed. For example, `DATABASE_URL` become `databaseurl` in JSON and `DATABASEURL` in environment variable.
+### Split TenantConfiguration into AppConfiguration and UserConfiguration
 
-To derive the new TenantConfiguration, we need AppConfiguration, UserConfiguration and the incoming HTTP request.
+AppConfiguration is used to store non-editable configuration while UserConfiguration is intended to be edited by the developer.
+
+### Make TenantConfiguration serializable to msgpack and YAML
+
+The original purpose of TenantConfiguration remains unchanged. It is msgpack serialized when injected by the gateway. It can also serialize to YAML in case the gear is running in standalone mode.
+
+### Restructure AppConfiguration, UserConfiguration, TenantConfiguration to make them more developer-friendly
+
+Key names will become `lower_snake_case` and related settings will be grouped into the same section.
+
+### Derive TenantConfiguration from AppConfiguration, UserConfiguration and the incoming HTTP request
+
+The incoming HTTP request implies a specific deployment. Given a AppConfiguration, UserConfiguration and a Deployment, we can derive a TenantConfiguration.
 
 ### Remaining issues
 
 - How to handle inline content in UserConfiguration? For now we can just store them as is but in the future we may want to store them in a private storage.
-
-## References
-
-This idea of forbidding `_` in key name is borrowed from [the configuration of docker registry](https://docs.docker.com/registry/configuration/)
