@@ -58,3 +58,8 @@ The incoming HTTP request implies a specific deployment. Given a AppConfiguratio
 ### Remaining issues
 
 - How to handle inline content in UserConfiguration? For now we can just store them as is but in the future we may want to store them in a private storage.
+
+## Appendix
+
+- [Example of TenantConfiguration in JSON](./tenant-config.example.json)
+- [Example of TenantConfiguration in YAML](./tenant-config.example.yaml)
