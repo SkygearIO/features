@@ -180,13 +180,13 @@ View the current app user config in yaml format.
 
 ```
 $ skycli app view-user-config
-masterkey: xxxxx
-apikey: xxxxx
+master_key: xxxxx
+api_key: xxxxx
 sso:
-  allowedcallbackurls:
+  allowed_callback_urls:
   - http://127.0.0.1:5000/
   - http://localhost:5000/
-  mergeuserswithidenticalemail: true
+  merge_users_with_identical_email: true
 ```
 
 ### skycli app update-user-config
@@ -203,13 +203,13 @@ $ skycli app update-user-config
 ? Edit user config. Press <enter> to launch your preferred editor.
 
 # Enter editor mode with existing config
-masterkey: xxxxx
-apikey: xxxxx
+master_key: xxxxx
+api_key: xxxxx
 sso:
-  allowedcallbackurls:
+  allowed_callback_urls:
   - http://127.0.0.1:5000/
   - http://localhost:5000/
-  mergeuserswithidenticalemail: true
+  merge_users_with_identical_email: true
 ~
 ~
 ~

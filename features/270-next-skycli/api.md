@@ -181,16 +181,16 @@ deployments:
     $ skycli app add-user dev@example.com --app=myapp
 
     # Update tenant config to enable welcome email
-    $ skycli app update-user-config welcomeemail --app=myapp
+    $ skycli app update-user-config welcome_email --app=myapp
     ? Edit user config. Press <enter> to launch your preferred editor.
     # Enter editor mode with existing config
     enabled: false
     sender: no-reply@skygeario.com
-    sendername: ''
-    replyto: ''
-    replytoname: ''
+    sender_name: ''
+    reply_to: ''
+    reply_to_name: ''
     subject: 'Welcome!'
-    emailhtml: |-
+    email_html: |-
       <p>Hello {% if user.name %}{{ user.name }}{% else %}{{ user.email }}{% endif %},</p>
 
       <p>Welcome to Skygear.</p>
