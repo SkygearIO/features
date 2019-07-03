@@ -1,3 +1,5 @@
+**This document is obsoleted by #332**
+
 ## Feature Overview
 
 Allow developer to integrate their authentication server with skygear server by logging in with custom token
