@@ -1,3 +1,5 @@
+**This document is deprecated, refer to #323 instead**
+
 For supporting login without specifying `loginID`, we have following proposal:
 
 Adjust current `LOGIN_ID_METADATA_KEYS` definition, rename it to `LOGIN_IDS_KEY_WHITELIST`. It is an empty list by default, which allows using any string as the `loginID` key, and `loginID` value must be a string.
