@@ -1,0 +1,108 @@
+{
+  "version": "1",
+  "app_name": "myapp",
+  "app_config": {
+    "database_url": "postgres://",
+    "smtp": {
+      "host": "",
+      "port": 25,
+      "mode": "normal",
+      "login": "",
+      "password": ""
+    },
+    "twilio": {
+      "account_sid": "",
+      "auth_token": "",
+      "from": ""
+    },
+    "nexmo": {
+      "api_key": "",
+      "secret": "",
+      "from": ""
+    }
+  },
+  "user_config": {
+    "api_key": "apikey",
+    "master_key": "masterkey",
+    "url_prefix": "",
+    "cors": {
+      "origin": "*"
+    },
+    "auth": {
+      "login_id_keys": [
+        "email",
+        "username"
+      ],
+      "custom_token_secret": ""
+    },
+    "token_store": {
+      "secret": "masterkey",
+      "expiry": 0
+    },
+    "user_audit": {
+      "enabled": false,
+      "trail_handler_url": "",
+      "password": {
+        "min_length": 0,
+        "uppercase_required": false,
+        "lowercase_required": false,
+        "digit_required": false,
+        "symbol_required": false,
+        "minimum_guessable_level": 0,
+        "excluded_keywords": null,
+        "history_size": 0,
+        "history_days": 0,
+        "expiry_days": 0
+      }
+    },
+    "forgot_password": {
+      "app_name": "myapp",
+      "url_prefix": "",
+      "secure_match": false,
+      "sender_name": "",
+      "sender": "no-reply@skygeario.com",
+      "subject": "Reset password instruction",
+      "reply_to_name": "",
+      "reply_to": "",
+      "reset_url_lifetime": 43200,
+      "success_redirect": "",
+      "error_redirect": "",
+      "email_text_url": "",
+      "email_html_url": "",
+      "reset_html_url": "",
+      "reset_success_html_url": "",
+      "reset_error_html_url": ""
+    },
+    "welcome_email": {
+      "enabled": false,
+      "url_prefix": "",
+      "sender_name": "",
+      "sender": "no-reply@skygeario.com",
+      "subject": "Welcome!",
+      "reply_to_name": "",
+      "reply_to": "",
+      "text_url": "",
+      "html_url": ""
+    },
+    "sso": {
+      "url_prefix": "",
+      "js_sdk_cdn_url": "https://code.skygear.io/js/skygear/latest/skygear.min.js",
+      "state_jwt_secret": "",
+      "auto_link_provider_keys": null,
+      "allowed_callback_urls": null,
+      "providers": null
+    },
+    "user_verification": {
+      "url_prefix": "",
+      "auto_update": false,
+      "auto_send_on_signup": false,
+      "auto_send_on_update": false,
+      "required": false,
+      "criteria": "",
+      "error_redirect": "",
+      "error_html_url": "",
+      "keys": null
+    }
+  },
+  "hooks": null
+}
