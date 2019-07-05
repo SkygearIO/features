@@ -243,7 +243,6 @@ const token = jwt.sign({
 # Tenant Configuration
 
 ```YAML
-url_prefix: ''
 custom_token:
   # By default Custom Token is disabled.
   enabled: false
@@ -255,6 +254,7 @@ custom_token:
   # Default to false.
   merge_existing_user: false
 oauth:
+  url_prefix: ''
   js_sdk_cdn_url: ''
   # The secret used to sign the JWT token, which itself is used as state.
   # See https://tools.ietf.org/html/rfc6749#section-4.1.1
