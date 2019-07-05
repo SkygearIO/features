@@ -203,21 +203,22 @@ loginMyAuthenticationServer().then(token => {
 
 The custom token **MUST** be a JWT token.
 
-It **MUST** have the following standard claims.
+It **MUST** have the following JWT standard claims.
 
 - `iss`: The value must match the configured value in tenant configuration.
 - `sub`: The user ID of the foreign authentication system.
 
-It **SHOULD** have the following standard claims.
+It **SHOULD** have the following JWT standard claims.
 
 - `aud`: If present and the configured value is not empty, they must match.
 - `exp`: If present, the Auth gear will validate it against the current time.
 - `nbf`: If present, the Auth gear will validate it against the current time.
 
-The signing algorithm is `HS256`. The signing key is shared between the Auth gear and the foreign authentication system.
+It **MAY** have the following OpenID Connect standard claims.
 
-The token can optionally contain a claim named `skyprofile` which **MUST** be an JSON object.
-If `skyprofile` contains `email`, then merging applies.
+- `email`: If present, it is used in [handling duplicated email](#options-on-duplicated-email-during-login)
+
+The signing algorithm is `HS256`. The signing key is shared between the Auth gear and the foreign authentication system.
 
 ### Server Side Example (Node.js)
 
@@ -235,9 +236,7 @@ const token = jwt.sign({
   iss: issuer,
   iat: nowUnix,
   exp: nowUnix + 60 * 60,
-  skyprofile: {
-    email: "user@example.com",
-  },
+  email: "user@example.com",
 }, secret, { algorithm: "HS256" });
 ```
 
@@ -252,6 +251,9 @@ custom_token:
   issuer: ''
   # The share secret with the foreign authentication system.
   secret: ''
+  # Whether or not login should merge existing user by email.
+  # Default to false.
+  merge_existing_user: false
 oauth:
   js_sdk_cdn_url: ''
   # The secret used to sign the JWT token, which itself is used as state.
