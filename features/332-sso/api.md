@@ -26,18 +26,10 @@ interface LoginOptions {
   mergeRealm?: string;
 }
 
-interface PopupOptions {
-  // If provided, it overrides to the default scope.
-  // Note that the scope must be large enough to fetch user info.
-  // The default scope typically requests access to information
-  // like email.
-  scope?: string[];
-}
-
 // Create a new user with the provider identity.
-function loginOAuthProviderWithPopup(providerID: string, options?: PopupOptions & LoginOptions): Promise<User>;
+function loginOAuthProviderWithPopup(providerID: string, options?: LoginOptions): Promise<User>;
 // Link the provider identity with the current logged in user.
-function linkOAuthProviderWithPopup(providerID: string, options?: PopupOptions): Promise<User>;
+function linkOAuthProviderWithPopup(providerID: string): Promise<User>;
 ```
 
 ### Example
@@ -55,7 +47,7 @@ The flow changes the location of the current window to show the provider authori
 ### API
 
 ```typescript
-interface RedirectOptions extends PopupOptions {
+interface RedirectOptions {
   // If provided, when the flow finishes, the browser will be redirected
   // to this URL. Default to window.location.href if not provided.
   callbackURL?: string;
@@ -286,16 +278,12 @@ interface LoginOptions {
   mergeRealm?: string;
 }
 
-interface PopupOptions {
-  scope?: string[];
-}
-
-interface RedirectOptions extends PopupOptions {
+interface RedirectOptions {
   callbackURL?: string;
 }
 
-function loginOAuthProviderWithPopup(providerID: string, options?: PopupOptions & LoginOptions): Promise<User>;
-function linkOAuthProviderWithPopup(providerID: string, options?: PopupOptions): Promise<User>;
+function loginOAuthProviderWithPopup(providerID: string, options?: LoginOptions): Promise<User>;
+function linkOAuthProviderWithPopup(providerID: string): Promise<User>;
 function loginOAuthProviderWithRedirect(providerID: string, options?: RedirectOptions & LoginOptions): Promise<void>;
 function linkOAuthProviderWithRedirect(providerID: string, options?: RedirectOptions): Promise<void>;
 
