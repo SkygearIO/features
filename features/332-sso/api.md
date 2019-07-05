@@ -282,6 +282,19 @@ oauth:
     # Space-delimited scopes. Required.
     # Note that the scope must be large enough to fetch user info.
     scope: 'profile email'
+    # When "type" is "azureadv2"
+    # The developer must specify "tenant".
+    # Ask Azure for the value of "tenant".
+  - type: azureadv2
+    id: azure-ad-1
+    tenant: '53ed053f-c7ca-4b17-9ffc-917def96673c'
+    client_id: ''
+    client_secret: ''
+  - type: azureadv2
+    id: azure-ad-2
+    tenant: '7026db0d-7b1d-4141-b3d0-3e8db2f7991e'
+    client_id: ''
+    client_secret: ''
 ```
 
 > Should we make scope optional? We should be able to provide default scope by type.
