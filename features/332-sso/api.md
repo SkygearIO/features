@@ -20,9 +20,8 @@ The flow does not change the location of the current window, instead, it opens a
 
 ```typescript
 interface LoginOptions {
-  // The developer can only set it to false to disable merging, given that
-  // the server has enabled merging.
-  mergeExistingUser?: false;
+  // Specify how the server should handle user duplicate. Default to "abort".
+  onUserDuplicate?: "abort" | "merge" | "create";
   // Which realm to consider during merging. Default to the "default" realm.
   mergeRealm?: string;
 }
@@ -132,23 +131,51 @@ askConfirmation().then(confirmed => {
 
 Some users may forget that they have signed up with email long ago. When they return to the application again, they may login with OAuth 2.0 provider in which the same email is used.
 
-There is a boolean server config `merge_existing_user` to offer two options.
+The client side configuration `onUserDuplicate` has three options `abort`, `merge` and `create`.
+
+The server side configuration `on_user_duplicate_allow_merge` is a boolean flag whether `merge` is allowed.
+
+The server side configuration `on_user_duplicate_allow_create` is a boolean flag whether `create` is allowed.
 
 Since login ID by itself is not unique, the client has an option `mergeRealm` to specify the realm to match against.
 
-## Abort on duplicated email
+## Abort on duplicate
 
 - The Auth gear will infer the email from the provider user info.
 - The email and `mergeRealm` are used to match an existing user.
-- If such match is found and `merge_existing_user` is `false`, the process is aborted and user duplicated error is returned to the client.
+- If such match is found and `onUserDuplicate` is `abort`, the process is aborted and user duplicated error is returned to the client.
 - It is the developer's responsibility to handle this error, probably by showing an error message explaining the situation such as `Seems that you have signed up before. Click here to login.`
 - Preferably after the user has logged in with their email, the application can offer an option to link with the provider.
 
-## Merge on duplicated email
+### Example
+
+```typescript
+try {
+  await loginOAuthProviderWithPopup("google");
+} catch (e) {
+  if (skygear.error.isUserDuplicate(e)) {
+    const navigateToLogin = await alert("Seems that you have signed up before. Click here to login.");
+    if (navigateToLogin) {
+      history.push("/login");
+    }
+  }
+}
+```
+
+## Merge on duplicate
 
 - The Auth gear will infer the email from the provider user info.
 - The email and `mergeRealm` are used to match an existing user.
-- If such match is found and `merge_existing_user` is `true`, that provider becomes a new Identity of that existing user.
+- If such match is found and `onUserDuplicate` is `merge`, that provider becomes a new Identity of that existing user.
+
+### Example
+
+```typescript
+loginOAuthProviderWithPopup("google", {
+  // The server must have enabled merge otherwise this is an error.
+  onUserDuplicate: "merge",
+});
+```
 
 However, merging has security implications as illustrated by the following scenario.
 
@@ -157,9 +184,22 @@ However, merging has security implications as illustrated by the following scena
 3. Alice signs up with OAuth 2.0 Provider and her account is shared with Mallory.
 4. Mallory can now access Alice's profile of that provider.
 
-Therefore, `merge_existing_user` is `false` by default.
-
 > In addition to email, should we consider phone number?
+
+## Create new user on duplicate
+
+- The Auth gear will infer the email from the provider user info.
+- The email and `mergeRealm` are used to match an existing user.
+- If such match is found and `onUserDuplicate` is `create`, a new user is created.
+
+### Example
+
+```typescript
+loginOAuthProviderWithPopup("google", {
+  // The server must have enabled create otherwise this is an error.
+  onUserDuplicate: "create",
+});
+```
 
 # Removal of v1 API
 
@@ -250,9 +290,10 @@ custom_token:
   issuer: ''
   # The share secret with the foreign authentication system.
   secret: ''
-  # Whether or not login should merge existing user by email.
-  # Default to false.
-  merge_existing_user: false
+  # Whether merge is allowed. Default to false.
+  on_user_duplicate_allow_merge: false
+  # Whether create is allowed. Default to false.
+  on_user_duplicate_allow_create: false
 oauth:
   url_prefix: ''
   js_sdk_cdn_url: ''
@@ -262,9 +303,10 @@ oauth:
   # A whitelist of allowed callback URLs
   allowed_callback_urls:
   - 'http://example.com/login'
-  # Whether or not login should merge existing user by email.
-  # Default to false.
-  merge_existing_user: false
+  # Whether merge is allowed. Default to false.
+  on_user_duplicate_allow_merge: false
+  # Whether create is allowed. Default to false.
+  on_user_duplicate_allow_create: false
   providers:
     # "type" chooses the implementation. Required.
     # Valid values are "google", "facebook", "instagram", "linkedin" and "azureadv2"
@@ -318,7 +360,7 @@ Applications that have specific needs to add or remove providers as part of thei
 
 ```typescript
 interface LoginOptions {
-  mergeExistingUser?: false;
+  onUserDuplicate?: "abort" | "merge" | "create";
   mergeRealm?: string;
 }
 
