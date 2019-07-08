@@ -74,6 +74,9 @@ security-critical operations:
 The period after the access token is issued, that is considered authenticated
 for security-critical operations.
 
+`replaceLoginIDEnabled` (boolean; default `false`):
+Allow replacing login ID in change username use case.
+
 
 ## Use Case Example
 

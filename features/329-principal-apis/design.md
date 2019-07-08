@@ -113,6 +113,7 @@ recommended update principal procedure atomically with nessessary checks.
 In addition, if current principal of the user is the login ID to replace, a new
 access token with new login ID as current principal would be issued.
 
+> Related config: `replaceLoginIDEnabled`
 > Related API: `replaceLoginID` function
 
 ## Principal Metadata
