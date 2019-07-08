@@ -78,6 +78,9 @@ Each identity provider should have their specific API to create principal. APIs
 that create principals should have common behaviors:
 - Should respect re-authentication configuration
 
+When signup as with multiple login IDs, the first login ID will be used as
+current identity in the newly created session.
+
 > Related API: `addLoginID` function for password identity provider
 
 # Deleting Principal
