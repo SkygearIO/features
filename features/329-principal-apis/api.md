@@ -77,6 +77,19 @@ for security-critical operations.
 
 ## Use Case Example
 
+### Get current identity
+```typescript
+const currentIdentity = (await whoami()).identity;
+expectEquals(currentIdentity, {
+    id: "1431CB1E-8A2F-4A44-874E-70C3DB3EE043",
+    type: "password",
+    loginIDKey: "username",
+    loginID: "test",
+    realm: "default",
+    metadata: {}
+});
+```
+
 ### List user identities
 ```typescript
 const identities = await listIdentities();
