@@ -303,6 +303,8 @@ oauth:
   # A whitelist of allowed callback URLs
   allowed_callback_urls:
   - 'http://example.com/login'
+  # Whether external access token flow is enabled. Default to false.
+  external_access_token_flow_enabled: false
   # Whether merge is allowed. Default to false.
   on_user_duplicate_allow_merge: false
   # Whether create is allowed. Default to false.
