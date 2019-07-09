@@ -109,7 +109,7 @@ getAccessTokenViaFacebookSDKSomehow().then(accessToken => {
 
 # Remove OAuth Provider
 
-If the removal will result in no login principals, then removal is forbidden. Such case happens when the user logged in with Google and has no other login means.
+Removing the provider used to login in current session is forbidden. Such case happens when the user logged in with some provider and has no other login means.
 
 ### API
 
