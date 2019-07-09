@@ -1,3 +1,5 @@
+**This document is obsoleted by #332**
+
 # API Design Overview
 
 Have official plugins for common SSO support; And also make it easy to enable
