@@ -1,7 +1,7 @@
 # Background
 Auth gear supports various identity providers, such as password credentials and
 OAuth. Auth gear should support all identity providers equally well, and
-provide a consistent API for manipulating principals.
+provide a consistent API for manipulating identities.
 
 
 # Use Cases
@@ -19,17 +19,16 @@ provide a consistent API for manipulating principals.
 A method to assert the identity of user. For example, providing a password or
 perform OAuth flow.
 
-**Principal**:
-An identity associated with user. A user can have multiple principals. Since
-the term 'Principal' is defined differently across many frameworks and
-standards, we will instead use a simpler term 'Identity' for public interfaces.
+**Identity**:
+An identity associated with user. A user can have multiple identities.
+Internally, this is known as 'Principal'.
 
 
 # Proposed Design
 
 ## Re-authentication for Security
-Many principal manipulation operations are critical for security:
-- Add/remove/replace login ID
+Many identity manipulation operations are critical for security:
+- Add/remove/update login ID
 - Link/unlink SSO provider
 - Change password
 
@@ -45,92 +44,91 @@ Developer can turn off the re-auth requirement in configuration. However,
 developer should understand the potential security risk.
 
 > Related config: `reauthForSecurity` and `reauthIntervalSeconds`
-> Related API: `changePassword`, `addLoginID`, `removeLoginID`, `replaceLoginID` function
 
-## Current Principal
-We need to provide a way for developer to get the principal is associated with
+## Current Identity
+We need to provide a way for developer to get the identity is associated with
 the current session:
 - Which login ID is used to login?
 - Which OAuth provider is used to login?
 
-When logging in using a principal, the ID of the principal (i.e. the current
-principal) would be embedded in the access token along with the user ID.
-Information about the current principal would be returned in user object.
+When logging in using a identity, the ID of the identity (i.e. the current
+identity) would be embedded in the access token along with the user ID.
+Information about the current identity would be returned in user object.
 
 > Related API: `identity` field in `User` object
 
-## Principal List
-We need to provide a way for developer to get a list of principals belonged to
+## Listing Identity
+We need to provide a way for developer to get a list of identitys belonged to
 the user:
 - What login IDs the user has?
 - Which OAuth providers had the user linked?
 
-A list of principals belonged to current user would be returned through an API.
+A list of identitys belonged to current user would be returned through an API.
 
 > Related API: `listIdentities` function
 
-# Creating Principal
-We need to provide a way for developer to create new principal for the user:
+## Creating Identity
+We need to provide a way for developer to create new identity for the user:
 - Add new login ID
 - Link OAuth account
 
-Each identity provider should have their specific API to create principal. APIs
-that create principals should have common behaviors:
+Each identity provider should have their specific API to create identity. APIs
+that create identitys should have common behaviors:
 - Should respect re-authentication configuration
 
 When signup as with multiple login IDs, the first login ID will be used as
-current principal in the newly created session.
+current identity in the newly created session.
 
-> Related API: `addLoginID` function for password identity provider
+> Related API: `addLoginID` function, `linkOAuthProviderWithPopup/Redirect` function (#332)
 
-# Deleting Principal
-We need to provide a way for developer to delete new principal for the user:
+## Deleting Identity
+We need to provide a way for developer to delete new identity for the user:
 - Remove login ID
 - Unlink OAuth account
 
-Each identity provider should have their specific API to delete principal. APIs
-that delete principals should have common behaviors:
+Each identity provider should have their specific API to delete identity. APIs
+that delete identitys should have common behaviors:
 - Should respect re-authentication configuration
-- Should not allow deleting the current principal
+- Should not allow deleting the current identity
 
-> Related API: `removeLoginID` function for password identity provider
+> Related API: `removeLoginID` function for password identity provider, `removeOAuthProvider` function (#332)
 
-## Updating Principal
-We do not allow changing the identity of a principal, e.g. changing the
-login ID, changing the OAuth provider. Instead, developer should:
-1. Create new principal
-2. Ensure the new principal is in desired state (e.g. verification)
-3. Delete old principal
+## Updating Identity
+To change OAuth provider, link the new provider then unlink the old provider.
 
-## Replacing login ID
-We cannot support changing username securely under the above design:
-- User cannot remove/add login ID due to validation on login ID amount
-- User cannot remove current login ID
-- User cannot change login ID of existing login ID
+To change login ID, use `updateLoginID` API. It performs
+recommended update identity procedure atomically with nessessary checks.
+In addition, if current identity of the user is the login ID to update, a new
+access token with new login ID as current identity would be issued. Note that
+the ID of the relevant identities would be changed.
 
-To support this use case, we provide a replace login ID API that performs
-recommended update principal procedure atomically with nessessary checks.
-In addition, if current principal of the user is the login ID to replace, a new
-access token with new login ID as current principal would be issued.
+> Related config: `updateLoginIDEnabled`
+> Related API: `updateLoginID` function, `linkOAuthProviderWithPopup/Redirect` & `removeOAuthProvider` function (#332)
 
-> Related config: `replaceLoginIDEnabled`
-> Related API: `replaceLoginID` function
-
-## Principal Metadata
-We need to ensure the attributes of the principals can be understood easily:
+## Identity Claims
+We need to ensure the attributes of the identities can be understood easily:
 - Send welcome email/SMS to login ID/OAuth account
-- Listing principals with avatar of OAuth provider in user management portal
+- Listing identities with avatar of OAuth provider in user management portal
 - Populating user metadata from external provider profile
 
-Each identity provider should provide a function to derive metadata from 
-provider-specific internal data of a principal:
+Each identity provider should provide a function to derive claims from 
+provider-specific internal data of a identity:
 - Password identity provider: the login ID keyed by the type of login ID key
                               specified in config.
 - OAuth identity provider: the parsed profile obtained from origin identity
                            provider, mapped to keyed by standard keys.
 - Custom token identity provider: the email embedded in the token.
 
-Some of the keys in metadata may be standard keys (defined in #323), which
+Some of the keys in claims may be standard keys (defined in #323), which
 indicates the meaning of the value.
 
-> Related API: `metadata` field in identity objects
+> Related API: `claims` field in identity objects
+
+
+# Design Considerations
+
+## Immutable Identity
+Conceptually, identities are immutable. Developer should instead:
+1. Create new identity
+2. Ensure the new identity is in desired state (e.g. verification)
+3. Delete old identity

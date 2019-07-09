@@ -21,7 +21,7 @@ interface PasswordIdentity {
     loginIDKey: string;
     loginID: string;
     realm: string;
-    metadata: {
+    claims: {
         email?: string;
         phone?: string;
         // or other standard keys in future
@@ -33,7 +33,7 @@ interface OAuthIdentity {
     providerID: string;
     providerUserID: string;
     rawProfile: object;
-    metadata: {
+    claims: {
         email?: string;
         // or other standard keys in future
     };
@@ -43,7 +43,7 @@ interface CustomTokenIdentity {
     type: 'custom';
     providerUserID: string;
     rawProfile: object;
-    metadata: {
+    claims: {
         // or other standard keys in future
     };
 }
@@ -55,7 +55,7 @@ async function listIdentities(): Promise<Identity[]>;
 
 async function addLoginID(loginID: { [key: string]: string }, realm?: string): Promise<void>;
 async function removeLoginID(loginID: string, realm?: string): Promise<void>;
-async function replaceLoginID(oldLoginID: string, newLoginID: { [key: string]: string }): Promise<User>;
+async function updateLoginID(oldLoginID: string, newLoginID: { [key: string]: string }): Promise<User>;
 
 async function changePassword(newPassword: string, oldPassword?: string): Promise<User>;
 
@@ -74,8 +74,8 @@ security-critical operations:
 The period after the access token is issued, that is considered authenticated
 for security-critical operations.
 
-`replaceLoginIDEnabled` (boolean; default `false`):
-Allow replacing login ID in change username use case.
+`updateLoginIDEnabled` (boolean; default `false`):
+Allow updating login ID in change username use case.
 
 
 ## Use Case Example
@@ -89,7 +89,7 @@ expectEquals(currentIdentity, {
     loginIDKey: "username",
     loginID: "test",
     realm: "default",
-    metadata: {}
+    claims: {}
 });
 ```
 
@@ -103,7 +103,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -113,7 +113,7 @@ expectEquals(identities, [
         loginIDKey: "contact_phone",
         loginID: "+85299999999",
         realm: "default",
-        metadata: {
+        claims: {
             "phone": "+85299999999"
         }
     },
@@ -123,14 +123,14 @@ expectEquals(identities, [
         loginIDKey: "fingerprint",
         loginID: "ZmluZ2VycHJpbnQ=",
         realm: "default",
-        metadata: {}
+        claims: {}
     },
     {
         id: "E65CA45C-7ADF-4F37-AF8C-1F99D526D6F1",
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
-        metadata: {
+        claims: {
             raw_profile: {
                 id: "9999999999999999",
                 email: "test@example.com",
@@ -155,7 +155,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -174,7 +174,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -184,7 +184,7 @@ expectEquals(identities, [
         loginIDKey: "secondary_email",
         loginID: "test@oursky.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@oursky.com"
         }
     },
@@ -202,7 +202,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -212,7 +212,7 @@ expectEquals(identities, [
         loginIDKey: "username",
         loginID: "test",
         realm: "default",
-        metadata: {
+        claims: {
             "username": "test"
         }
     },
@@ -224,7 +224,7 @@ expectEquals(currentIdentity, {
     loginIDKey: "email",
     loginID: "test@example.com",
     realm: "default",
-    metadata: {
+    claims: {
         "email": "test@example.com"
     }
 });
@@ -241,7 +241,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -258,7 +258,7 @@ expectEquals(identities, [
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
-        metadata: {
+        claims: {
             raw_profile: {
                 id: "9999999999999999",
                 email: "test@example.com",
@@ -285,7 +285,7 @@ expectEquals(identities, [
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
-        metadata: {
+        claims: {
             raw_profile: {
                 id: "9999999999999999",
                 email: "test@example.com",
@@ -302,7 +302,7 @@ expectEquals(identities, [
         loginIDKey: "email",
         loginID: "test@example.com",
         realm: "default",
-        metadata: {
+        claims: {
             "email": "test@example.com"
         }
     },
@@ -310,7 +310,7 @@ expectEquals(identities, [
 
 ```
 
-### Replace login ID
+### Update login ID
 ```typescript
 let identities: Identity[];
 let currentIdentity: Identity;
@@ -323,7 +323,7 @@ expectEquals(identities, [
         loginIDKey: "username",
         loginID: "test1",
         realm: "default",
-        metadata: {}
+        claims: {}
     },
 ]);
 currentIdentity = (await whoami()).identity;
@@ -333,11 +333,11 @@ expectEquals(currentIdentity, {
     loginIDKey: "username",
     loginID: "test1",
     realm: "default",
-    metadata: {}
+    claims: {}
 });
 
 // after re-authentication (otherwise the call would fail):
-await replaceLoginID("test1", {"username": "test2"});
+await updateLoginID("test1", {"username": "test2"});
 
 identities = await listIdentities();
 expectEquals(identities, [
@@ -347,7 +347,7 @@ expectEquals(identities, [
         loginIDKey: "username",
         loginID: "test2",
         realm: "default",
-        metadata: {}
+        claims: {}
     },
 ]);
 currentIdentity = (await whoami()).identity;
@@ -357,7 +357,7 @@ expectEquals(currentIdentity, {
     loginIDKey: "username",
     loginID: "test2",
     realm: "default",
-    metadata: {}
+    claims: {}
 });
 
 ```
