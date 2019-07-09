@@ -29,7 +29,7 @@ standards, we will instead use a simpler term 'Identity' for public interfaces.
 
 ## Re-authentication for Security
 Many principal manipulation operations are critical for security:
-- Add/remove login ID
+- Add/remove/replace login ID
 - Link/unlink SSO provider
 - Change password
 
@@ -45,7 +45,7 @@ Developer can turn off the re-auth requirement in configuration. However,
 developer should understand the potential security risk.
 
 > Related config: `reauthForSecurity` and `reauthIntervalSeconds`
-> Related API: `changePassword` function
+> Related API: `changePassword`, `addLoginID`, `removeLoginID`, `replaceLoginID` function
 
 ## Current Principal
 We need to provide a way for developer to get the principal is associated with
@@ -79,7 +79,7 @@ that create principals should have common behaviors:
 - Should respect re-authentication configuration
 
 When signup as with multiple login IDs, the first login ID will be used as
-current identity in the newly created session.
+current principal in the newly created session.
 
 > Related API: `addLoginID` function for password identity provider
 
