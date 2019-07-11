@@ -63,14 +63,14 @@ async function changePassword(newPassword: string, oldPassword?: string): Promis
 
 
 ## Configuration
-`disableReauthForSecurity` (boolean; default `false`):
+`reauthentication.disabled` (boolean; default `false`):
 Require re-authentication (i.e. access token must be issued recently) for
 security-critical operations:
 - add/remove login ID
 - link/unlink SSO provider (except auto-link when logging in with OAuth)
 - change password (if old password is not provided)
 
-`reauthIntervalSeconds` (integer; default 300, i.e. 5 minutes):
+`reauthentication.interval` (integer; default 300, i.e. 5 minutes):
 The period after the access token is issued, that is considered authenticated
 for security-critical operations.
 
@@ -130,13 +130,13 @@ expectEquals(identities, [
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
+        rawProfile: {
+            id: "9999999999999999",
+            email: "test@example.com",
+            contact_phone: "+85299999999",
+            gender: "male",
+        },
         claims: {
-            raw_profile: {
-                id: "9999999999999999",
-                email: "test@example.com",
-                contact_phone: "+85299999999",
-                gender: "male",
-            },
             email: "test@example.com",
             phone: "+85299999999",
         },
@@ -258,13 +258,13 @@ expectEquals(identities, [
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
+        rawProfile: {
+            id: "9999999999999999",
+            email: "test@example.com",
+            contact_phone: "+85299999999",
+            gender: "male",
+        },
         claims: {
-            raw_profile: {
-                id: "9999999999999999",
-                email: "test@example.com",
-                contact_phone: "+85299999999",
-                gender: "male",
-            },
             email: "test@example.com",
             phone: "+85299999999",
         },
@@ -285,13 +285,13 @@ expectEquals(identities, [
         type: "oauth",
         providerID: "some-site",
         providerUserID: "9999999999999999",
+        rawProfile: {
+            id: "9999999999999999",
+            email: "test@example.com",
+            contact_phone: "+85299999999",
+            gender: "male",
+        },
         claims: {
-            raw_profile: {
-                id: "9999999999999999",
-                email: "test@example.com",
-                contact_phone: "+85299999999",
-                gender: "male",
-            },
             email: "test@example.com",
             phone: "+85299999999",
         },
