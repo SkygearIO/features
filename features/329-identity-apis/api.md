@@ -11,8 +11,6 @@ interface User {
     isVerified: boolean;
     isDisabled: boolean;
     metadata: Metadata;
-
-    identity: Identity;
 }
 
 interface PasswordIdentity {
@@ -59,6 +57,19 @@ async function updateLoginID(oldLoginID: string, newLoginID: { [key: string]: st
 
 async function changePassword(newPassword: string, oldPassword?: string): Promise<User>;
 
+class AuthContainer {
+    // NOTE:
+    // Access token should be persist more securely than common auth data.
+    // Access token is separated from user object, so developer can save user to
+    // app state storage (e.g. redux store) directly.
+    get currentAccessToken(): string;
+    // NOTE:
+    // this field is not contained in user object to be consistent with access
+    // token: user has many identity, identity has many session. Only top-level
+    // entity (i.e. user) would be returned from APIs.
+    get currentIdentity(): Identity;
+}
+
 ```
 
 
@@ -82,8 +93,8 @@ Allow updating login ID in change username use case.
 
 ### Get current identity
 ```typescript
-const currentIdentity = (await whoami()).identity;
-expectEquals(currentIdentity, {
+await whoami();
+expectEquals(auth.currentIdentity, {
     id: "1431CB1E-8A2F-4A44-874E-70C3DB3EE043",
     type: "password",
     loginIDKey: "username",
@@ -217,8 +228,8 @@ expectEquals(identities, [
         }
     },
 ]);
-const currentIdentity = (await whoami()).identity;
-expectEquals(currentIdentity, {
+await whoami();
+expectEquals(auth.currentIdentity, {
     id: "B9FA2617-6023-4A11-8021-5180AFF40A04",
     type: "password",
     loginIDKey: "email",
@@ -326,8 +337,8 @@ expectEquals(identities, [
         claims: {}
     },
 ]);
-currentIdentity = (await whoami()).identity;
-expectEquals(currentIdentity, {
+await whoami();
+expectEquals(auth.currentIdentity, {
     id: "1431CB1E-8A2F-4A44-874E-70C3DB3EE043",
     type: "password",
     loginIDKey: "username",
@@ -350,8 +361,8 @@ expectEquals(identities, [
         claims: {}
     },
 ]);
-currentIdentity = (await whoami()).identity;
-expectEquals(currentIdentity, {
+await whoami();
+expectEquals(auth.currentIdentity, {
     id: "A73DEA08-DF98-45F3-A780-B238E64FD583",
     type: "password",
     loginIDKey: "username",

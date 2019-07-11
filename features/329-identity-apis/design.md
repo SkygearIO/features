@@ -55,7 +55,7 @@ When logging in using a identity, the ID of the identity (i.e. the current
 identity) would be embedded in the access token along with the user ID.
 Information about the current identity would be returned in user object.
 
-> Related API: `identity` field in `User` object
+> Related API: `identity` field in auth container
 
 ## Listing Identity
 We need to provide a way for developer to get a list of identitys belonged to
