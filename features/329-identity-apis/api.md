@@ -62,12 +62,12 @@ class AuthContainer {
     // Access token should be persist more securely than common auth data.
     // Access token is separated from user object, so developer can save user to
     // app state storage (e.g. redux store) directly.
-    get currentAccessToken(): string;
+    get currentAccessToken(): string | null;
     // NOTE:
     // this field is not contained in user object to be consistent with access
     // token: user has many identity, identity has many session. Only top-level
     // entity (i.e. user) would be returned from APIs.
-    get currentIdentity(): Identity;
+    get currentIdentity(): Identity | null;
 }
 
 ```
