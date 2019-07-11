@@ -33,7 +33,7 @@ Many identity manipulation operations are critical for security:
 - Change password
 
 By default, user are required to re-authenticate before performing these
-operations. This is achieve by checking the issue time of the access token is
+operations. This is achieved by checking the issue time of the access token is
 recent.
 
 For change password, we support the common case of providing old password to
@@ -43,7 +43,7 @@ Both the re-auth requirement and time to considered 'recent' can be configured.
 Developer can turn off the re-auth requirement in configuration. However,
 developer should understand the potential security risk.
 
-> Related config: `disableReauthForSecurity` and `reauthIntervalSeconds`
+> Related config: `reauthentication`
 
 ## Current Identity
 We need to provide a way for developer to get the identity is associated with
@@ -63,7 +63,7 @@ the user:
 - What login IDs the user has?
 - Which OAuth providers had the user linked?
 
-A list of identitys belonged to current user would be returned through an API.
+A list of identities of the user would be returned through an API.
 
 > Related API: `listIdentities` function
 
@@ -82,7 +82,7 @@ current identity in the newly created session.
 > Related API: `addLoginID` function, `linkOAuthProviderWithPopup/Redirect` function (#332)
 
 ## Deleting Identity
-We need to provide a way for developer to delete new identity for the user:
+We need to provide a way for developer to delete existing identity for the user:
 - Remove login ID
 - Unlink OAuth account
 
