@@ -43,7 +43,7 @@ Both the re-auth requirement and time to considered 'recent' can be configured.
 Developer can turn off the re-auth requirement in configuration. However,
 developer should understand the potential security risk.
 
-> Related config: `reauthForSecurity` and `reauthIntervalSeconds`
+> Related config: `disableReauthForSecurity` and `reauthIntervalSeconds`
 
 ## Current Identity
 We need to provide a way for developer to get the identity is associated with
