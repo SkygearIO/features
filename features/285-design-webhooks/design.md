@@ -1,129 +1,248 @@
-# next webhooks design
+# Background
 
-## Overview
+Web-hooks would be used to notify external services of events in auth gear.
 
-skygear sends webhooks for events that happen in your app, and are designed to help a developer to monitor events, sync database, and many other use cases.
 
-When one of events is triggered, skygear sends a HTTP POST with a payload to the webhook's configured URL.
+# Proposed Designs
 
-## SYNC and ASYNC hooks
+## Events
+Web-hook events are triggered when some mutating operation is performed by
+auth gear.
 
-There are two types of webhook:
+Each operation will trigger two events: BEFORE and AFTER:
+- BEFORE events would be triggered before the operation is performed; the
+  operation can be failed by web-hook handler.
+- AFTER events would be trigger after the operation is performed.
 
-- `SYNC` - gear's operation will be blocked until a response is received. Gear should respect `SYNC` hook's response, if it indicates failed, operation should abort and return a formatted error response to the client.
-- `ASYNC` - gear's operation won't be blocked and the response from the webhook is ignored.
+Both events has the same event payload.
 
-## Request Headers
 
-Following headers will be added to webhook POST request:
+## Delivery
 
-- `X-Skygear-Webhook-Req-ID`: an ID of the request.
-- `X-Skygear-Webhook-Async`: if is a `async` hook, then the value is `TRUE` otherwise is `FALSE`. 
-- `X-Skygear-Webhook-Signature`: a signature string of the webhook event, a develop should can verify the request by skygear's SDK or manually.
+The events would be delivered to web-hook handlers as an HTTP POST request to
+the handler endpoint.
 
-## Request Payload
+The handler endpoint can be specified as full URL or an absolute path. Absolute
+paths will be resolved to full URL using an inferred URL scheme and authority:
+- from HTTP request URL if the event is generated from it; otherwise,
+- from the tenant configuration.
 
-Each event type has a payload which carries relevant information, and each payload data is defined by each gear.
+Each event type can have multiple handlers; the order of deliveries is
+unspecified.
 
-All event payloads follows following payload format:
+BEFORE events will always be delivered before AFTER events. BEFORE events will
+be delivered in well-defined order during a request. AFTER events will be
+delivered in unspecified order.
 
-```json=
+Web-hook handler must be idempotent.
+
+Web-hook handler must return a status code within the 2XX range. Responding with
+status code outside the range, including 3XX & 5XX, would be considered a
+failed delivery.
+
+The time spent in a delivery must not exceed 5 seconds, otherwise would be
+considered a failed delivery.
+
+### BEFORE Events
+
+BEFORE events would be delivered to web-hook handlers synchronously.
+
+Web-hook handler should respond with a JSON-formatted body to indicated whether
+the operation should be failed, for example:
+```json
+// Allowed
 {
-    "event": "event_name",
+    "is_allowed": true
+}
+
+// Disallowed
+{
+    "is_allowed": false,
+    "reason": "the metadata does not match the required format.",
     "data": {
-        "key_name_1": "event_data_key_value",
-        "key_name_2": "event_data_key_value",
-        ...,
-    },
-    "context": {
-        "user": <current user object>,
-        "req": {
-            "path": "request_path",
-            "body": <original_request_body>,
-            "id": "request_id"
+        "email": "invalid email format"
+    }
+}
+```
+If the operation is disallowed, a non-empty reason must be provided. Optional
+additional information can be included. If any of the delievery responses
+disallowed the operation, the operation is considered as failed, with the
+disallowing reasons and additional information as part of the error. For example:
+```json
+{
+    "error": {
+        "name": "WebHookError",
+        "code": 10000,
+        "message": "Operation is disallowed by web-hook",
+        "info": {
+            "errors": [
+                {
+                    "reason": "the metadata does not match the required format.",
+                    "data": {
+                        "email": "invalid email format"
+                    }
+                }
+            ]
         }
     }
 }
 ```
 
-Note that, `context` is above format is still under discussion.
+The total time spent in all deliveries of the event must not exceed 10 seconds,
+otherwise the operation would be considered failed.
 
-## Responding to a webhook
+All failed deliveries are marked as permanently failed and will not be retried.
 
-To acknowledge receipt of a webhook, webhook endpoint should return a 2xx HTTP status code. All response codes outside this range, including 3xx codes, will indicate to skygear the request is failed.
+The operation is considered as failed if any of the deliveries failed. A failed
+operation would not trigger AFTER events.
 
-For some events, it may allow to webhook to modify changes (e.x. auth gear's before family hooks) when response code is 2xx. The behavior is defined by each gear, so will not be covered in this spec. Missing field in the return object means unmodified, so empty body is accepted. Another thing is gear will validate return object, if validation failed, gear should return an error to SDK.
+### AFTER Events
 
-Take auth gear as an example, its before family hooks accept that a hook returns a user object to modify current user object.
+AFTER events would be delivered to web-hook handlers asynchronously after the
+operation is performed (i.e. commited into database).
 
-```javascript=
-var express = require('express');
-var bodyParser = require('body-parser');
+All AFTER events, regardless whether handler is present, are presisted into
+database, with minimum retention period of 30 days.
 
-var app = express();
+The response body of web-hook handler is ignored.
 
-app.use(bodyParser.json());
+If any delivery failed, all deliveries will be retried after some time,
+regardless whether some deliveries may succeed. The retry will be performed
+with a variant of exponential back-off algorithm. If `Retry-After` HTTP header
+is present in the response, the delivery will not be retried before the
+specified time.
 
-app.post('/before_signup', function(req, res){
-    var user = req.body.data.user;
+If the delivery continue to fail after 3 days from the time of first attempted
+delivery, the event is marked as permanently failed and will not be retried
+automatically.
 
-    user.metadata.loveCat = true;
 
-    res.status(200);
-    res.send(user);
-});
+## Event Management
+
+### Alerts
+If an event delivery is permanently failed, an ERROR level log entry is
+generated to notify developers.
+
+### Past Events
+An API is provided to list past events. This API can be used to reconcile
+self-managed database with the failed events.
+
+> NOTE: BEFORE events are not persisted, regardless of success/failure.
+
+### Manual Re-delivery
+Developer can manually trigger a re-delivery of failed event, bypassing the
+retry interval limit.
+
+> NOTE: BEFORE events cannot be re-delivered.
+
+
+## Security
+
+Web-hook delivery process can be modeled as following:
+```
+ Int. Net. ┊    Internet    ┊      Internal Network
+           ┊                ┊
+ Auth Gear─┊─────┬──────────┊>Gateway────────────>Internal Handler
+           ┊     │          └┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
+           ┊     └───────────>External Handler
 ```
 
-If webhook wants to include additional information for an error case, it could return with payload:
+Considering the authenticity, integrity and confidentiality of the process:
 
-| key | description | require |
-| -------- | -------- | -------- | 
-| `error` | [string] An error message. | ✓ |
-| `code` | [number] An error code. |  |
+We assume `Gateway -> Internal Handler` data-path is secure with respect to
+the mentioned 3 properties; the admins of internal network (e.g. cluster admin)
+is responsible for its security.
 
-example:
+To protect the data-paths `Auth Gear -> Gateway` and
+`Auth Gear -> External Handler`, we provide some security measures:
+- Require HTTPS: ensure integrity and confidentiality of the delivery
+- Signed Request: ensure authenticity of the delivery
 
-```
-{
-    "code": 1001,
-    "message": "EVERYONE LOVES CAT!"
-}
-```
+### HTTPS
 
-## Configure webhook
+We require all external web-hook handler HTTP endpoint to use HTTPS.
 
-webhook deploy mechanism will be covered in spec, please refer next cli design for more information. Followings are some variables that are configurable when deploying a webhook.
+For internal handlers, network admin is responsible to ensure the request URL
+passed to auth gear is secure.
 
-| argument | description | require |
-| -------- | -------- | -------- | 
-| `events` | A list of gear events, such as: ["after_signup", "before_login"]. | ✓ |
-| `url` | The url of the webhook. | ✓ |
-| `async` | default is `true`. | |
-| `secret` | default is empty, if provided, it will be used as the key to generate `X-Skygear-Webhook-Signature` digest. | |
-| `timeout` | - default value of sync hook is 5 seconds, it allows to be configured up to 10 seconds.<br/>- default value of async hook is 60 seconds and up to 300 seconds.  | |
+### Signature
 
-## versioning
+Each web-hook event request is signed with a secret key shared between auth
+gear and web-hook handler. Developer must validate the signature and reject
+requests with invalid signature to ensure the request is originated from auth
+gear.
 
-Like skygear cloud functions, webhooks should be consider as a "moving part". So no mattter a user deploy webhooks by `skycli` or gear REST interface, a new app version should be created as well. Note that, a new app version and a new unit version will be generated when deploy by REST interface every time.
+For the detail on signature generation and validation, refer to #300.
 
-## Verify Request
+> For advanced end-to-end security scenario, some network admin may wish to
+> use mTLS for authentication. We do not support this at the moment.
 
-When `secret` of a webhook is not empty, `X-Skygear-Webhook-Signature` will be added to request headers, it is the HMAC hex digest of the POST request payload. The digest is generated using the sha256 hash function and the hook `secret` as the key.
 
-## Timeout
+# Considerations
 
-A `SYNC` hook is considered failed if it can't response within 5 seconds, where the value of timeout is configurable of each hook (up to 10 seconds).
+### Recursive Web-hooks
 
-For `ASYNC` hook, it is considered failed if it can't return within 60 seconds, where the value can be configured up to 300 seconds.
+A ill-designed web-hook handlers may be called recursively. For example,
+updating user metadata when handling `after_user_metadata_update` event.
 
-## Retry mechanism
+Developer is responsible to ensure:
+- web-hook handlers would not be called recursively; or
+- recursive web-hook handlers have well-defined termination condition.
 
-If a `SYNC` hook got
+### Delivery Reliablity
 
-- 503 Services Unavailable
-- 429 Too Many Requests
+The main purpose of web-hook in auth gear is to allowing external services
+observe state changes in auth gear.
 
-The hook will wait certain amount of time, and retry again.
- 
-- When `Retry-After` header is presented, and the delay seconds is less than 30 seconds, the hook will respect the value and retry once.
-- Or, the hook will retry after 5 seconds, at most 3 times.
+Therefore, AFTER events should be persistent, immutable, and delivered reliably;
+otherwise, external services may observe inconsistent changes.
+
+It is not recommended to perform side-effect in BEFORE event handlers;
+otherwise, developer need to consider how to compensate for the side-effect for
+possibility of operation failure.
+In general, use cases that require BEFORE events may instead consider:
+- use authorization policy to allow/deny request (TBD)
+- wrap auth gear functions to validate requests
+
+### Eventual Consistency
+
+Fundamentally, auth gear with web-hooks is a distributed system.
+When web-hook handlers have side-effects, we need to choose between guaranteeing
+consistency or availability of the system.
+
+We decided to ensure the availability of the system. To maintain consistency,
+eventual consistency should be considered in system design.
+
+Developer should regular check the past event list for unprocessed events to
+ensure system consistency.
+
+> We considered ensuring the consistency of the system through distributed
+> transaction protocols (e.g. two-phase commit). However, its implementation
+> requires much effort from both auth gear and web-hook handlers, and introduce
+> a single point of failure (coordinator). We decided on availability instead.
+
+### Event Timing
+There are four possible delivery timing of events: sync BEFORE, async BEFORE,
+sync AFTER, async AFTER.
+
+Async BEFORE is mostly useless: the request may not be successful, and handler
+cannot affect the operation. Therefore, we do not offer async BEFORE events.
+
+Sync AFTER cannot be used safely:
+- If it is not within the operation transaction, async AFTER can be used instead.
+- If it is within the operation transaction,
+  then the transaction should rollback on web-hook delivery failure,
+  otherwise async AFTER can be used instead. So:
+    - If the handler has no side-effect, sync BEFORE can be used instead
+      (e.g. custom validation)
+    - If the handler has side-effect, it is subject to distributed transaction
+      problem. We use eventual consistency so async AFTER should be used.
+
+Therefore, we do not offer sync AFTER events.
+
+# Appendix
+
+## [Web-hook Event Details](./events.md)
+## [Web-hook Configuration](./config.md)
+## [Web-hook Management API](./api.md)
+## [Web-hook Use Cases](./use-cases.md)
