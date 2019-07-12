@@ -95,3 +95,17 @@ it means end-user intentionally double-submit the form attempting to bypass
 constraints. Developer can resolve the conflict by:
 - disabling the user that failed to save profile and notify admin to investigate; or
 - requiring the user that failed to save to fill in sign up form again.
+
+
+## Ensuring Consistency
+
+Due to web-hook latency, user may call an API that depends on data not yet
+populate by web-hook handlers (e.g. profile not yet created after signing up).
+When application detected inconsistency, application should handle it gracefully:
+
+- reject request that depends on inconsistent state, user can retry after
+  state converged to consistency; or
+- attempt to restore consistency immediately, e.g. create profile immediately if
+  no profile is found.
+
+Developer should consider which approach suit their application best.
