@@ -182,7 +182,7 @@ For the detail on signature generation and validation, refer to #300.
 
 ### Recursive Web-hooks
 
-A ill-designed web-hook handlers may be called recursively. For example,
+A ill-designed web-hook handler may be called recursively. For example,
 updating user metadata when handling `after_user_metadata_update` event.
 
 Developer is responsible to ensure:
@@ -191,14 +191,14 @@ Developer is responsible to ensure:
 
 ### Delivery Reliablity
 
-The main purpose of web-hook in auth gear is to allowing external services
+The main purpose of web-hook in auth gear is to allow external services to
 observe state changes in auth gear.
 
 Therefore, AFTER events should be persistent, immutable, and delivered reliably;
 otherwise, external services may observe inconsistent changes.
 
 It is not recommended to perform side-effect in BEFORE event handlers;
-otherwise, developer need to consider how to compensate for the side-effect for
+otherwise, developer should consider how to compensate for the side-effect for
 possibility of operation failure.
 In general, use cases that require BEFORE events may instead consider:
 - use authorization policy to allow/deny request (TBD)
@@ -211,7 +211,7 @@ When web-hook handlers have side-effects, we need to choose between guaranteeing
 consistency or availability of the system.
 
 We decided to ensure the availability of the system. To maintain consistency,
-eventual consistency should be considered in system design.
+developer should take eventual consistency into account when designing system.
 
 Developer should regular check the past event list for unprocessed events to
 ensure system consistency.
