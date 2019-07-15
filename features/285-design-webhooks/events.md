@@ -3,11 +3,11 @@
 All web-hook events have the same format:
 ```json
 {
+    "version": 1,
     "id": "0E1E9537-DF4F-4AF6-8B48-3DB4574D4F24",
     "seq": 435,
     "type": "after_user_create",
     "payload": {
-        "version": 1
         // ...
     },
     "context": {
@@ -21,16 +21,16 @@ All web-hook events have the same format:
 - `type`: the type of the web-hook event.
 - `payload`: the payload of the web-hook; it is specific to each event type.
 - `context`: the context of the web-hook.
-- `version`: the version of the web-hook payload; it is specific to the event
+- `version`: the version of the web-hook event; it is specific to the event
              type.
 
 ## Versioning
-The content of top-level fields `type` and `context` are guaranteed to exist
+The content of top-level fields `type`, `id` and `seq` are guaranteed to exist
 and only backward-compatible changes would be made.
 
-The content of top-level field `payload` are specific to each event type.
 Field `version` in the payload would be updated when a backward incompatible
-change is made. Consumer should handle unknown version gracefully.
+change is made to `payload` or `context`. Consumer should handle unknown
+version gracefully.
 
 ## Context
 Each web-hook event would have a context, it contains the environmental
@@ -78,8 +78,8 @@ information about the event:
 ```
 
 - `is_user_creating`: Whether the identity is created as part of
-                    user creation process. If yes, associated user is not yet
-                    accessible from API in BEFORE event handler.
+                      user creation process. If yes, associated user is not yet
+                      accessible from API in BEFORE event handler.
 
 ### before_identity_delete, after_identity_delete
 ```json
@@ -97,9 +97,9 @@ information about the event:
 ```
 
 - `is_disabled`: The new disabled status
+- `user`: a snapshot of the user object before the operatoin
 
 **NOTE**
-- The fields in user object is a snapshot before the operation.
 - To handle initial status, use `before/after_user_create` instead.
 
 ### before_user_verified_status_update, after_user_verified_status_update
@@ -113,9 +113,9 @@ information about the event:
 
 - `is_verified`: The new verified status
 - `verify_info`: The new verify info
+- `user`: a snapshot of the user object before the operatoin
 
 **NOTE**
-- The fields in user object is a snapshot before the operation.
 - To handle initial status, use `before/after_user_create` instead.
 
 ### before_user_metadata_update, after_user_metadata_update
@@ -126,10 +126,10 @@ information about the event:
 }
 ```
 
-`metadata`: The new user metadata
+- `metadata`: The new user metadata
+- `user`: a snapshot of the user object before the operatoin
 
 **NOTE**
-- The fields in user object is a snapshot before the operation.
 - To handle metadata creation, use `before/after_user_create` instead.
 
 
