@@ -11,10 +11,11 @@ auth gear.
 
 Each operation will trigger two events: BEFORE and AFTER:
 - BEFORE events would be triggered before the operation is performed; the
-  operation can be failed by web-hook handler.
+  operation can be aborted by web-hook handler.
 - AFTER events would be trigger after the operation is performed.
 
-Both events has the same event payload.
+Both events has the same event payload. Web-hook event handlers cannot modify
+the payload.
 
 
 ## Delivery
@@ -91,7 +92,8 @@ disallowing reasons and additional information as part of the error. For example
 The total time spent in all deliveries of the event must not exceed 10 seconds,
 otherwise the operation would be considered failed.
 
-All failed deliveries are marked as permanently failed and will not be retried.
+BEFORE events would not be persisted and their failed deliveries would not be
+retried.
 
 The operation is considered as failed if any of the deliveries failed. A failed
 operation would not trigger AFTER events.
