@@ -3,7 +3,7 @@
 These API are intended to be consumed at server-side (e.g. in a cron job), no
 client SDK API is provided.
 
-## GET /_auth/events
+## GET /{gear}/events
 
 This API returns a list of past events. This is a privileged operation; user
 must be authenticated using master key.
@@ -14,6 +14,9 @@ Query parameters:
             If omitted, fetch oldest events.
 - `limit`: integer, optional, must be within range [1, 20];
            limit the number of events returned.
+- `status`: string, optional, comma-separated string of event statuses;
+            filter the returned events by the statuses.
+            If multiple values exists, they're combined together.
 
 Response:
 ```json
@@ -38,7 +41,7 @@ Response:
     - `success`: the event is delivered successfully
 
 
-## POST /_auth/events/{event_id}/retry
+## POST /{gear}/events/{event_id}/retry
 
 This API retries the delivery of specified event. This is a privileged
 operation; user must be authenticated using master key.
