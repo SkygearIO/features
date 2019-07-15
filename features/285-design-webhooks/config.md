@@ -4,11 +4,12 @@
 In `skygear.yaml`:
 ```yaml
 hooks:
-    before_signup:
-        - "https://www.mydomain.com/api/hooks/before_signup"
-        - /profile/before_signup
-    after_signup:
-        - /profile/after_signup
+    - event: before_signup
+      url: "https://www.mydomain.com/api/hooks/before_signup"
+    - event: before_signup
+      url: /profile/before_signup
+    - event: after_signup
+      url: /profile/after_signup
 ```
 
 In user configuration:
@@ -18,9 +19,10 @@ hook_secret: 7pWyqCcfsNnDr5trKt7bJhLZL
 ```
 
 ## skygear.yaml
-The top-level key `hooks` is a map, where the keys are web-hook event names.
-The value of map is a list of strings, where each string describe the web-hook
-handler endpoint.
+The top-level key `hooks` is a list of web-hook handler definition.
+Each web-hook handler definition describe the handler:
+- `event`: the event that the handler handles
+- `url`: the handler HTTP endpoint
 
 If the web-hook handler endpoint is a full URL, it must use HTTPS scheme.
 Otherwise, the configuration will be failed to validate.
