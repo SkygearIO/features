@@ -36,7 +36,7 @@ Developer may require user to present an invitation code before signing up:
 ### Suggested Solution
 
 We use pessimistic concurrency control to ensure no user can signup without a
-valid invitation code:
+valid invitation code under normal situation:
 
 - Invitation code consumptions are stored in database:
     - (invitation code ID, expiry time, consumed user ID)
@@ -56,7 +56,15 @@ valid invitation code:
   invitation token should be reused in subsequent signup request until
   its expiry.
 - In `after_user_create` event handler:
+    - Check if referenced consumption record is expired: if it is expired,
+      there's an anomaly in the delivery of events and it must be resolved.
     - Clear the expiry time and set consumed user ID in referenced consumption record.
+
+If an anomaly occured:
+- Renewing the record would not exceed the consumption limit: possible to
+  resolve it automatically by renewing the record as valid.
+- Renewing the record would exceed the consumption limit: disable the user
+  and notify developer to resolve it manually.
 
 
 ### Naive Approaches
