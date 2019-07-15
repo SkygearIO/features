@@ -210,7 +210,7 @@ In general, use cases that require BEFORE events may instead consider:
 
 Fundamentally, auth gear with web-hooks is a distributed system.
 When web-hook handlers have side-effects, we need to choose between guaranteeing
-consistency or availability of the system.
+consistency or availability of the system (see appendix: CAP theorem).
 
 We decided to ensure the availability of the system. To maintain consistency,
 developer should take eventual consistency into account when designing system.
@@ -248,3 +248,16 @@ Therefore, we do not offer sync AFTER events.
 ## [Web-hook Configuration](./config.md)
 ## [Web-hook Management API](./api.md)
 ## [Web-hook Use Cases](./use-cases.md)
+
+## CAP Theorem
+
+To simplify, the CAP theorem state that, a distributed data store can satify
+only two of the three properties simultaneously:
+- Consistency
+- Availability
+- Network Partition Tolerance
+
+Since network partition cannot be avoided practically, distributed system would
+need to choose between consistency and availabilty. Most microservice
+architecture prefer availabilty over strong consistency, and instead application
+state is eventually consistent.
