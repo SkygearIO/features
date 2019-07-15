@@ -38,34 +38,139 @@ Developer may require user to present an invitation code before signing up:
 We use pessimistic concurrency control to ensure no user can signup without a
 valid invitation code under normal situation:
 
-- Invitation code consumptions are stored in database:
-    - (invitation code ID, expiry time, consumed user ID)
-    - If consumed user ID is present, expiry time is ignored and will not expire.
-    - If record is expired, the record should be ignored.
-- Pass invitation code and intended login ID to a developer-created 'claim code' endpoint,
-  in exchange for a invitation token:
-    - Create a code consumption record with a short expiry time (e.g. 1 min).
-    - Reject if the code consumption limit would be exceed (ignoring expired records).
-    - Return a JWT referencing the consumption record and intended login ID.
-- Pass invitation token in user metadata of signup request.
-- In `before_user_create` event handler:
-    - Check the invitation token is valid, not expired, and matches the intended login ID.
-    - Check the referenced consumption record is not consumed.
-    - Disallow the operation if any of the 2 conditions failed.
-- If signup failed due to other validation (e.g. duplicated login ID),
-  invitation token should be reused in subsequent signup request until
-  its expiry.
-- In `after_user_create` event handler:
-    - Check if referenced consumption record is expired: if it is expired,
-      there's an anomaly in the delivery of events and it must be resolved.
-    - Clear the expiry time and set consumed user ID in referenced consumption record.
+```typescript
+declare function cryptoSecureRandomString(): string;
 
-If an anomaly occured:
-- Renewing the record would not exceed the consumption limit: possible to
-  resolve it automatically by renewing the record as valid.
-- Renewing the record would exceed the consumption limit: disable the user
-  and notify developer to resolve it manually.
+// simplified auth functions
 
+interface User {
+    id: string;
+    metadata: any;
+}
+
+interface Identity {
+    id: string;
+    loginIDKey: string;
+    loginID: string;
+}
+
+declare function disableUser(id: string): Promise<void>;
+declare function deleteLoginID(loginID: string): Promise<void>;
+declare function signupWithEmail(loginID: { [key: string]: string }, password: string): Promise<User>;
+
+// DB entities
+interface InvitationCode {
+    id: string;
+    code: string;
+    consumptionLimit: number;
+}
+
+interface InvitationCodeConsumption {
+    token: string;
+    codeID: string;
+    expiry: Date;
+    consumedUserID: string | null;
+}
+
+declare function getInvitationCodeByCode(code: string): Promise<InvitationCode | null>;
+declare function getInvitationCodeByID(id: string): Promise<InvitationCode | null>;
+declare function getInvitationCodeConsumptionByToken(token: string): Promise<InvitationCodeConsumption | null>;
+declare function getInvitationCodeConsumptionsByCodeID(codeID: string): Promise<InvitationCodeConsumption[]>;
+declare function saveInvitationCodeConsumption(consumption: InvitationCodeConsumption): Promise<void>;
+
+function isConsumptionValid(consumption: InvitationCodeConsumption): boolean {
+    // a consumption record associated with a user never expires
+    if (consumption.consumedUserID !== null) {
+        return true
+    }
+    return consumption.expiry < new Date()
+}
+
+// expiry of the lock on invitation code
+const LockExpiryMS: number = 1000 * 60
+// invitation token is included in login IDs: prevent multiple use of same token
+const InvitationTokenLoginIDKey = "invitation_token";
+
+interface ConsumptionToken {
+    value: string;
+    expiry: Date;
+}
+
+// Claim invitation code API: client should call this to attempt to claim a invitation code
+async function claimInvitationCode(code: string): Promise<ConsumptionToken> {
+    const invitationCode = await getInvitationCodeByCode(code);
+    if (!invitationCode) {
+        throw new Error("invitation code is invalid");
+    }
+
+    const consumption: InvitationCodeConsumption = {
+        token: cryptoSecureRandomString(),
+        codeID: invitationCode.id,
+        expiry: new Date(Date.now() + LockExpiryMS),
+        consumedUserID: null,
+    };
+    await saveInvitationCodeConsumption(consumption);
+
+    const consumptions = await getInvitationCodeConsumptionsByCodeID(invitationCode.id);
+    if (consumptions.filter(isConsumptionValid).length > invitationCode.consumptionLimit) {
+        throw new Error("invitation code reached consumption limit");
+    }
+
+    return {
+        value: consumption.token,
+        expiry: consumption.expiry
+    };
+}
+
+// before_user_create handler
+async function beforeUserCreate(user: User, identities: Identity[]): Promise<void> {
+    const invitation = identities.find(identity => identity.loginIDKey === InvitationTokenLoginIDKey);
+    if (!invitation) {
+        throw new Error("invitation token is invalid");
+    }
+
+    const token = invitation.loginID;
+    const consumption = await getInvitationCodeConsumptionByToken(token);
+    if (!consumption || consumption.expiry > new Date()) {
+        throw new Error("invitation token is invalid");
+    }
+}
+
+// after_user_create handler
+async function afterUserCreate(user: User, identities: Identity[]): Promise<void> {
+    const invitation = identities.find(identity => identity.loginIDKey === InvitationTokenLoginIDKey)!;
+
+    const token = invitation.loginID;
+    const consumption = await getInvitationCodeConsumptionByToken(token);
+    consumption.consumedUserID = user.id;
+    await saveInvitationCodeConsumption(consumption);
+
+    const code = await getInvitationCodeByID(consumption.codeID);
+    const consumptions = await getInvitationCodeConsumptionsByCodeID(consumption.codeID);
+    if (consumptions.filter(isConsumptionValid).length > code.consumptionLimit) {
+        // consumption limit exceed, even with validation: anomaly occured.
+        // likely the event delivery is delayed
+        // disable the user and notify the admin to investigate
+        await disableUser(user.id);
+        return;
+    }
+
+    await deleteLoginID(invitation.loginID);
+}
+
+// client-side signup logic
+let invitationToken: string | null;
+let invitationTokenExpiry: Date | null;
+async function signup(email: string, password: string, invitationCode: string): Promise<User> {
+    // reuse token if previous-signup failed
+    if (!invitationToken || invitationTokenExpiry > new Date()) {
+        const token = await claimInvitationCode(invitationCode);
+        invitationToken = token.value;
+        invitationTokenExpiry = token.expiry
+    }
+    return await signupWithEmail({ email, [InvitationTokenLoginIDKey]: invitationToken }, password);
+}
+```
 
 ### Naive Approaches
 - Pass invitation code instead of invitation token in signup request, and create
@@ -73,7 +178,7 @@ If an anomaly occured:
     - Problem: If the signup failed, user cannot reuse the code until the
                tempoarary consumption record expired.
 
-- Do not save/check the intended login ID.  
+- Do not save/check the token in login IDs.  
     - Problem: Malicious user may create many users using same invitation token.
 
 
@@ -90,19 +195,80 @@ Developer may use the same approach as invitation codes. However, if having
 users without profile is an acceptable risk, optimistic concurrency control
 can be used instead to simplify logic:
 
-- Pass signup form in user metadata of signup request.
-- In `before_user_create` event handler:
-    - Validate the form is valid, otherwise disallow the operation.
-- In `after_user_create` event handler:
-    - Save the form in self-managed database
-    - If the save failed, it means a concurrency conflict occured and
-      must be resolved.
+```typescript
+// simplified auth functions
 
-If a conflict occured (e.g. due to violated unique constraints), in most case
-it means end-user intentionally double-submit the form attempting to bypass
-constraints. Developer can resolve the conflict by:
-- disabling the user that failed to save profile and notify admin to investigate; or
-- requiring the user that failed to save to fill in sign up form again.
+interface User {
+    id: string;
+    metadata: any;
+}
+
+interface Identity {
+    id: string;
+    loginIDKey: string;
+    loginID: string;
+}
+
+declare function disableUser(id: string): Promise<void>;
+declare function signupWithEmail(loginID: { [key: string]: string }, password: string, metadata: any): Promise<User>;
+
+// DB entities
+interface Profile {
+    userID: string;
+    formData: any;
+}
+
+class ConstraintViolatedError extends Error { }
+
+declare function saveProfile(profile: Profile): Promise<void>;
+
+function validateForm(formData: any): boolean {
+    // TODO: validate signup form in data
+    return true;
+}
+
+// before_user_create handler
+async function beforeUserCreate(user: User, identities: Identity[]): Promise<void> {
+    if (!validateForm(user.metadata.form_data)) {
+        throw new Error("signup form is invalid");
+    }
+}
+
+// after_user_create handler
+async function afterUserCreate(user: User, identities: Identity[]): Promise<void> {
+    const profile: Profile = {
+        userID: user.id,
+        formData: user.metadata.form_data,
+    }
+
+    try {
+        await saveProfile(profile);
+    } catch (error) {
+        if (error instanceof ConstraintViolatedError) {
+            // concurrency conflict occured:
+            // some constraints in database is violated. (e.g. email uniqueness)
+            // most likely the end-user intentionally double-submit the form,
+            // attempting to bypass constaints.
+            // to resolve the conflict:
+
+            // approach 1: disable to user and notify admin
+            await disableUser(user.id);
+
+            // approach 2: require user to fill-in signup form again after logging in
+            profile.formData = null;
+            await saveProfile(profile);
+
+            return;
+        }
+        throw error;
+    }
+}
+
+// client-side signup logic
+async function signup(email: string, password: string, formData: any): Promise<User> {
+    return await signupWithEmail({ email }, password, { form_data: formData });
+}
+```
 
 
 ## Ensuring Consistency
