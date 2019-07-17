@@ -16,20 +16,21 @@ All web-hook events have the same format:
 }
 ```
 
-- `id`: the ID of the web-hook event.
-- `seq`: monotonic increasing event sequence number to establish event order.
-- `type`: the type of the web-hook event.
-- `payload`: the payload of the web-hook; it is specific to each event type.
-- `context`: the context of the web-hook.
-- `version`: the version of the web-hook event; it is specific to the event
-             type.
+- `version`: signed 32-bit integer, the version of the web-hook event; it is
+             specific to the event type.
+- `id`: string, ID of the web-hook event.
+- `seq`: signed 64-bit integer, monotonic increasing event sequence number to
+         establish event order.
+- `type`: string, the type of the web-hook event.
+- `payload`: object, the payload of the web-hook; it is specific to each event type.
+- `context`: object, the context of the web-hook.
 
 ## Versioning
-The content of top-level fields `type`, `id` and `seq` are guaranteed to exist
+The content of top-level fields `type`, `id` and are guaranteed to exist
 and only backward-compatible changes would be made.
 
 Field `version` in the payload would be updated when a backward incompatible
-change is made to `payload` or `context`. Consumer should handle unknown
+change is made to `payload`, `context` or `seq`. Consumer should handle unknown
 version gracefully.
 
 ## Context
