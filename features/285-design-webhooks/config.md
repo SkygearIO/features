@@ -36,3 +36,7 @@ To update hooks configuration, a new deployment would be created.
 The top-level key `hook_secret` is a string. This is the value of web-hook
 signature secret key shared among all web-hooks. If omitted, master key is used
 by default.
+
+## App Configuration
+The top-level key `sync_hook_timeout_second` is a integer. This is the timeout
+for synchronous web-hook handlers. If omitted, 5 seconds is used by default.
