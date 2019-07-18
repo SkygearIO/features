@@ -14,8 +14,7 @@ Each operation will trigger two events: BEFORE and AFTER:
   operation can be aborted by web-hook handler.
 - AFTER events would be trigger after the operation is performed.
 
-Both events has the same event payload. Web-hook event handlers cannot modify
-the payload.
+Both events has the same event payload.
 
 
 ## Delivery
@@ -29,7 +28,8 @@ paths will be resolved to full URL using an inferred URL scheme and authority:
 - from the tenant configuration.
 
 Each event type can have multiple handlers; the order of deliveries is
-unspecified.
+unspecified for AFTER events, and same order as in `skygear.yaml` for BEFORE
+events.
 
 BEFORE events will always be delivered before AFTER events. BEFORE events will
 be delivered in well-defined order during a request. AFTER events will be
@@ -46,7 +46,8 @@ considered a failed delivery.
 
 ### BEFORE Events
 
-BEFORE events would be delivered to web-hook handlers synchronously.
+BEFORE events would be delivered to web-hook handlers synchronously, right
+before committing the result of the operation into database.
 
 Web-hook handler should respond with a JSON-formatted body to indicated whether
 the operation should be failed, for example:
@@ -117,6 +118,37 @@ specified time.
 If the delivery continue to fail after 3 days from the time of first attempted
 delivery, the event is marked as permanently failed and will not be retried
 automatically.
+
+## Mutations
+
+Some BEFORE event types allow web-hook handler to request mutation on entities
+(e.g. user) before committing to database.
+
+Web-hook handler cannot request mutation if the operation is disallowed.
+Web-hook handler should indicate the mutations to perform through its response,
+for example:
+```json
+{
+    "is_allowed": true,
+    "mutations": {
+        "metadata": {
+            "username": "test"
+        },
+        "is_verified": false
+    }
+}
+```
+
+Each event type specifies possible mutation keys.
+- If a mutation key is absent: no mutation would be performed for that key.
+- If a mutation key is present: mutation would be performed based on the value.
+
+If an entity is mutated, subsequent events will used the mutated value.
+
+Developer is responsible for ensuring correct order of event delivery. For
+example, in most case, developer would like mutating event-handlers (e.g. 
+populating default value for some fields) before non-mutating event-handlers
+(e.g. validating field values).
 
 
 ## Event Management
@@ -243,6 +275,18 @@ Sync AFTER cannot be used safely:
 Therefore, we do not offer sync AFTER events.
 
 # Appendix
+
+## Overview of Request Lifecycle (including web-hooks)
+1. Receive request
+2. Decode & validate Request
+3. Begin transaction
+4. Perform operations
+5. Deliver BEFORE events to web-hook handlers
+6. If disallowed: rollback transaction & abort request
+7. If mutation requested: perform mutation
+8. Commit transaction
+9. Return response
+10. Deliver AFTER events to web-hook handlers
 
 ## [Web-hook Event Details](./events.md)
 ## [Web-hook Configuration](./config.md)

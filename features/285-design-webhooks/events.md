@@ -70,6 +70,12 @@ information about the event:
 }
 ```
 
+#### Mutations
+- `metadata`: initial value of user metadata
+- `verify_info`: initial verify info of user
+                 (`is_verified` flag is derived from `verify_info`)
+- `is_disabled`: initial disbled status of user
+
 ### before_identity_create, after_identity_create
 ```json
 {
@@ -125,6 +131,9 @@ information about the event:
 **NOTE**
 - To handle initial status, use `before/after_user_create` instead.
 
+#### Mutations
+- `is_disabled`: new disabled status of user
+
 ### before_user_verified_status_update, after_user_verified_status_update
 ```json
 {
@@ -141,6 +150,10 @@ information about the event:
 **NOTE**
 - To handle initial status, use `before/after_user_create` instead.
 
+#### Mutations
+- `verify_info`: new verify info of user
+                 (`is_verified` flag is derived from `verify_info`)
+
 ### before_user_metadata_update, after_user_metadata_update
 ```json
 {
@@ -154,6 +167,9 @@ information about the event:
 
 **NOTE**
 - To handle metadata creation, use `before/after_user_create` instead.
+
+#### Mutations
+- `metadata`: new value of user metadata
 
 ### before_password_update, after_password_update
 ```json
@@ -247,9 +263,21 @@ information about the event:
 4. Session token is generated and sent to database
 5. `before_user_create` event is triggered
 6. `before_identity_create` event is triggered
-6. `before_session_create` event is triggered
-7. Transaction commit
-8. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
+7. `before_session_create` event is triggered
+8. Transaction commit
+9. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
+
+### Signup with password (with metadata mutation)
+1. Transaction begin
+2. User object is generated and sent to database
+3. Identity objects are generated and sent to database
+4. Session token is generated and sent to database
+5. `before_user_create` event is triggered
+6. Mutation is requested: metadata of user is updated
+7. `before_identity_create` event is triggered
+8. `before_session_create` event is triggered
+9. Transaction commit
+10. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
 
 ### Signup with password (failed)
 1. Transaction begin
@@ -264,8 +292,8 @@ information about the event:
 3. Identity objects are generated and sent to database
 4. Session token is generated and sent to database
 5. `before_user_create` event is triggered
-7. DISALLOWED: "metadata does not contain user address"
-8. Transaction rollback
+6. DISALLOWED: "metadata does not contain user address"
+7. Transaction rollback
 
 ### Linking with OAuth accounts/Adding new login ID
 1. Transaction begin
@@ -292,7 +320,7 @@ information about the event:
 1. Transaction begin
 2. Old login ID is deleted from database
 3. New login ID is generated and sent to database
-5. `before_identity_delete` event is triggered
-4. `before_identity_create` event is triggered
+4. `before_identity_delete` event is triggered
+5. `before_identity_create` event is triggered
 6. Transaction commit
-8. `after_identity_delete` and `after_identity_create` event is triggered
+7. `after_identity_delete` and `after_identity_create` event is triggered
