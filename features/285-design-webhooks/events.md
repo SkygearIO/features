@@ -89,6 +89,28 @@ information about the event:
 }
 ```
 
+### before_session_create, after_session_create
+```json
+{
+    "reason": "signup",
+    "user": { /* a User object */ },
+    "identity": { /* an Identity object */ }
+}
+```
+
+- `reason`: The reason for the creation of session, can be `signup` or `login`
+
+### before_session_delete, after_session_delete
+```json
+{
+    "reason": "logout",
+    "user": { /* a User object */ },
+    "identity": { /* an Identity object */ }
+}
+```
+
+- `reason`: The reason for the deletion of session, can be `logout`
+
 ### before_user_disabled_status_update, after_user_disabled_status_update
 ```json
 {
@@ -98,7 +120,7 @@ information about the event:
 ```
 
 - `is_disabled`: The new disabled status
-- `user`: a snapshot of the user object before the operatoin
+- `user`: a snapshot of the user object before the operation
 
 **NOTE**
 - To handle initial status, use `before/after_user_create` instead.
@@ -114,7 +136,7 @@ information about the event:
 
 - `is_verified`: The new verified status
 - `verify_info`: The new verify info
-- `user`: a snapshot of the user object before the operatoin
+- `user`: a snapshot of the user object before the operation
 
 **NOTE**
 - To handle initial status, use `before/after_user_create` instead.
@@ -128,10 +150,25 @@ information about the event:
 ```
 
 - `metadata`: The new user metadata
-- `user`: a snapshot of the user object before the operatoin
+- `user`: a snapshot of the user object before the operation
 
 **NOTE**
 - To handle metadata creation, use `before/after_user_create` instead.
+
+### before_password_update, after_password_update
+```json
+{
+    "reason": "change-password",
+    "user": { /* a User object */ }
+}
+```
+
+- `reason`: The reason for the update of password, can be `change-password`,
+            `reset-password`, or `administrative`
+- `user`: a snapshot of the user object before the operation
+
+**NOTE**
+- To handle initial user creation, use `before/after_user_create` instead.
 
 
 ## Sample Web-hook Event
@@ -210,8 +247,9 @@ information about the event:
 4. Session token is generated and sent to database
 5. `before_user_create` event is triggered
 6. `before_identity_create` event is triggered
+6. `before_session_create` event is triggered
 7. Transaction commit
-8. `after_user_create` and `after_identity_create` events are triggered
+8. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
 
 ### Signup with password (failed)
 1. Transaction begin
