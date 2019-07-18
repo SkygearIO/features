@@ -41,9 +41,6 @@ Web-hook handler must return a status code within the 2XX range. Responding with
 status code outside the range, including 3XX & 5XX, would be considered a
 failed delivery.
 
-The time spent in a delivery must not exceed 5 seconds, otherwise would be
-considered a failed delivery.
-
 ### BEFORE Events
 
 BEFORE events would be delivered to web-hook handlers synchronously, right
@@ -90,8 +87,10 @@ disallowing reasons and additional information as part of the error. For example
 }
 ```
 
-The total time spent in all deliveries of the event must not exceed 10 seconds,
-otherwise the operation would be considered failed.
+The time spent in a BEFORE event delivery must not exceed 5 seconds, otherwise
+would be considered a failed delivery. This timeout can be configured in app
+config. Also, the total time spent in all deliveries of the event must not
+exceed 10 seconds, otherwise the operation would be considered failed.
 
 BEFORE events would not be persisted and their failed deliveries would not be
 retried.
@@ -103,6 +102,9 @@ operation would not trigger AFTER events.
 
 AFTER events would be delivered to web-hook handlers asynchronously after the
 operation is performed (i.e. commited into database).
+
+The time spent in an AFTER event delivery must not exceed 60 seconds, otherwise
+would be considered a failed delivery.
 
 All AFTER events, regardless whether handler is present, are presisted into
 database, with minimum retention period of 30 days.
