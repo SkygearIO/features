@@ -95,14 +95,9 @@ linking SSO accounts.
 
 ```json
 {
-    "is_user_creating": false,
     "identity": { /* an Identity object */ }
 }
 ```
-
-- `is_user_creating`: Whether the identity is created as part of
-                      user creation process. If yes, associated user is not yet
-                      accessible from API in BEFORE event handler.
 
 **NOTE**
 - This event would not be generated for creation of user.
