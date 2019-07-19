@@ -57,9 +57,27 @@ information about the event:
   the request will not be treated as authenticated with the user to
   sign up/log in, in both BEFORE/AFTER events.
 
+
+## Mutations
+
+For BEFORE events about a user, following fields can be mutated:
+- `metadata`: user metadata
+- `verify_info`: verify info of user
+                 (`is_verified` flag is derived from `verify_info`)
+- `is_disabled`: disbled status of user
+
+**NOTE**
+- The mutations would not affect authorization of current operation. e.g.
+  disabling user through mutations would not fail an operation requiring
+  non-disabled users.
+
+
 ## Event Types
 
 ### before_user_create, after_user_create
+
+When a user is being created, e.g. sign up with password/SSO
+
 ```json
 {
     "user": { /* a User object */ },
@@ -70,13 +88,11 @@ information about the event:
 }
 ```
 
-#### Mutations
-- `metadata`: initial value of user metadata
-- `verify_info`: initial verify info of user
-                 (`is_verified` flag is derived from `verify_info`)
-- `is_disabled`: initial disbled status of user
-
 ### before_identity_create, after_identity_create
+
+When an identity is being created for a existing user, e.g. adding login ID/
+linking SSO accounts.
+
 ```json
 {
     "is_user_creating": false,
@@ -88,7 +104,15 @@ information about the event:
                       user creation process. If yes, associated user is not yet
                       accessible from API in BEFORE event handler.
 
+**NOTE**
+- This event would not be generated for creation of user.
+  To handle initial values of user, use `before/after_user_create` instead.
+
 ### before_identity_delete, after_identity_delete
+
+When an identity is being deleted for a existing user, e.g. removing login ID/
+unlinking SSO accounts.
+
 ```json
 {
     "identity": { /* an Identity object */ }
@@ -96,6 +120,10 @@ information about the event:
 ```
 
 ### before_session_create, after_session_create
+
+When a session is being created for a existing user, e.g. logging in with
+password/SSO.
+
 ```json
 {
     "reason": "signup",
@@ -107,6 +135,9 @@ information about the event:
 - `reason`: The reason for the creation of session, can be `signup` or `login`
 
 ### before_session_delete, after_session_delete
+
+When a session is being deleted for a existing user, e.g. logging out
+
 ```json
 {
     "reason": "logout",
@@ -117,61 +148,42 @@ information about the event:
 
 - `reason`: The reason for the deletion of session, can be `logout`
 
-### before_user_disabled_status_update, after_user_disabled_status_update
+### before_user_update, after_user_update
+
+When user attributes (metadata, disable status, verified status) is being
+updated due to API operations.
+
 ```json
 {
+    "reason": "update-metadata",
     "is_disabled": true,
-    "user": { /* a User object */ }
-}
-```
-
-- `is_disabled`: The new disabled status
-- `user`: a snapshot of the user object before the operation
-
-**NOTE**
-- To handle initial status, use `before/after_user_create` instead.
-
-#### Mutations
-- `is_disabled`: new disabled status of user
-
-### before_user_verified_status_update, after_user_verified_status_update
-```json
-{
     "is_verified": true,
     "verify_info": { /* ... */ },
+    "metadata": {},
     "user": { /* a User object */ }
 }
 ```
 
-- `is_verified`: The new verified status
-- `verify_info`: The new verify info
+- `reason`: The reason for the update of user, can be `update-metadata`,
+            `update-identity`, `verification`, or `administrative`.
+- `is_disabled`: The new disabled status;
+                 if it is not changed, the field would be absent.
+- `is_verified`: The new verified status;
+                 if it is not changed, the field would be absent.
+- `verify_info`: The new verify info;
+                 if it is not changed, the field would be absent.
+- `metadata`: The new metadata;
+                 if it is not changed, the field would be absent.
 - `user`: a snapshot of the user object before the operation
 
 **NOTE**
-- To handle initial status, use `before/after_user_create` instead.
-
-#### Mutations
-- `verify_info`: new verify info of user
-                 (`is_verified` flag is derived from `verify_info`)
-
-### before_user_metadata_update, after_user_metadata_update
-```json
-{
-    "metadata": { /* ... */ },
-    "user": { /* a User object */ }
-}
-```
-
-- `metadata`: The new user metadata
-- `user`: a snapshot of the user object before the operation
-
-**NOTE**
-- To handle metadata creation, use `before/after_user_create` instead.
-
-#### Mutations
-- `metadata`: new value of user metadata
+- This event would not be generated for creation of user.
+  To handle initial values of user, use `before/after_user_create` instead.
 
 ### before_password_update, after_password_update
+
+When the password of a user is being updated.
+
 ```json
 {
     "reason": "change-password",
@@ -184,7 +196,25 @@ information about the event:
 - `user`: a snapshot of the user object before the operation
 
 **NOTE**
-- To handle initial user creation, use `before/after_user_create` instead.
+- This event would not be generated for creation of user.
+  To handle initial values of user, use `before/after_user_create` instead.
+
+### user_sync
+
+When user state (user/identity/session) is potentially being updated.
+
+```json
+{
+    "user": { /* a User object */ }
+}
+```
+
+- `user`: the user object after the operation
+
+**NOTE**
+- This user object may not be updated for consecutive events; even if the
+  operation does not actually modify the user state, this event would be
+  generated.
 
 
 ## Sample Web-hook Event
@@ -260,61 +290,58 @@ information about the event:
 1. Transaction begin
 2. User object is generated and sent to database
 3. Identity objects are generated and sent to database
-4. Session token is generated and sent to database
-5. `before_user_create` event is triggered
-6. `before_identity_create` event is triggered
-7. `before_session_create` event is triggered
-8. Transaction commit
-9. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
+4. `before_user_create` event is triggered
+5. Session token is generated and sent to database
+6. `before_session_create` event is triggered
+7. Transaction commit
+8. `after_user_create`, `after_session_create` and `user_sync` events are triggered
 
 ### Signup with password (with metadata mutation)
 1. Transaction begin
 2. User object is generated and sent to database
 3. Identity objects are generated and sent to database
-4. Session token is generated and sent to database
-5. `before_user_create` event is triggered
-6. Mutation is requested: metadata of user is updated
-7. `before_identity_create` event is triggered
-8. `before_session_create` event is triggered
-9. Transaction commit
-10. `after_user_create`, `after_identity_create` and `after_session_create` events are triggered
+4. `before_user_create` event is triggered
+5. Session token is generated and sent to database
+6. `before_session_create` event is triggered
+7. Mutation is requested: metadata of user is updated
+8. Transaction commit
+9. `after_user_create`, `after_session_create` and `user_sync` events are triggered
 
 ### Signup with password (failed)
 1. Transaction begin
 2. User object is generated and sent to database
-3. Identity objects are generated and sent to database
-4. FAILED: login ID is duplicated
-5. Transaction rollback
+3. `before_user_create` event is triggered
+4. Identity objects are generated and sent to database
+5. FAILED: login ID is duplicated
+6. Transaction rollback
 
 ### Signup with password (disallowed by web-hook handler)
 1. Transaction begin
 2. User object is generated and sent to database
-3. Identity objects are generated and sent to database
-4. Session token is generated and sent to database
-5. `before_user_create` event is triggered
-6. DISALLOWED: "metadata does not contain user address"
-7. Transaction rollback
+3. `before_user_create` event is triggered
+4. DISALLOWED: "metadata does not contain user address"
+5. Transaction rollback
 
 ### Linking with OAuth accounts/Adding new login ID
 1. Transaction begin
 2. Identity object is generated and sent to database
 3. `before_identity_create` event is triggered
 4. Transaction commit
-5. `after_identity_create` event is triggered
+5. `after_identity_create` and `user_sync` event is triggered
 
 ### Unlinking OAuth accounts/Removing new login ID
 1. Transaction begin
 2. Identity object is deleted from database
 3. `before_identity_delete` event is triggered
 4. Transaction commit
-5. `after_identity_delete` event is triggered
+5. `after_identity_delete` and `user_sync` event is triggered
 
 ### Disabling user
 1. Transaction begin
 2. User disabled status is updated in database
-3. `before_user_disabled_status_update` event is triggered
+3. `before_user_update` event is triggered
 4. Transaction commit
-5. `after_user_disabled_status_update` event is triggered
+5. `after_user_update` and `user_sync` event is triggered
 
 ### Updating login ID
 1. Transaction begin
@@ -323,4 +350,4 @@ information about the event:
 4. `before_identity_delete` event is triggered
 5. `before_identity_create` event is triggered
 6. Transaction commit
-7. `after_identity_delete` and `after_identity_create` event is triggered
+7. `after_identity_delete`, `after_identity_create`, `user_sync` event is triggered

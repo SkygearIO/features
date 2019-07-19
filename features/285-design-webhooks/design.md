@@ -107,8 +107,8 @@ operation is performed (i.e. commited into database).
 The time spent in an AFTER event delivery must not exceed 60 seconds, otherwise
 would be considered a failed delivery.
 
-All AFTER events, regardless whether handler is present, are presisted into
-database, with minimum retention period of 30 days.
+All AFTER events with web-hook handler are presisted into database, with
+minimum retention period of 30 days.
 
 The response body of web-hook handler is ignored.
 
@@ -124,8 +124,8 @@ automatically.
 
 ## Mutations
 
-Some BEFORE event types allow web-hook handler to request mutation on entities
-(e.g. user) before committing to database.
+BEFORE events allow web-hook handler to request mutation on some fields before
+committing to database.
 
 Web-hook handler cannot request mutation if the operation is disallowed.
 Web-hook handler should indicate the mutations to perform through its response,
@@ -142,16 +142,30 @@ for example:
 }
 ```
 
-Each event type specifies possible mutation keys.
-- If a mutation key is absent: no mutation would be performed for that key.
-- If a mutation key is present: mutation would be performed based on the value.
+- If a field is absent: no mutation would be performed for that field.
+- If a field is present: the field would be set to the provided value.
 
-If an entity is mutated, subsequent events will used the mutated value.
+If failed to perform the mutations, the operation would be failed.
+If the operation failed, the mutations are rollbacked and not visible.
+
+Mutations would not generate additional events (except `user_sync`).
+
+If a field is mutated, subsequent events will use the mutated value.
 
 Developer is responsible for ensuring correct order of event delivery. For
 example, in most case, developer would like mutating event-handlers (e.g. 
 populating default value for some fields) before non-mutating event-handlers
 (e.g. validating field values).
+
+### user_sync
+
+`user_sync` is a special event. It is delivered like an AFTER event.
+
+When an API that would potentially update the user state (including user object,
+identity, or session) is used, this event would be generated, regardless
+whether the user state is actually updated.
+
+This event can be used to synchronize user state to user-managed database.
 
 
 ## Event Management
