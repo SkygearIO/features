@@ -38,5 +38,9 @@ signature secret key shared among all web-hooks. If omitted, master key is used
 by default.
 
 ## App Configuration
-The top-level key `sync_hook_timeout_second` is a integer. This is the timeout
-for synchronous web-hook handlers. If omitted, 5 seconds is used by default.
+The top-level key `hook` is a map containing configuration of hooks:
+- `sync_hook_timeout_second`: integer, default to 5; timeout for a delivery to
+                              synchronous web-hook handlers of an event
+- `sync_hook_total_timeout_second`: integer, default to 10; timeout for all
+                                    deliveries to synchronous web-hook handlers
+                                    of an event

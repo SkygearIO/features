@@ -14,6 +14,9 @@ Each operation will trigger two events: BEFORE and AFTER:
   operation can be aborted by web-hook handler.
 - AFTER events would be trigger after the operation is performed.
 
+Additionally, a `user_sync` event is provided for synchronizing user state to
+self-managed database.
+
 Both events has the same event payload.
 
 
@@ -88,10 +91,12 @@ disallowing reasons and additional information as part of the error. For example
 }
 ```
 
+Web-hook handler can request mutations, see [mutation section](#mutations) for details.
+
 The time spent in a BEFORE event delivery must not exceed 5 seconds, otherwise
-would be considered a failed delivery. This timeout can be configured in app
-config. Also, the total time spent in all deliveries of the event must not
-exceed 10 seconds, otherwise the operation would be considered failed.
+would be considered a failed delivery. Also, the total time spent in all
+deliveries of the event must not exceed 10 seconds, otherwise the operation
+would be considered failed. Both timeout are configurable in app config.
 
 BEFORE events would not be persisted and their failed deliveries would not be
 retried.
@@ -150,7 +155,7 @@ If the operation failed, the mutations are rollbacked and not visible.
 
 Mutations would not generate additional events (except `user_sync`).
 
-If a field is mutated, subsequent events will use the mutated value.
+The mutated value is be propagated along the next events.
 
 Developer is responsible for ensuring correct order of event delivery. For
 example, in most case, developer would like mutating event-handlers (e.g. 
