@@ -207,9 +207,9 @@ When user state (user/identity/session) is potentially being updated.
 - `user`: the user object after the operation
 
 **NOTE**
-- This user object may not be updated for consecutive events; even if the
-  operation does not actually modify the user state, this event would be
-  generated.
+- The event would be generated unconditionally whenever a mutating operation is
+  used; for example, disabling an already disabled user would still generate
+  this event.
 
 
 ## Sample Web-hook Event
@@ -217,11 +217,11 @@ When user state (user/identity/session) is potentially being updated.
 ### before_user_create
 ```json
 {
+    "version": 1,
     "id": "A2BB162C-15EC-44A4-87D0-BF87354E1208",
     "seq": 50862,
     "type": "before_user_create",
     "payload": {
-        "version": 1,
         "user": {
             "id": "20568C13-C72B-42EC-982C-C7C926830650",
             "created_at": "2019-07-08T11:12:44.317236Z",
@@ -254,11 +254,11 @@ When user state (user/identity/session) is potentially being updated.
 ### after_identity_create
 ```json
 {
+    "version": 1,
     "id": "D46EF8B6-4E30-4574-B7B5-D925A989AEFA",
     "seq": 50867,
     "type": "after_identity_create",
     "payload": {
-        "version": 1,
         "is_user_creating": true,
         "identity": {
             "id": "9747C5CC-565E-4837-8414-0E10458F383A",
