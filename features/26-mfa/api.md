@@ -88,10 +88,6 @@ function isMFARequiredError(err: unknown): boolean;
 
 // Authenticate
 
-interface AuthenticateExtraOptions {
-  requestBearerToken?: boolean;
-}
-
 interface AuthenticateResult {
   bearerToken?: string;
 }
@@ -99,18 +95,20 @@ interface AuthenticateResult {
 interface TOTPAuthenticateOptions {
   authenticatorID?: string;
   otp: string;
+  requestBearerToken?: boolean;
 }
 
-async function authenticateWithTOTP(options: TOTPAuthenticateOptions, extraOptions?: AuthenticateExtraOptions): Promise<AuthenticateResult>;
+async function authenticateWithTOTP(options: TOTPAuthenticateOptions): Promise<AuthenticateResult>;
 
 interface OOBAuthenticateOptions {
   authenticatorID?: string;
   code: string;
+  requestBearerToken?: boolean;
 }
 
-async function authenticateWithOOB(options: OOBAuthenticateOptions, extraOptions?: AuthenticateExtraOptions): Promise<AuthenticateResult>;
+async function authenticateWithOOB(options: OOBAuthenticateOptions): Promise<AuthenticateResult>;
 
-async function authenticateWithRecoveryCode(code: string, extraOptions?: AuthenticateExtraOptions): Promise<AuthenticateResult>;
+async function authenticateWithRecoveryCode(code: string): Promise<AuthenticateResult>;
 
 async function authenticateWithBearerToken(token: string): Promise<void>;
 
