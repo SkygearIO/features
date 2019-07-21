@@ -352,9 +352,11 @@ The access token includes a new claim [amr](https://openid.net/specs/openid-conn
 
 |Method|Factor Name|
 |------|-----------|
-|password|password|
+|password|pwd|
 |oauth|oauth|
 |custom_token|custom_token|
+
+If the method has defined value in [RFC8176](https://tools.ietf.org/html/rfc8176), the value is used.
 
 When the user authenticates with one factor, the value is singleton array of the name of that factor.
 
@@ -366,7 +368,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["password"]
+  "amr": ["pwd"]
 }
 ```
 
@@ -374,7 +376,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["password", "totp"]
+  "amr": ["pwd", "totp"]
 }
 ```
 
@@ -382,7 +384,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["password", "oob"]
+  "amr": ["pwd", "oob"]
 }
 ```
 
@@ -390,7 +392,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["password", "bearer_token"]
+  "amr": ["pwd", "bearer_token"]
 }
 ```
 
@@ -398,7 +400,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["password", "recovery_code"]
+  "amr": ["pwd", "recovery_code"]
 }
 ```
 
@@ -420,14 +422,14 @@ Given
 
 ```JSON
 {
-  "amr": ["password", "oob"]
+  "amr": ["pwd", "oob"]
 }
 ```
 
 The injected header is
 
 ```
-x-skygear-auth-amr: password, oob
+x-skygear-auth-amr: pwd, oob
 ```
 
 The usefulness of this injection is to allow microservice to determine whether MFA is required.
