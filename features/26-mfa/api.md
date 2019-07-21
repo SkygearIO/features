@@ -130,7 +130,7 @@ interface OOBAuthenticator {
   type: "oob";
   activatedAt: Date;
   channel: "sms";
-  phone: string;
+  maskedPhone: string;
 }
 
 interface RecoveryCodeAuthenticator {
@@ -284,7 +284,7 @@ const authenticators = await skygear.auth.mfa.listAuthenticators();
 //     type: "oob",
 //     activatedAt: new Date("2019-07-19T00:00:00.000Z"),
 //     channel: "sms",
-//     phone: "+85223456789",
+//     maskedPhone: "+85223******",
 //   },
 //   {
 //     id: "3",
