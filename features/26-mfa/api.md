@@ -429,7 +429,7 @@ Given
 The injected header is
 
 ```
-x-skygear-auth-amr: pwd, oob
+x-skygear-auth-amr: pwd,oob
 ```
 
 The usefulness of this injection is to allow microservice to determine whether MFA is required.
