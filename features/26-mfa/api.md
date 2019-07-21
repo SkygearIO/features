@@ -51,6 +51,7 @@ interface CreateNewTOTPResult {
   authenticatorID: string;
   authenticatorType: "totp";
   secret: string;
+  otpauthURI: string;
 }
 
 interface ActivateTOTPResult {
@@ -176,10 +177,11 @@ try {
 // Present AN UI to let the user to optionally name the TOTP authenticator.
 
 const displayName = textInput.value;
-const { authenticatorID, secret } = await skygear.auth.mfa.createNewTOTP(displayName);
+const { authenticatorID, secret, otpauthURI } = await skygear.auth.mfa.createNewTOTP(displayName);
 
 // Present to the secret to the user and let the user
 // to add the secret to their TOTP application, such as Authy and Google Authenticator.
+// Or preferably use a OR code to display otpauthURI, it is compatible with Google Authenticator and Authy.
 
 // Present an UI to instruct the user to input the OTP.
 const otp = textInput.value;
