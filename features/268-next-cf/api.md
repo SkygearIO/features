@@ -292,12 +292,8 @@ deployments:
 hooks:
   - url: /api/after_signup
     event: after_signup
-    async: true
-    timeout: 60
   - url: http://external-service.com/signup-hook
     event: after_signup
-    async: true
-    timeout: 60
 
 ```
 
@@ -307,8 +303,6 @@ hooks:
     auth gear will call the provided url directly. If the value is path only,
     api endpoint url (e.g. https://myapp.skygear.io) will be added.
   - `event` is the name of the listening event
-  - `async` indicates the event call is synchronous or asynchronous
-  - `timeout` is the timeout of hook http request
 
 # Serving content
 
