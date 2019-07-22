@@ -239,7 +239,7 @@ For the detail on signature generation and validation, refer to #300.
 ### Recursive Web-hooks
 
 A ill-designed web-hook handler may be called recursively. For example,
-updating user metadata when handling `after_user_metadata_update` event.
+updating user metadata when handling `after_user_update` event.
 
 Developer is responsible to ensure:
 - web-hook handlers would not be called recursively; or
