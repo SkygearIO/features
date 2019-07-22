@@ -5,6 +5,7 @@ The following factors are supported:
 - Time-Based One-Time Password [(TOTP)](https://tools.ietf.org/html/rfc6238)
 - Out-of-band
   - SMS
+  - Email
 - Recovery code
 - Bearer token
 
@@ -63,16 +64,21 @@ async function activateTOTP(authenticatorID: string, otp: string): Promise<Activ
 
 // Register OOB
 
-interface CreateNewOOBOptions {
-  channel?: "sms";
+type CreateNewOOBOptions = CreateNewOOBSMSOptions | CreateNewOOBEmailOptions;
+
+interface CreateNewOOBSMSOptions {
+  channel: "sms";
   phone: string;
+}
+
+interface CreateNewOOBEmailOptions {
+  channel: "email";
+  email: string;
 }
 
 interface CreateNewOOBResult {
   authenticatorID: string;
   authenticatorType: "oob";
-  channel: "sms";
-  phone: string;
 }
 
 interface ActivateOOBResult {
@@ -115,7 +121,7 @@ async function authenticateWithBearerToken(token: string): Promise<void>;
 
 // Authenticator management
 
-type Authenticator = TOTPAuthenticator | OOBAuthenticator | RecoveryCodeAuthenticator | BearerTokenAuthenticator;
+type Authenticator = TOTPAuthenticator | OOBSMSAuthenticator | OOBEmailAuthenticator | RecoveryCodeAuthenticator | BearerTokenAuthenticator;
 
 interface TOTPAuthenticator {
   id: string;
@@ -130,6 +136,22 @@ interface OOBAuthenticator {
   activatedAt: Date;
   channel: "sms";
   maskedPhone: string;
+}
+
+interface OOBSMSAuthenticator {
+  id: string;
+  type: "oob";
+  activatedAt: Date;
+  channel: "sms";
+  maskedPhone: string;
+}
+
+interface OOBEmailAuthenticator {
+  id: string;
+  type: "oob";
+  activatedAt: Date;
+  channel: "email";
+  maskedEmail: "ab*****@example.com";
 }
 
 interface RecoveryCodeAuthenticator {
@@ -360,7 +382,9 @@ If the method has defined value in [RFC8176](https://tools.ietf.org/html/rfc8176
 
 When the user authenticates with one factor, the value is singleton array of the name of that factor.
 
-When the user authenticates with MFA factor, the authenticator type is added.
+When the user authenticates with MFA factor, `mfa` is included and the authenticator type is added.
+
+In the case the authenticator is OOB, the channel is also added.
 
 ## Example
 
@@ -376,15 +400,23 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["pwd", "totp"]
+  "amr": ["pwd", "mfa", "totp"]
 }
 ```
 
-### Authenticate with password and then OOB
+### Authenticate with password and then OOB SMS
 
 ```JSON
 {
-  "amr": ["pwd", "oob"]
+  "amr": ["pwd", "mfa", "oob", "sms"]
+}
+```
+
+### Authenticate with password and then OOB Email
+
+```JSON
+{
+  "amr": ["pwd", "mfa", "oob", "email"]
 }
 ```
 
@@ -392,7 +424,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["pwd", "bearer_token"]
+  "amr": ["pwd", "mfa", "bearer_token"]
 }
 ```
 
@@ -400,7 +432,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["pwd", "recovery_code"]
+  "amr": ["pwd", "mfa", "recovery_code"]
 }
 ```
 
@@ -408,7 +440,7 @@ When the user authenticates with MFA factor, the authenticator type is added.
 
 ```JSON
 {
-  "amr": ["oauth", "totp"]
+  "amr": ["oauth", "mfa", "totp"]
 }
 ```
 
@@ -422,14 +454,14 @@ Given
 
 ```JSON
 {
-  "amr": ["pwd", "oob"]
+  "amr": ["pwd", "mfa", "oob", "sms"]
 }
 ```
 
 The injected header is
 
 ```
-x-skygear-auth-amr: pwd,oob
+x-skygear-auth-amr: pwd,mfa,oob,sms
 ```
 
 The usefulness of this injection is to allow microservice to determine whether or not the user was authenticated with MFA.
