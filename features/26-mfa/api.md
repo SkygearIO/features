@@ -155,7 +155,7 @@ interface OOBEmailAuthenticator {
   type: "oob";
   activatedAt: Date;
   channel: "email";
-  maskedEmail: "ab*****@example.com";
+  maskedEmail: string;
 }
 
 interface RegenerateRecoveryCodeResult {
@@ -314,6 +314,13 @@ const authenticators = await skygear.auth.mfa.getAuthenticators();
 //     activatedAt: new Date("2019-07-19T00:00:00.000Z"),
 //     channel: "sms",
 //     maskedPhone: "+85223******",
+//   },
+//   {
+//     id: "3",
+//     type: "oob",
+//     activatedAt: new Date("2019-07-19T00:00:00.000Z"),
+//     channel: "email",
+//     maskedEmail: "ab*****@example.com",
 //   },
 // ]
 
