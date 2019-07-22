@@ -52,15 +52,22 @@ interface CreateNewTOTPResult {
   authenticatorID: string;
   authenticatorType: "totp";
   secret: string;
-  otpauthURI: string;
 }
 
 interface ActivateTOTPResult {
   recoveryCodes?: string[];
 }
 
+interface GenerateOTPAuthURIOptions {
+  secret: string;
+  issuer: string;
+  accountName: string;
+}
+
 async function createNewTOTP(displayName?: string): Promise<CreateNewTOTPResult>;
 async function activateTOTP(authenticatorID: string, otp: string): Promise<ActivateTOTPResult>;
+function generateOTPAuthURI(options: GenerateOTPAuthURIOptions): string;
+function generateOTPAuthURIQRCodeImageURL(otpauthURI: string): string;
 
 // Register OOB
 
@@ -199,11 +206,21 @@ try {
 // Present AN UI to let the user to optionally name the TOTP authenticator.
 
 const displayName = textInput.value;
-const { authenticatorID, secret, otpauthURI } = await skygear.auth.mfa.createNewTOTP(displayName);
+const { authenticatorID, secret } = await skygear.auth.mfa.createNewTOTP(displayName);
 
 // Present to the secret to the user and let the user
 // to add the secret to their TOTP application, such as Authy and Google Authenticator.
-// Or preferably use a OR code to display otpauthURI, it is compatible with Google Authenticator and Authy.
+// Or preferably generate an otpauth URI.
+
+const otpauthURI = skygear.auth.mfa.generateOTPAuthURI({
+  secret,
+  issuer: "My App",
+  accountName: "user@example.com",
+});
+
+// If the developer can either generate the QR code by themselves or generate an QR code image URL.
+const qrcodeImageURL = skygear.auth.mfa.generateOTPAuthURIQRCodeImageURL(otpauthURI);
+image.src = qrcodeImageURL;
 
 // Present an UI to instruct the user to input the OTP.
 const otp = textInput.value;
