@@ -39,6 +39,11 @@ mfa:
   recovery_code:
     # How many recovery code should be generated. Default is 16.
     count: 16
+    # Enable listing the existing recovery code.
+    # Some services like GitHub allow listing the existing recovery code.
+    # By default listing is disabled, the user must regenerate a new set of
+    # recovery code.
+    list_enabled: false
 ```
 
 # SDK API
@@ -128,21 +133,13 @@ async function authenticateWithBearerToken(token: string): Promise<void>;
 
 // Authenticator management
 
-type Authenticator = TOTPAuthenticator | OOBSMSAuthenticator | OOBEmailAuthenticator | RecoveryCodeAuthenticator | BearerTokenAuthenticator;
+type Authenticator = TOTPAuthenticator | OOBSMSAuthenticator | OOBEmailAuthenticator;
 
 interface TOTPAuthenticator {
   id: string;
   type: "totp";
   activatedAt: Date;
   displayName: string;
-}
-
-interface OOBAuthenticator {
-  id: string;
-  type: "oob";
-  activatedAt: Date;
-  channel: "sms";
-  maskedPhone: string;
 }
 
 interface OOBSMSAuthenticator {
@@ -161,26 +158,19 @@ interface OOBEmailAuthenticator {
   maskedEmail: "ab*****@example.com";
 }
 
-interface RecoveryCodeAuthenticator {
-  id: string;
-  type: "recovery_code";
-  createdAt: Date;
-}
-
-interface BearerTokenAuthenticator {
-  id: string;
-  type: "bearer_token";
-  createdAt: Date;
-  expireAt: Date;
-}
-
 interface RegenerateRecoveryCodeResult {
   recoveryCodes: string[];
 }
 
-async function listAuthenticators(): Promise<Authenticator[]>;
+interface ListRecoveryCodeResult {
+  recoveryCodes: string[];
+}
+
+async function getAuthenticators(): Promise<Authenticator[]>;
 async function deleteAuthenticator(authenticatorID: string): Promise<void>;
 async function regenerateRecoveryCode(): Promise<RegenerateRecoveryCodeResult>;
+async function listRecoveryCode(): Promise<ListRecoveryCodeResult>;
+async function revokeAllBearerTokens(): Promise<void>;
 ```
 
 # Use Cases
@@ -282,7 +272,7 @@ try {
     return;
   }
 
-  const authenticators = await skygear.auth.mfa.listAuthenticators();
+  const authenticators = await skygear.auth.mfa.getAuthenticators();
   // Present the authenticators to the user and let them choose
   // which one they want to use.
 
@@ -310,7 +300,7 @@ The bearer token should be handled transparently by the SDK so the actual code w
 ## List authenticators in settings screen
 
 ```typescript
-const authenticators = await skygear.auth.mfa.listAuthenticators();
+const authenticators = await skygear.auth.mfa.getAuthenticators();
 // [
 //   {
 //     id: "1",
@@ -325,35 +315,8 @@ const authenticators = await skygear.auth.mfa.listAuthenticators();
 //     channel: "sms",
 //     maskedPhone: "+85223******",
 //   },
-//   {
-//     id: "3",
-//     type: "recovery_code",
-//     createdAt: new Date("2019-07-19T00:00:00.000Z"),
-//   },
-//   {
-//     id: "4",
-//     type: "recovery_code",
-//     createdAt: new Date("2019-07-19T00:00:00.000Z"),
-//   },
-//   {
-//     id: "5",
-//     type: "recovery_code",
-//     createdAt: new Date("2019-07-19T00:00:00.000Z"),
-//   },
-//   {
-//     id: "5",
-//     type: "recovery_code",
-//     createdAt: new Date("2019-07-19T00:00:00.000Z"),
-//   },
-//   {
-//     id: "6",
-//     type: "bearer_token",
-//     createdAt: new Date("2019-07-19T00:00:00.000Z"),
-//     expireAt: new Date("2019-08-19T00:00:00.000Z"),
-//   }
 // ]
 
-const numberOfRecoveryCodes = authenticators.filter(a => a.type === "recovery_code").length;
 const hasTOTP = authenticators.filter(a => a.type === "totp").length > 0;
 const hasOOB = authenticators.filter(a => a.type === "oob").length > 0;
 ```
@@ -361,24 +324,30 @@ const hasOOB = authenticators.filter(a => a.type === "oob").length > 0;
 ## Delete an authenticator
 
 ```typescript
-const authenticators = await skygear.auth.mfa.listAuthenticators();
+const authenticators = await skygear.auth.mfa.getAuthenticators();
 // Present an UI to show the list of authenticators and
 // let the user to choose which one to delete.
 
 // Suppose the user wants to delete the first one.
 const { id } = authenticators[0];
 await skygear.auth.mfa.deleteAuthenticator(id);
-
-// The user can also delete a bearer token if they believe
-// the device storing it has been compromised.
-const bearerTokens = authenticators.filter(a => a.type === "bearer_token");
-const { id } = bearerTokens[0];
-await skygear.auth.mfa.deleteAuthenticator(id);
 ```
 
-## Regenerate recovery codes
+## Revoke all bearer tokens
 
 ```typescript
+// The user can revoke all bearer tokens so that subsequent authentications
+// require MFA.
+await skygear.auth.mfa.revokeAllBearerTokens();
+```
+
+## List and regenerate recovery codes
+
+```typescript
+// If listing is enabled, the user can list the existing recovery code.
+cpnst { recoveryCodes } = await skygear.auth.mfa.listRecoveryCode();
+
+// Otherwise, the user must regenerate a new set of recovery code.
 const { recoveryCodes } = await skygear.auth.mfa.regenerateRecoveryCode();
 // Present an UI to show the list of recovery codes to the user.
 ```
