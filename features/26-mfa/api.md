@@ -957,3 +957,37 @@ async function beginBearerTokenFlow(error: unknown): Promise<User> {
   }
 }
 ```
+
+# Authenticator Characteristics
+
+## TOTP
+
+The implementation conforms to [RFC6238](https://tools.ietf.org/html/rfc6238) and [RFC4226](https://tools.ietf.org/html/rfc4226) so the one-time password is 6-digit long.
+
+### Example
+
+- `123456`
+
+## OOB
+
+The code is 6-digit long and valid for 5 minutes.
+
+### Example
+
+- `123456`
+
+## Recovery code
+
+The code is cryptographically secure random 10-letter string in Crockford's Base32 alphabet.
+
+### Example
+
+- `a6ef6748a7`
+
+## Bearer token
+
+- The token is a cryptographically secure random string of 256 bits (32 bytes) in hex encoding.
+
+### Example
+
+- `3e52f564f8f76bbe38b93ad9897601577227612b5d496de2aab443a67d23ea94`
