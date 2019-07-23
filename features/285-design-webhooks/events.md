@@ -95,6 +95,7 @@ linking SSO accounts.
 
 ```json
 {
+    "user": { /* a User object */ },
     "identity": { /* an Identity object */ }
 }
 ```
@@ -110,6 +111,7 @@ unlinking SSO accounts.
 
 ```json
 {
+    "user": { /* a User object */ },
     "identity": { /* an Identity object */ }
 }
 ```
