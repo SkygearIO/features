@@ -10,9 +10,9 @@ Developer may want to synchronize metadata when it is updated by user:
 
 ### Suggested Solution
 
-- In `before_user_metadata_update`:
+- In `before_user_update`:
     - Validate input user metadata is valid, otherwise disallow the operation.
-- In `after_user_metadata_update`:
+- In `user_sync`:
     - Save new user profile and event sequence number in database, if and only
       if the incoming event is later then the sequence number saved.
 
