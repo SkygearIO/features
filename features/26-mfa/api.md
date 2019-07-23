@@ -909,3 +909,51 @@ A MFA required endpoint rejects any request with a MFA token with a MFA required
 ## Issue of MFA Token
 
 When access token issuing endpoints returns a MFA required error, the error includes a MFA token.
+
+# Interaction between Client SDK and MFA
+
+- The Client SDK must detect MFA required error.
+- If the MFA required error has a MFA token and the Client SDK does not have an access token, the Client SDK must save the MFA token as access token.
+- The Client SDK must save the bearer token it receives.
+- For access token issuing endpoints, The Client SDK must handle MFA required error with the saved bearer token transparently.
+
+## Bearer token flow
+
+The following pseudo code demonstrate the bearer token flow
+
+```typescript
+// This function is skygear.auth.login
+async function login(loginID: string, password: string): Promise<User> {
+  try {
+    return _login("user@example.com", "password");
+  } catch (e) {
+    return beginBearerTokenFlow(e);
+  }
+}
+
+async function beginBearerTokenFlow(error: unknown): Promise<User> {
+  // Re-raise the error if it is not MFA required error.
+  if (!isMFARequiredError(error)) {
+    throw error;
+  }
+
+  // Retrieve the saved bearer token
+  let bearerToken;
+  try {
+    bearerToken = await getBearerToken();
+  } catch {
+    throw error;
+  }
+
+  // If there is no bearer token, re-raise the error
+  if (!bearerToken) {
+    throw error;
+  }
+
+  try {
+    return authenticateWithBearerToken(bearerToken);
+  } catch {
+    throw error;
+  }
+}
+```
