@@ -54,6 +54,22 @@ Following function will be removed from client SDK, a developer should create it
 
 For security reason, Cloud Function should invoke admin related API with master key.
 
+## Web-hook
+For details on web-hook, refer to [web-hook spec](../285-design-webhooks/design.md).
+
+At the moment, following web-hook events are supported:
+
+| Purpose               | Event                                         |
+| --------------------- | --------------------------------------------- |
+| User Creation         | before_user_create, after_user_create         |
+| Identity Creation     | before_identity_create, after_identity_create |
+| Identity Deletion     | before_identity_delete, after_identity_delete |
+| Session Creation      | before_session_create, after_session_create   |
+| Session Deletion      | before_session_delete, after_session_delete   |
+| User Update           | before_user_update, after_user_update         |
+| Password Update       | before_password_update, after_password_update |
+| User Synchronization  | user_sync                                     |
+
 ## user metadata
 
 For future advanced management requirements, auth gear should have user metadata, it includes common user attributes, such as avatar, first name, last name, display name, preferred language, ..., etc. 
