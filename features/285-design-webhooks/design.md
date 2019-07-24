@@ -38,7 +38,7 @@ BEFORE events will always be delivered before AFTER events. BEFORE events will
 be delivered in well-defined order during a request. AFTER events will be
 delivered in unspecified order.
 
-Web-hook handler should be idempotent, since the same event may be delivered
+Web-hook handler should be idempotent, since AFTER events may be delivered
 multiple times due to retries.
 
 Web-hook handler must return a status code within the 2XX range. Responding with
