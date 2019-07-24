@@ -33,7 +33,7 @@ URL with app domain by auth gear at runtime.
 To update hooks configuration, a new deployment would be created.
 
 ## User Configuration
-The top-level key `hook_secret` is a string. This is the value of web-hook
+The key `hook.secret` is a string. This is the value of web-hook
 signature secret key shared among all web-hooks (see
 [request verifiation spec](../300-request-verification/request-verification.md)
 for details). If omitted, master key is used by default.
