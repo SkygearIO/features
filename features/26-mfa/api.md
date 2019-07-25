@@ -193,14 +193,12 @@ No response body. Only side effect is performed.
 
 ```JSON
 {
-  "authenticator_id": "xxx",
   "otp": "123456",
   "request_bearer_token": true
 }
 ```
 
-- `authenticator_id`: Optional when there is only one active TOTP authenticator.
-- `otp`: The one-time password
+- `otp`: The one-time password. The OTP is tried with all active authenticators.
 - `request_bearer_token`: Whether or not to issue a bearer token
 
 ### Response body
@@ -222,14 +220,12 @@ No response body. Only side effect is performed.
 
 ```JSON
 {
-  "authenticator_id": "xxx",
   "code": "123456",
   "request_bearer_token": true
 }
 ```
 
-- `authenticator_id`: Optional when there is only one active OOB authenticator.
-- `code`: The code received from out-of-band channel.
+- `code`: The code received from out-of-band channel. The code is tried with all valid codes.
 - `request_bearer_token`: Whether or not to issue a bearer token
 
 ### Response body
@@ -451,21 +447,13 @@ function isMFARequiredError(err: unknown): boolean;
 
 // Authenticate
 
-interface TOTPAuthenticateOptions {
-  authenticatorID?: string;
-  otp: string;
+interface MFAAuthenticateOptions {
   skipMFAForCurrentDevice?: boolean;
 }
 
-async function authenticateWithTOTP(options: TOTPAuthenticateOptions): Promise<User>;
+async function authenticateWithTOTP(otp: string, options?: MFAAuthenticateOptions): Promise<User>;
 
-interface OOBAuthenticateOptions {
-  authenticatorID?: string;
-  code: string;
-  skipMFAForCurrentDevice?: boolean;
-}
-
-async function authenticateWithOOB(options: OOBAuthenticateOptions): Promise<User>;
+async function authenticateWithOOB(code: string, options?: MFAAuthenticateOptions): Promise<User>;
 
 async function authenticateWithRecoveryCode(code: string): Promise<User>;
 
@@ -619,7 +607,7 @@ try {
   // Present an UI to offer the user to skip MFA for 30 days.
 
   const code = textInput.value;
-  const user = await skygear.auth.mfa.authenticateWithOOB({ authenticatorID, code }, { skipMFAForCurrentDevice: true});
+  const user = await skygear.auth.mfa.authenticateWithOOB(code, { skipMFAForCurrentDevice: true});
 }
 ```
 
