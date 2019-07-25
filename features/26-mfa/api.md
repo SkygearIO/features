@@ -746,6 +746,25 @@ const { recoveryCodes } = await skygear.auth.mfa.regenerateRecoveryCode();
 
 - POST /mfa/recovery_code/regenerate
 
+## Account recovery
+
+### SDK
+
+```typescript
+// Suppose the user has lost their TOTP device.
+// The MFA screen of the application should display
+// a button to allow the user to enter recovery code.
+// Since recovery code is consumable, the application should
+// prompt the user to generate a new set of recovery code to
+// prevent account lockout.
+const recoveryCode = textInput.value;
+const user = await skygear.auth.mfa.authenticateWithRecoveryCode(recoveryCode);
+```
+
+### HTTP
+
+- POST /mfa/recovery_code/authenticate
+
 # Access Token, amr and MFA Token
 
 ## amr
