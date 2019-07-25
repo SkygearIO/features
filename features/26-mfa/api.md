@@ -21,7 +21,12 @@ The access token contains how the user was authenticated.
 
 ```yaml
 mfa:
-  # 'optional' or 'required'
+  # 'off', 'optional' or 'required'
+  #
+  # `off` means MFA API is disabled. The user cannot register authenticator.
+  # If the default were 'optional', the user would be free to register authenticator
+  # and the developer may not be expecting this. Since MFA requires client side support,
+  # the developer must opt-in to enable MFA.
   #
   # 'optional' means the user is free to register a new authenticator.
   # When a user has at least one active authenticator, the user must login with MFA.
@@ -30,8 +35,8 @@ mfa:
   # 'required' means the user must login with MFA.
   # This is like how banking services offer MFA.
   #
-  # Default is 'optional'
-  enforcement: 'optional'
+  # Default is 'off'
+  enforcement: 'off'
   bearer_token:
     # How many days the bearer token is valid. Default is 30.
     expire_in_days: 30
