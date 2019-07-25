@@ -336,6 +336,10 @@ No input is required.
 
 No response body.
 
+### Note
+
+This operation is always allowed so the user can always delete compromised authenticator.
+
 ## POST /mfa/recovery_code/regenerate
 
 ### Request body
