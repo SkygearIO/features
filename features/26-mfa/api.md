@@ -962,7 +962,15 @@ async function beginBearerTokenFlow(error: unknown): Promise<User> {
 
 ## TOTP
 
-The implementation conforms to [RFC6238](https://tools.ietf.org/html/rfc6238) and [RFC4226](https://tools.ietf.org/html/rfc4226) so the one-time password is 6-digit long.
+The implementation conforms to [RFC6238](https://tools.ietf.org/html/rfc6238) and [RFC4226](https://tools.ietf.org/html/rfc4226).
+
+In order to be compatible existing Authenticator Applications like Google Authenticator
+
+- The algorithm is always HMAC-SHA1.
+- The code is always 6-digit long.
+- The valid period of a code is always 30 seconds.
+
+To deal with clock skew, the code generated before or after the current time are also accepted.
 
 ### Example
 
@@ -991,3 +999,7 @@ The code is cryptographically secure random 10-letter string in Crockford's Base
 ### Example
 
 - `3e52f564f8f76bbe38b93ad9897601577227612b5d496de2aab443a67d23ea94`
+
+## Vulnerability to brute force attack
+
+Since the code of each authenticator is short, it is vulnerable to brute force attack. Authentication attempts should have rate limiting to prevent brute force attack.
