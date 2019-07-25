@@ -765,6 +765,30 @@ const user = await skygear.auth.mfa.authenticateWithRecoveryCode(recoveryCode);
 
 - POST /mfa/recovery_code/authenticate
 
+## Lost device or changed phone number
+
+### SDK
+
+```typescript
+// Suppose the user has lost their device or changed their phone number.
+// Under default settings, the number of authenticators is 1.
+// So the user should first remove the old authenticator otherwise
+// new registration will never succeed.
+
+// Present an UI to let the user to choose an authenticator to delete.
+const authenticators = await skygear.auth.mfa.getAuthenticators();
+const authenticatorID = authenticators[0].id;
+await skygear.auth.mfa.deleteAuthenticator(authenticatorID);
+
+// Guide the user to setup a new authenticator.
+// This flow should be the same as the original Registration flow.
+```
+
+### HTTP
+
+- GET /mfa/authenticators
+- DELETE /mfa/authenticator
+
 # Access Token, amr and MFA Token
 
 ## amr
