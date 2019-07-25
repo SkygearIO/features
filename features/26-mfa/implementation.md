@@ -43,12 +43,14 @@
 |------|----|
 |id|TEXT|
 |user_id|TEXT; foreign key to `_core_user.id`|
+|authenticator_id|TEXT; foreign key to `_auth_authenticator.id`|
 |code|TEXT|
 |created_at|timestamp|
 |expire_at|timestamp|
 
 - A OOB code is generated when trigger is called.
 - A OOB code is valid if it does not expire yet.
+- A OOB code is specific to an authenticator.
 - If a valid OOB code is found, no new code is generated. The valid code is delivered again.
 
 ## _auth_authenticator_recovery_code
