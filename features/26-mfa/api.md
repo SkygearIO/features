@@ -37,6 +37,16 @@ mfa:
   #
   # Default is 'off'
   enforcement: 'off'
+  totp:
+    # The maximum number of TOTP authenticator the user can register.
+    # Valid values is [0, 10].
+    # Default is 1.
+    maximum: 1
+  oob:
+    # The maximum number of OOB authenticator the user can register.
+    # Valid values is [0, 10].
+    # Default is 1.
+    maximum: 1
   bearer_token:
     # How many days the bearer token is valid. Default is 30.
     expire_in_days: 30
