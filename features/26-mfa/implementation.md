@@ -70,6 +70,9 @@
 |Column|Type|
 |------|----|
 |id|TEXT; foreign key to `_auth_authenticator.id`|
+|parent_id|TEXT; foreign key to `_auth_authenticator.id`|
 |token|TEXT|
 |created_at|timestamp|
 |expire_at|timestamp|
+
+- `parent_id` is the ID of the parent authenticator. If the parent is deleted, all child bearer token are deleted.
