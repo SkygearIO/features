@@ -162,6 +162,8 @@ A PNG image of a QR code representing the given otpauth URI.
 }
 ```
 
+- `authenticator_id`: Optional when there is only one active OOB authenticator.
+
 ### Response body
 
 No response body. Only side effect is performed.
