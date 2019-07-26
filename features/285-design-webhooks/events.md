@@ -155,7 +155,7 @@ updated due to API operations.
 
 ```json
 {
-    "reason": "update-metadata",
+    "reason": "update_metadata",
     "is_disabled": true,
     "is_verified": true,
     "verify_info": { /* ... */ },
@@ -164,8 +164,8 @@ updated due to API operations.
 }
 ```
 
-- `reason`: The reason for the update of user, can be `update-metadata`,
-            `update-identity`, `verification`, or `administrative`.
+- `reason`: The reason for the update of user, can be `update_metadata`,
+            `update_identity`, `verification`, or `administrative`.
 - `is_disabled`: The new disabled status;
                  if it is not changed, the field would be absent.
 - `is_verified`: The new verified status;
@@ -186,13 +186,13 @@ When the password of a user is being updated.
 
 ```json
 {
-    "reason": "change-password",
+    "reason": "change_password",
     "user": { /* a User object */ }
 }
 ```
 
-- `reason`: The reason for the update of password, can be `change-password`,
-            `reset-password`, or `administrative`
+- `reason`: The reason for the update of password, can be `change_password`,
+            `reset_password`, or `administrative`
 - `user`: a snapshot of the user object before the operation
 
 **NOTE**
