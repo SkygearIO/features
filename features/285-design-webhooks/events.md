@@ -3,7 +3,6 @@
 All web-hook events have the same format:
 ```json
 {
-    "version": 1,
     "id": "0E1E9537-DF4F-4AF6-8B48-3DB4574D4F24",
     "seq": 435,
     "type": "after_user_create",
@@ -16,8 +15,6 @@ All web-hook events have the same format:
 }
 ```
 
-- `version`: signed 32-bit integer, the version of the web-hook event; it is
-             specific to the event type.
 - `id`: string, ID of the web-hook event.
 - `seq`: signed 64-bit integer, monotonic increasing event sequence number to
          establish event order.
@@ -26,12 +23,10 @@ All web-hook events have the same format:
 - `context`: object, the context of the web-hook.
 
 ## Versioning
-The content of top-level fields `type`, `id` and are guaranteed to exist
-and only backward-compatible changes would be made.
+All fields are guaranteed that only backward-compatible changes would be made:
+- Existing fields would not be removed or changed in meaning
+- New fields may be added
 
-Field `version` in the payload would be updated when a backward incompatible
-change is made to `payload`, `context` or `seq`. Consumer should handle unknown
-version gracefully.
 
 ## Context
 Each web-hook event would have a context, it contains the environmental
@@ -229,7 +224,6 @@ When user state (user/identity/session) is potentially being updated.
 ### before_user_create
 ```json
 {
-    "version": 1,
     "id": "A2BB162C-15EC-44A4-87D0-BF87354E1208",
     "seq": 50862,
     "type": "before_user_create",
@@ -266,7 +260,6 @@ When user state (user/identity/session) is potentially being updated.
 ### after_identity_create
 ```json
 {
-    "version": 1,
     "id": "D46EF8B6-4E30-4574-B7B5-D925A989AEFA",
     "seq": 50867,
     "type": "after_identity_create",
