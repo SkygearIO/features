@@ -153,8 +153,7 @@ for example:
 If failed to perform the mutations, the operation would be failed.
 If the operation failed, the mutations are rollbacked and not visible.
 
-Mutations would not generate additional events (except `user_sync`, which
-would be generated whenever user is updated).
+Mutations would not generate additional events.
 
 The mutated value is be propagated along the next events.
 
