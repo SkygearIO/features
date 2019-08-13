@@ -98,11 +98,11 @@ If developer choose to enable session cookie:
 
 ### Security Consideration
 
-- HTTPS is required.
+- HTTPS is required (can be disabled for development purpose).
 - Session cookie is HTTP-only; web app and web SDK would not have access to the
   session tokens.
-- Session cookie is set with `SameSite=lax`; generally, cross-domain requests
-  would not contain the cookie.
+- Session cookie is set with `SameSite=lax` by default; generally, cross-domain
+  requests would not contain the cookie.
 - Session cookie would not be shared across custom domains.
 - App developers are responsible to prevent CSRF in their services.
 - For untrusted multi-tenant hosting where sub-domain is allocated to each
