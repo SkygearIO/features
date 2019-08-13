@@ -16,6 +16,10 @@ interface Session {
 
 function listSessions(): Promise<Session[]>;
 
+function getSession(sessionID: string): Promise<Session>;
+
+function updateSession(sessionID: string, data: object): Promise<void>;
+
 function revokeOtherSessions(): Promise<void>;
 
 function revokeSession(sessionID: string): Promise<void>;

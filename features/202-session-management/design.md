@@ -31,11 +31,9 @@ Each session would be associated with attributes:
 - last user agent
 - custom attributes
 
-Session attributes would be available in web-hook event context, and session
-management APIs.
-
-App developer can update custom attributes in session using web-hook event
-mutation.
+Session attributes can be manipulated through management APIs. Session ID would
+be included in web-hook event, so developer can read/write session attributes
+if needed.
 
 Gateway is responsible to update last access time, last IP, and last user agent
 of session after processing the request, regardless whether the request is
