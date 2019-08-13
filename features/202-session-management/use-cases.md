@@ -2,14 +2,6 @@
 
 This document describes non-obvious solution to use cases.
 
-## Revoke all sessions, including current session
-Developer can revoke all other sessions, then revoke current session.
-
-```typescript
-await revokeOtherSessions();
-await revokeSession(auth.currentSessionID);
-```
-
 
 ## Session expiry after inactivity
 Developer can set session idle timeout to same as access token lifetime.
