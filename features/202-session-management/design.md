@@ -29,11 +29,15 @@ Each session would be associated with attributes:
 - last IP
 - creation user agent
 - last user agent
+- name
 - custom attributes
 
 Session attributes can be manipulated through management APIs. Session ID would
 be included in web-hook event, so developer can read/write session attributes
 if needed.
+
+Each session is associated with a name, default to empty. User can update the
+session name using SDK. This name is shown in portal UI.
 
 Gateway is responsible to update last access time, last IP, and last user agent
 of session after processing the request, regardless whether the request is
@@ -46,11 +50,14 @@ APIs would be provided to manage sessions of a user.
 
 Session list API returns a list of valid session of a user. Each list entry
 contains the session ID and session attributes. Access token / refresh token of
-the session would not be included.
+the session would not be included. Parsed user agent data is also returned.
 
 Revoke sessions API revokes a specific session, or all sessions other than the
 requesting session. A `session_delete` event would be generated for all sessions
 to be revoked.
+
+Update session API allows updating name of session. Custom attributes can also
+be updated using master key.
 
 
 ## Access / Refresh Token
@@ -111,14 +118,18 @@ If developer choose to enable session cookie:
 
 ## API Key per Client
 
-Each app can support multiple clients, such as web app and mobile app. It is
-common that web app uses cookies, while mobile app uses Authorization header.
+Each app can support multiple clients, such as web client and mobile client.
+It is common that web client uses cookies, while mobile client uses
+Authorization header.
 
 Developer can create a API key for each client. Each API key identifies a
 specific client, and different attributes can be configured for the client:
 - Name
 - Enabled status
 - Session token transport (cookie / `Authorization` header)
+
+Session token transport must be specified at client creation. It cannot be
+changed after creation.
 
 
 # Appendix
