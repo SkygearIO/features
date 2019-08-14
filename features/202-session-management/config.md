@@ -50,7 +50,7 @@ The value of key `clients` is a list of client configuration:
                           Must less than or equal to `access_token_lifetime`.
 - `same_site`: (valid for `cookie` transport only)
                The `SameSite` property of cookie. Can be `lax`, `strict`, or
-               empty string. Default to `lax`.
+               `none`. Default to `lax`.
 
 ## Auth Gear standalone configuration
 - `INSECURE_COOKIE`: Indicate whether session cookie should not set the `Secure`
