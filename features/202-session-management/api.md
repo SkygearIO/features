@@ -65,3 +65,36 @@ The parsed user agent information is provided in best-effort basis, and its
 information may not be backward compatible.
 Some parsed user agent information may not be available, and empty string
 would be used instead.
+
+
+## Web-hook Events
+In event context, a `session` attribute with value type `Session` would be
+added:
+```json
+{
+    "timestamp": 1565859018,
+    "request_id": "66014B80-0813-481B-9CD9-7C5A12B4671F",
+    "user_id": "F973C930-D357-428E-8E6D-A32B0FF1CFF4",
+    "identity_id": "1658AC0E-1D62-4612-BDE3-31464121C9A3",
+    "session": {
+        "id": "FEAD3339-4A26-4C43-8737-27AC88D1173E",
+        "identity_id": "1658AC0E-1D62-4612-BDE3-31464121C9A3"
+        // ...
+    }
+}
+```
+
+For `session_delete` event, the `reason` field will have one more possible
+value `revoke`.
+
+A new event `session_update` would be added with payload:
+```json
+{
+    "name": "",
+    "data": {}
+}
+```
+`name` and `data` are the new name and custom attributes respectively. If the
+field is not updated, `null` would be used as value. The session attributes in
+event context is the old value.
+
