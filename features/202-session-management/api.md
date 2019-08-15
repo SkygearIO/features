@@ -4,14 +4,11 @@
 ```typescript
 interface UserAgent {
     raw: string;
-    name: string;
-    version: string;
+    name: string; // browser name or app ID
+    version: string; // browser version or app version
     os: string;
     osVersion: string;
-    app: string;
-    appVersion: string
     device: string;
-    deviceID: string;
 }
 
 interface Session {
@@ -53,12 +50,12 @@ class AuthContainer {
 
 In general, for native SDKs, the user agent would have following format:
 ```
-[App ID]/[App Version]([Device]; [OS]; [Device ID]) [SDK Library Name]/[SDK version]
+[App ID]/[App Version]([Device]; [OS]) [SDK Library Name]/[SDK version]
 ```
 
 Examples:
-- `io.skygear.test.ios/1.0.1 (iPhone11,8; iOS 12.0; 46FF79AA-4E2E-475F-B58F-E7E37BAB771C) SKYKit/2.0.1`
-- `io.skygear.test.android/1.3.0 (Samsung GT-S5830L; Android 9.0; 32DDE92083E1AA54) io.skygear.skygear/2.2.0`
+- `io.skygear.test.ios/1.0.1 (iPhone11,8; iOS 12.0) SKYKit/2.0.1`
+- `io.skygear.test.android/1.3.0 (Samsung GT-S5830L; Android 9.0) io.skygear.skygear/2.2.0`
 
 The parsed user agent information is provided in best-effort basis, and its
 information may not be backward compatible.

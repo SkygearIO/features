@@ -26,3 +26,17 @@ session:
     session_idle_timeout_enabled: true
     session_idle_timeout: 1209600       # 2 weeks
 ```
+
+
+# Custom session attributes
+Developer can assign a custom attributes (e.g. device ID) using update
+session API. If developer would like to allow client-side to update, a wrapper
+API can be provided to allow updating specific attribute.
+
+```typescript
+// cloud function / microservice:
+async function updateDeviceID(sessionID: string, deviceID: string): Promise<void> {
+    // using master key:
+    await skygear.auth.updateSession(sessionID, { deviceID });
+}
+```

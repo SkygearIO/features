@@ -127,6 +127,7 @@ specific client, and different attributes can be configured for the client:
 - Name
 - Enabled status
 - Session token transport (cookie / `Authorization` header)
+- Session token properties (e.g. lifetime)
 
 Session token transport must be specified at client creation. It cannot be
 changed after creation.
@@ -161,6 +162,21 @@ gear/services, or client should refresh it:
 
 Therefore, it is proposed that session cookie must not be used with refresh
 token.
+
+
+## Privacy Policy & GDPR compliance
+
+Auth gear collects and saves the IP and user agent (including device model,
+OS, browser, etc.) of logged in user for session management. The combination of
+IP and user agent can be used to distinguish a person, therefore it can be
+considered a personal identifier. We consider it is our legitimate interest to
+collect this information for security purpose. This information would be
+deleted when session is invalidated. An API is provided so that user can
+review collected information.
+
+Developers should consider informing user about collected information in
+Privacy Policy of their app. Also, developers are responsible for evaluating
+GDPR compliance for custom attributes saved in session.
 
 
 ## References
