@@ -54,8 +54,12 @@ In general, for native SDKs, the user agent would have following format:
 ```
 
 Examples:
-- `io.skygear.test.ios/1.0.1 (iPhone11,8; iOS 12.0) SKYKit/2.0.1`
-- `io.skygear.test.android/1.3.0 (Samsung GT-S5830L; Android 9.0) io.skygear.skygear/2.2.0`
+- `io.skygear.test/1.0.1 (iPhone11,8; iOS 12.0) SKYKit/2.0.1`
+- `io.skygear.test/1.3.0 (Samsung GT-S5830L; Android 9.0) io.skygear.skygear/2.2.0`
+
+For web SDK, the user agent would be controlled by browser, for example:
+
+`Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36`
 
 The parsed user agent information is provided in best-effort basis, and its
 information may not be backward compatible.
