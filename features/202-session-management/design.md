@@ -105,6 +105,7 @@ If developer choose to enable session cookie:
 - Access token would not be returned from APIs.
 - Gateway would read access token from cookie only, ignoring `Authorization`
   header.
+- Some SDKs (e.g. mobile SDKs) would not be able to consume it.
 
 ### Security Consideration
 
@@ -123,12 +124,11 @@ If developer choose to enable session cookie:
 
 Optionally, developer can enable extra information collection at client side.
 If enabled, client SDK would collect extra information about user and send them
-to server in a cookie. This collection is on best-effort basis, and fields are
+to server in a header. This collection is on best-effort basis, and fields are
 not guaranteed to have values.
 
 This information would be associated with the session. Server would update
-the session with the information provided in cookie every request (erase if
-not present).
+the session with the information provided in header (if present) every request.
 
 Following information would be collected at the moment:
 - Device name

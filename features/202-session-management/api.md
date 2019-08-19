@@ -9,12 +9,8 @@ interface UserAgent {
     version: string; // browser version or app version
     os: string;
     osVersion: string;
-    device: string;
-}
-
-// Field value would be empty string if not available
-interface Device {
-    name: string; // device name
+    deviceName: string;
+    deviceModel: string;
 }
 
 interface Session {
@@ -25,14 +21,13 @@ interface Session {
     createdByIP: string;
     lastAccessedIP: string;
     userAgent: UserAgent;
-    device: Device?;
     name: string;
     data: object;
 }
 
 interface ExtraSessionInfoConfig {
-    enabled: boolean; // indicate whether extra information is enabled, default false
-    deviceName: string; // if empty, SDK would try to detect it if possible
+    deviceNameEnabled: boolean; // indicate SDK should collect device name information
+    deviceName?: string; // if falsy, SDK would try to detect it if possible
 }
 
 // list all sessions of current user
@@ -80,10 +75,9 @@ information may not be backward compatible.
 
 ## SDK Extra Information Collection
 Extra information collection is disabled by default. If enabled, the collected
-information would be sent in cookie `SKYGEAR_SESS_INFO` as JSON encoded object.
+information would be sent in header `X-Skygear-Extra-Info` as JSON encoded object.
 
-Extra information collection configuration would be persisted across app
-restart.
+Client SDKs should persist the extra information configuration locally.
 
 
 ## Web-hook Events
