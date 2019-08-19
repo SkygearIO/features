@@ -42,12 +42,11 @@ async function updateDeviceID(sessionID: string, deviceID: string): Promise<void
 ```
 
 # Session information display
-To display a session information in session management UI, it is recommended to
-determine displayed name as:
-1. If extra information is present and device name is not empty: use device name
-2. If user-defined session name is not empty: use session name
-3. Otherwise: combine device model & OS version to form the display name
-
-Developer may also want to display additional information:
+To display a session information in session management UI, developer may want to
+display following information:
+- Device name (if present)
+- Session name (if present)
+- Device Model
+- OS & OS Version
 - IP Address
 - Country (derived from IP using geo IP database)
