@@ -15,7 +15,8 @@ Sessions of auth gear should be configurable and manageable.
 ## Stateful Session
 
 Sessions would be stateful (i.e. persisted into database), instead of being
-stateless.
+stateless. Sessions would be stored in a low-latency horizontally scalable
+store for scalability reasons.
 
 Each session would be associated with attributes:
 - session ID
@@ -149,6 +150,11 @@ specific client, and different attributes can be configured for the client:
 
 Session token transport must be specified at client creation. It cannot be
 changed after creation.
+
+
+# Future Works
+- Audit log should include session attributes for historical records (#340)
+- A country value should be provided, deriving from available information (#354)
 
 
 # Appendix
