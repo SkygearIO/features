@@ -119,6 +119,21 @@ If developer choose to enable session cookie:
   tenant, the top-level domain must be included in Public Suffix List.
 
 
+## Extra Information Collection
+
+Optionally, developer can enable extra information collection at client side.
+If enabled, client SDK would collect extra information about user and send them
+to server in a cookie. This collection is on best-effort basis, and fields are
+not guaranteed to have values.
+
+This information would be associated with the session. Server would update
+the session with the information provided in cookie every request (erase if
+not present).
+
+Following information would be collected at the moment:
+- Device name
+
+
 ## API Key per Client
 
 Each app can support multiple clients, such as web client and mobile client.

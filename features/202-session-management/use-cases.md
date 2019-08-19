@@ -40,3 +40,10 @@ async function updateDeviceID(sessionID: string, deviceID: string): Promise<void
     await skygear.auth.updateSession(sessionID, { deviceID });
 }
 ```
+
+# Session name
+To display a session name in session management UI, it is recommended to
+determine displayed name as:
+1. If extra information is present and device name is not empty: use device name
+2. If user-defined session name is not empty: use session name
+3. Otherwise: combine device model & OS version to form the display name

@@ -2,6 +2,7 @@
 
 ## SDK API
 ```typescript
+// Field value would be empty string if not available
 interface UserAgent {
     raw: string;
     name: string; // browser name or app ID
@@ -11,6 +12,11 @@ interface UserAgent {
     device: string;
 }
 
+// Field value would be empty string if not available
+interface Device {
+    name: string; // device name
+}
+
 interface Session {
     id: string;
     identityID: string;
@@ -18,10 +24,15 @@ interface Session {
     lastAccessedAt: Date;
     createdByIP: string;
     lastAccessedIP: string;
-    createdByUserAgent: UserAgent;
-    lastAccessedUserAgent: UserAgent;
+    userAgent: UserAgent;
+    device: Device?;
     name: string;
     data: object;
+}
+
+interface ExtraSessionInfoConfig {
+    enabled: boolean; // indicate whether extra information is enabled, default false
+    deviceName: string; // if empty, SDK would try to detect it if possible
 }
 
 // list all sessions of current user
@@ -43,6 +54,8 @@ function revokeSession(sessionID: string): Promise<void>;
 
 class AuthContainer {
     get currentSessionID(): string | null;
+
+    extraSessionInfoConfig: ExtraSessionInfoConfig;
 }
 ```
 
@@ -63,8 +76,14 @@ For web SDK, the user agent would be controlled by browser, for example:
 
 The parsed user agent information is provided in best-effort basis, and its
 information may not be backward compatible.
-Some parsed user agent information may not be available, and empty string
-would be used instead.
+
+
+## SDK Extra Information Collection
+Extra information collection is disabled by default. If enabled, the collected
+information would be sent in cookie `SKYGEAR_SESS_INFO` as JSON encoded object.
+
+Extra information collection configuration would be persisted across app
+restart.
 
 
 ## Web-hook Events
