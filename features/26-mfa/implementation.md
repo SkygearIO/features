@@ -51,6 +51,7 @@
 - A OOB code is generated when trigger is called.
 - A OOB code is valid if it does not expire yet.
 - A OOB code is specific to an authenticator.
+- At any given time, all valid OOB codes of a given user are unique. The codes are not unique across users. Expired codes are not unique.
 - If a valid OOB code is found, no new code is generated. The valid code is delivered again.
 
 ## _auth_authenticator_recovery_code
