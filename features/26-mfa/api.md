@@ -37,16 +37,26 @@ mfa:
   #
   # Default is 'off'
   enforcement: 'off'
+  # The total maximum number of authenticator the user can register.
+  # Valid values is [0, 15].
+  # Default is 1.
+  maximum: 1
   totp:
     # The maximum number of TOTP authenticator the user can register.
-    # Valid values is [0, 10].
-    # Default is 1.
-    maximum: 1
+    # Valid values is [0, 5].
+    # Default is 0.
+    maximum: 0
   oob:
-    # The maximum number of OOB authenticator the user can register.
-    # Valid values is [0, 10].
-    # Default is 1.
-    maximum: 1
+    sms:
+      # The maximum number of OOB-SMS authenticator the user can register.
+      # Valid values is [0, 5].
+      # Default is 0.
+      maximum: 0
+    email:
+      # The maximum number of OOB-Email authenticator the user can register.
+      # Valid values is [0, 5].
+      # Default is 0.
+      maximum: 0
   bearer_token:
     # How many days the bearer token is valid. Default is 30.
     expire_in_days: 30
@@ -58,6 +68,56 @@ mfa:
     # By default listing is disabled, the user must regenerate a new set of
     # recovery code.
     list_enabled: false
+```
+
+# Configuration Recipes
+
+## At most 1 TOTP or 1 OOB-SMS or 1 OOB-Email
+
+```yaml
+mfa:
+  enforcement: "optional"
+  totp:
+    maximum: 1
+  oob:
+    sms:
+      maximum: 1
+    email:
+      maximum: 1
+```
+
+## At most 1 TOTP and 1 OOB-SMS and 1 OOB-Email
+
+```yaml
+mfa:
+  enforcement: "optional"
+  maximum: 3
+  totp:
+    maximum: 1
+  oob:
+    sms:
+      maximum: 1
+    email:
+      maximum: 1
+```
+
+## At most 1 TOTP
+
+```yaml
+mfa:
+  enforcement: "optional"
+  totp:
+    maximum: 1
+```
+
+## At most 1 OOB-SMS
+
+```yaml
+mfa:
+  enforcement: "optional"
+  oob:
+    sms:
+      maximum: 1
 ```
 
 # Endpoints
