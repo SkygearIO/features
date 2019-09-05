@@ -28,8 +28,7 @@ Each session would be associated with attributes:
 - last access time
 - creation IP
 - last IP
-- creation user agent
-- last user agent
+- user agent
 - name
 - custom attributes
 
@@ -39,9 +38,8 @@ handler.
 Each session is associated with a name, default to empty. User can update the
 session name using SDK. This name is shown in portal UI.
 
-Gateway is responsible to update last access time, last IP, and last user agent
-of session after processing the request, regardless whether the request is
-successful.
+Gateway is responsible to update last access time, last IP, and user agent
+of session before processing the request.
 
 
 ## Session Management
@@ -105,7 +103,12 @@ If developer choose to enable session cookie:
 - Access token would be transported in session cookie.
 - Access token would not be returned from APIs.
 - Gateway would read access token from cookie only, ignoring `Authorization`
-  header.
+  header. If a token is present in both header and cookie, it would be treated
+  as if no token is present.
+- The session cookie would be cleared when:
+    - access token will be returned when header transport is used; or
+    - token is present in both header and cookie; or
+    - the provided access token is not valid.
 - Some SDKs (e.g. mobile SDKs) would not be able to consume it.
 
 ### Security Consideration
@@ -148,8 +151,8 @@ specific client, and different attributes can be configured for the client:
 - Session token transport (cookie / `Authorization` header)
 - Session token properties (e.g. lifetime)
 
-Session token transport must be specified at client creation. It cannot be
-changed after creation.
+Session token transport must be specified at client creation. Developer should
+not change it after creation.
 
 
 # Future Works

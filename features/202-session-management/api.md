@@ -25,8 +25,8 @@ interface Session {
     data: object;
 }
 
-interface ExtraSessionInfoConfig {
-    deviceNameEnabled: boolean; // indicate SDK should collect device name information
+interface ExtraSessionInfoOptions {
+    collectDeviceName: boolean; // indicate SDK should collect device name information
     deviceName?: string; // if falsy, SDK would try to detect it if possible
 }
 
@@ -39,7 +39,7 @@ function getSession(sessionID: string): Promise<Session>;
 
 // update specific session name for current user
 // for master-key, can use for any user and also update custom attributes
-function updateSession(sessionID: string, name: string | undefined, data?: object): Promise<void>;
+function updateSession(sessionID: string, patch: { name?: string; data?: JSONObject }): Promise<void>;
 
 function revokeOtherSessions(): Promise<void>;
 
@@ -50,7 +50,7 @@ function revokeSession(sessionID: string): Promise<void>;
 class AuthContainer {
     get currentSessionID(): string | null;
 
-    extraSessionInfoConfig: ExtraSessionInfoConfig;
+    extraSessionInfoOptions: ExtraSessionInfoOptions;
 }
 ```
 
@@ -58,12 +58,12 @@ class AuthContainer {
 
 In general, for native SDKs, the user agent would have following format:
 ```
-[App ID]/[App Version]([Device]; [OS]) [SDK Library Name]/[SDK version]
+[App ID]/[App Version](Skygear; [Device]; [OS]) [SDK Library Name]/[SDK version]
 ```
 
 Examples:
-- `io.skygear.test/1.0.1 (iPhone11,8; iOS 12.0) SKYKit/2.0.1`
-- `io.skygear.test/1.3.0 (Samsung GT-S5830L; Android 9.0) io.skygear.skygear/2.2.0`
+- `io.skygear.test/1.0.1 (Skygear; iPhone11,8; iOS 12.0) SKYKit/2.0.1`
+- `io.skygear.test/1.3.0 (Skygear; Samsung GT-S5830L; Android 9.0) io.skygear.skygear/2.2.0`
 
 For web SDK, the user agent would be controlled by browser, for example:
 
@@ -79,6 +79,10 @@ information would be sent in header `X-Skygear-Extra-Info` as JSON encoded objec
 
 Client SDKs should persist the extra information configuration locally.
 
+Example header:
+```
+X-Skygear-Extra-Info: { "device_name": "My Phone" }
+```
 
 ## Web-hook Events
 In event context, a `session` attribute with value type `Session` would be
@@ -100,14 +104,4 @@ added:
 For `session_delete` event, the `reason` field will have one more possible
 value `revoke`.
 
-A new event `session_update` would be added with payload:
-```json
-{
-    "name": "",
-    "data": {}
-}
-```
-`name` and `data` are the new name and custom attributes respectively. If the
-field is not updated, `null` would be used as value. The session attributes in
-event context is the old value.
 
