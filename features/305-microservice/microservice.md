@@ -40,24 +40,21 @@ deployments:
     path: /api/
     port: 3000
     context: ./backend/nodejs
-    running_environment: nodejs
-    environment_version: "10"
+    runtime: nodejs
+    runtime_version: "10"
     command: "npm start"
 ```
 
-*`port`, `command`, `environment_version` are optional.*
+*`command`, `runtime_version` are optional.*
 
 When the user run `skycli app deploy`, the following steps are taken:
 
 1. Assert `./backend/service` to be a directory.
-1. If `running_environment` is specified, `skycli` will require the controller
-server to get with `environment_version` to get the `Dockerfile` and default `port`.
-1. Update deployment item with default port.
-1. Look for `<context>/.dockerignore`. If it is not present, the entire context is archived. Otherwise, use the same mechanism as `.dockerignore` to ignore files. `Dockerfile` will be
-added to the archive with default docker file path.
+1. If `runtime` is specified, `skycli` will request the controller with `runtime` and `runtime_version` to download the template in `tarball` format.
+1. Unzip the template and merge to the user code. Look for `<context>/.dockerignore`. If it is not present, the entire context is archived. Otherwise, use the same mechanism as `.dockerignore` to ignore files.
 1. Upload the archive and save as an artifact.
 1. Follow the existing deployment flow like deploying docker.
-1. `dockerfile` cannot be specified in this flow, default docker file path will be used.
+1. `dockerfile` cannot be specified in this flow, default dockerfile will be included in the template.
 1. Command is optional. Controller provided Dockerfile should have default command.
 If it is specified, it will override the default command.
 
@@ -122,8 +119,6 @@ The existing routing mechanism for cloud code is enhanced to support routing to 
 
 ## Preconfigured environment
 
-To avoid maintain too many minor versions, only major versions will be
-provided. For example, if user set `running_environment` to `nodejs` and
-`environment_version` to `10`, docker base image `node:10` will be used. So the
-latest minor version that provided by docker hub will be used during the build
-time.
+Every `runtime` and `runtime_version` has its own template. The template should contain a `Dockerfile`. If the template requires scripts or other files, we should give special name to folders or files, to avoid conflict with the user source code files.
+
+Each `runtime` has default `runtime_version`, we can define `runtime_version` base on `runtime`. For example, version 8, 10 and 12 will be supported in `nodejs`, and 2.7, 3.5, 3.6, 3.7 and 3.8 will be supported in `python`. If user want to use specific minor or patch version, they should write their own dockerfile.
