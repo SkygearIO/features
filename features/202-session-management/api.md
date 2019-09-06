@@ -75,13 +75,13 @@ information may not be backward compatible.
 
 ## SDK Extra Information Collection
 Extra information collection is disabled by default. If enabled, the collected
-information would be sent in header `X-Skygear-Extra-Info` as JSON encoded object.
+information would be sent in header `X-Skygear-Extra-Info` as base64 encoded JSON encoded object.
 
 Client SDKs should persist the extra information configuration locally.
 
 Example header:
 ```
-X-Skygear-Extra-Info: { "device_name": "My Phone" }
+X-Skygear-Extra-Info: eyAiZGV2aWNlX25hbWUiOiAiTXkgUGhvbmUiIH0K
 ```
 
 ## Web-hook Events
