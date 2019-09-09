@@ -132,3 +132,30 @@ Folder structure of template
 Every `template` has its own `Dockerfile` and `.dockerignore`. For template that requires scripts, we should put them into the `.skygear` folder. If there is name conflict between template and user files, `skycli` will stop archiving with error message.
 
 Templates will be defined based on language. For example, version 8, 10 and 12 will be supported in `nodejs`, and 2.7, 3.5, 3.6, 3.7 and 3.8 will be supported in `python`. If user want to use specific minor or patch version, they should write their own dockerfile.
+
+### Nodejs example
+
+Dockerfile
+
+```Dockerfile
+FROM node:12
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN set -ex \
+    && ([ -f package-lock.json ] && npm ci) \
+    || ([ -f package.json ] && npm install)
+
+COPY . .
+
+CMD [ "npm", "start" ]
+```
+
+.dockerignore
+
+```
+node_modules
+npm-debug.log
+```
