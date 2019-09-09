@@ -16,7 +16,7 @@ deployments:
     port: 8888
     context: ./backend/service
     dockerfile: Dockerfile
-    command: "<start server command>"
+    command: ["<start server command in array>"]
 ```
 
 *`dockerfile`, `command` are optional.*
@@ -42,7 +42,7 @@ deployments:
     port: 3000
     context: ./backend/nodejs
     template: nodejs:10
-    command: "npm start"
+    command: ["npm", "start"]
 ```
 
 *`command` is optional.*
