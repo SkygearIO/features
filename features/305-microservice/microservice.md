@@ -142,10 +142,15 @@ FROM node:12
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
+COPY package.json ./
+
+# Copy package.json again is workaround to avoid errors when
+# package*.json and yarn.lock are missing
+COPY package.json package*.json yarn.lock* ./
 
 RUN set -ex \
-    && ([ -f package-lock.json ] && npm ci) \
+    && ([ -f yarn.lock ] && yarn install) \
+    || ([ -f package-lock.json ] && npm ci) \
     || ([ -f package.json ] && npm install)
 
 COPY . .
@@ -156,6 +161,32 @@ CMD [ "npm", "start" ]
 .dockerignore
 
 ```
-node_modules
-npm-debug.log
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Dependency directories
+node_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+
+# FuseBox cache
+.fusebox/
 ```
