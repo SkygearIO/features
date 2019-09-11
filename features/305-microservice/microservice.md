@@ -52,8 +52,7 @@ When the user run `skycli app deploy`, the following steps are taken:
 1. Assert `./backend/service` to be a directory.
 1. If `template` is specified, `skycli` will request the controller with `template` to download the template in `tarball` format.
 1. Unzip the template and merge to the user code (see [Preconfigured environment](#preconfigured-environment) for details).
-1. `skycli` will read the `<context>/.dockerignore` file and ignore files with the same mechanism as `.dockerignore`.
-1. `skycli` will read the `<context>/.skyignore` file and ignore files with the same mechanism as `.gitignore`.
+1. `skycli` will use user provided `.skyignore` to ignore user code, and template provided `.dockerignore` to ignore the merged archive. `.dockerignore` mechanism will be used for both ignore config files.
 1. User should use `.skyignore` in their code, `.dockerignore` is provided by the template.
 1. Upload the archive and save as an artifact.
 1. Follow the existing deployment flow like deploying docker.
