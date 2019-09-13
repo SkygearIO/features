@@ -51,6 +51,10 @@ class AuthContainer {
     get currentSessionID(): string | null;
 
     extraSessionInfoOptions: ExtraSessionInfoOptions;
+
+    // after updating extra session info options, call this to save it to
+    // persistent storage.
+    saveExtraSessionInfoOptions(): Promise<void>;
 }
 ```
 
