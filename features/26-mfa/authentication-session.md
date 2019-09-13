@@ -65,19 +65,16 @@ An authentication session participating endpoint is endpoint that may return aut
 
 These endpoints initiate an authentication session.
 
-- GET /mfa/authenticators
-
-This endpoint accepts authentication session token so the user can see what authenticators they can use.
-
 - POST /mfa/totp/new
 - POST /mfa/totp/activate
 - POST /mfa/oob/new
 - POST /mfa/oob/activate
-- POST /mfa/oob/trigger
 
 These endpoints accept authentication session token only when the user has no authenticators. When the user has no authenticators, they must be offered a way to add the very first authenticator. When the user has at least one authenticator, then these endpoints only accept access token. This prevents an attacker who knows the first factor (such as password credentials) to register arbitrary authenticators.
 
+- GET /mfa/authenticators
 - POST /mfa/totp/authenticate
+- POST /mfa/oob/trigger
 - POST /mfa/oob/authenticate
 - POST /mfa/recovery_code/authenticate
 - POST /mfa/bearer_token/authenticate
