@@ -457,6 +457,8 @@ The following functions are all in the namespace `skygear.auth.mfa`.
 
 interface CreateNewTOTPOptions {
   displayName: string;
+  issuer: string;
+  accountName: string;
   authenticationSessionToken?: string;
 }
 
@@ -464,6 +466,8 @@ interface CreateNewTOTPResult {
   authenticatorID: string;
   authenticatorType: "totp";
   secret: string;
+  otpauthURI: string;
+  qrCodeImageURL: string;
 }
 
 interface ActivateTOTPOptions {
@@ -638,24 +642,23 @@ const { token: authenticationSessionToken } = authnSession;
 // Present an UI to let the user to optionally name the TOTP authenticator.
 
 const displayName = textInput.value;
-const { authenticatorID, secret } = await skygear.auth.mfa.createNewTOTP({
+const {
+  authenticatorID,
+  // In simpliest case, just use the QR code image URL.
+  qrCodeImageURL,
+  // Or the developer can generate the QR code with the key URI.
+  otpauthURI,
+  // Or the developer can generate the key URI by themselves with the Base32 encoded secret.
+  secret,
+} = await skygear.auth.mfa.createNewTOTP({
   displayName,
+  issuer: "My App",
+  accountName: "user@example.com",
   authenticationSessionToken,
 });
 
-// Present to the secret to the user and let the user
-// to add the secret to their TOTP application, such as Authy and Google Authenticator.
-// Or preferably generate an otpauth URI.
-
-const otpauthURI = skygear.auth.mfa.generateOTPAuthURI({
-  secret,
-  issuer: "My App",
-  accountName: "user@example.com",
-});
-
-// If the developer can either generate the QR code by themselves or generate an QR code image URL.
-const qrcodeImageURL = skygear.auth.mfa.generateOTPAuthURIQRCodeImageURL(otpauthURI);
-image.src = qrcodeImageURL;
+// The image URL is ready for use.
+image.src = qrCodeImageURL;
 
 // Present an UI to instruct the user to input the OTP.
 const otp = textInput.value;
