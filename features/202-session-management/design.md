@@ -98,11 +98,10 @@ If developer choose to enable session cookie:
 - Access token would not be returned from APIs.
 - Gateway would read access token from cookie only, ignoring `Authorization`
   header. If a token is present in both header and cookie, it would be treated
-  as if no token is present.
-- The session cookie would be cleared when:
-    - access token will be returned when header transport is used; or
-    - token is present in both header and cookie; or
-    - the provided access token is not valid.
+  as if session is not found.
+- To prevent unrecoverable failure (i.e. site unaccessible until cookies are cleared),
+  the session cookie would be cleared when the session is not found or invalid,
+  instead of producing error response.
 - Some SDKs (e.g. mobile SDKs) would not be able to consume it.
 
 ### Security Consideration
