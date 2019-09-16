@@ -154,7 +154,7 @@ mfa:
 ```JSON
 {
   "authenticator_id": "xxx",
-  "otp": "123456",
+  "otp": "123456"
 }
 ```
 
