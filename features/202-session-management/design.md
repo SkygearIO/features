@@ -119,16 +119,15 @@ If developer choose to enable session cookie:
 
 ## Extra Information Collection
 
-Optionally, developer can enable extra information collection at client side.
-If enabled, client SDK would collect extra information about user and send them
-to server in a header. This collection is on best-effort basis, and fields are
-not guaranteed to have values.
+Optionally, developer can send extra information to server.
 
 This information would be associated with the session. Server would update
 the session with the information provided in header (if present) every request.
 
-Following information would be collected at the moment:
+Following information is available at the moment:
 - Device name
+
+SDKs should provide helper functions to collect extra information if available.
 
 
 ## API Key per Client
