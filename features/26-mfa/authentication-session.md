@@ -51,9 +51,6 @@ The authentication session error is an error that includes the authentication se
 }
 ```
 
-The client SDK must forward this error and let the application to act accordingly. For example,
-if the next step is `mfa`, direct the user to the MFA screen.
-
 If the authentication session is invalid (expired), the following error is returned.
 
 ```json
@@ -61,8 +58,6 @@ If the authentication session is invalid (expired), the following error is retur
   "name": "InvalidAuthenticationSession"
 }
 ```
-
-The client SDK must clear the authentication session if it encounters this error.
 
 ## Authentication Session Participating Endpoint
 
@@ -90,3 +85,15 @@ These endpoints accept authentication session token only when the user has no au
 - POST /mfa/bearer_token/authenticate
 
 By definition, they accept authentication session token.
+
+## Interaction between Client SDK and Authentication Session
+
+The client SDK must ensure the presence of (access token and refresh token) and authentication session are mutually exclusive.
+
+If the client SDK encounters `AuthenticationSession` error, it must decode the authentication session and store it in memory and local storage.
+
+If the client SDK encounters `InvalidAuthenticationSession` error, it must clear the authentication session.
+
+If the client SDK stores the session, it must clear the authentication session.
+
+If the client SDK stores the authentication session, it must clear the session.

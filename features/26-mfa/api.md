@@ -455,7 +455,6 @@ interface CreateNewTOTPOptions {
   displayName: string;
   issuer: string;
   accountName: string;
-  authenticationSessionToken?: string;
 }
 
 interface CreateNewTOTPResult {
@@ -469,7 +468,6 @@ interface CreateNewTOTPResult {
 interface ActivateTOTPOptions {
   authenticatorID: string;
   otp: string;
-  authenticationSessionToken?: string;
 }
 
 interface ActivateTOTPResult {
@@ -495,24 +493,20 @@ type CreateNewOOBOptions = CreateNewOOBSMSOptions | CreateNewOOBEmailOptions;
 interface CreateNewOOBSMSOptions {
   channel: "sms";
   phone: string;
-  authenticationSessionToken?: string;
 }
 
 interface CreateNewOOBEmailOptions {
   channel: "email";
   email: string;
-  authenticationSessionToken?: string;
 }
 
 interface TriggerOOBOptions {
   authenticatorID?: string;
-  authenticationSessionToken?: string;
 }
 
 interface ActivateOOBOptions {
   authenticatorID: string;
   code: string;
-  authenticationSessionToken?: string;
 }
 
 interface CreateNewOOBResult {
@@ -536,25 +530,24 @@ interface AuthenticationSession {
   step: "identity" | "mfa";
 }
 
-function decodeAuthenticationSession(value: unknown): AuthenticationSession | undefined;
+interface AuthContainer {
+  authenticationSession?: AuthenticationSession;
+}
 
 // Authenticate
 
 interface AuthenticateWithTOTPOptions {
   otp: string;
-  authenticationSessionToken: string;
   skipMFAForCurrentDevice?: boolean;
 }
 
 interface AuthenticateWithOOBOptions {
   code: string;
-  authenticationSessionToken: string;
   skipMFAForCurrentDevice?: boolean;
 }
 
 interface AuthenticateWithRecoveryCodeOptions {
   code: string;
-  authenticationSessionToken: string;
 };
 
 async function authenticateWithTOTP(options: AuthenticateWithTOTPOptions): Promise<User>;
@@ -598,11 +591,7 @@ interface ListRecoveryCodeResult {
   recoveryCodes: string[];
 }
 
-interface GetAuthenticatorsOptions {
-  authenticationSessionToken?: string;
-}
-
-async function getAuthenticators(options?: GetAuthenticatorsOptions): Promise<Authenticator[]>;
+async function getAuthenticators(): Promise<Authenticator[]>;
 async function deleteAuthenticator(authenticatorID: string): Promise<void>;
 async function regenerateRecoveryCode(): Promise<RegenerateRecoveryCodeResult>;
 async function listRecoveryCode(): Promise<ListRecoveryCodeResult>;
@@ -619,19 +608,16 @@ async function revokeAllTrustedDevices(): Promise<void>;
 try {
   await skygear.auth.login("user@example.com", "password");
 } catch (e) {
-  const authnSession = skygear.decodeAuthenticationSession(e);
-  if (authnSession != null) {
-    if (authnSession.step === "mfa") {
-      navigateToRegisterMFAScreen(authnSession);
-      return;
-    }
+  const authnSession = skygear.auth.authenticationSession;
+  if (authnSession != null && authnSession.step === "mfa") {
+    navigateToRegisterMFAScreen(authnSession);
+    return;
   }
   // Handle any other error.
 }
 ```
 
 ```typescript
-const { token: authenticationSessionToken } = authnSession;
 // Present an UI to let the user to choose authenticator.
 // Suppose the user chose TOTP.
 
@@ -650,7 +636,6 @@ const {
   displayName,
   issuer: "My App",
   accountName: "user@example.com",
-  authenticationSessionToken,
 });
 
 // The image URL is ready for use.
@@ -661,12 +646,10 @@ const otp = textInput.value;
 const { recoveryCodes } = await skygear.auth.mfa.activateTOTP({
   authenticatorID,
   otp,
-  authenticationSessionToken,
 });
 ```
 
 ```typescript
-const { token: authenticationSessionToken } = authnSession;
 // Present an UI to let the user to choose authenticator.
 // Suppose the user chose OOB.
 
@@ -675,7 +658,6 @@ const e164number = textInput.value;
 const { authenticatorID } = await skygear.auth.mfa.createNewOOB({
   channel: "sms",
   phone: e164number,
-  authenticationSessionToken,
 });
 
 // Present an UI to instruct the user to check SMS.
@@ -683,7 +665,6 @@ const { authenticatorID } = await skygear.auth.mfa.createNewOOB({
 // Present an UI to offer the user to trigger again in case the delivery failed.
 await triggerOOB({
   authenticatorID,
-  authenticationSessionToken,
 });
 
 // Present an UI to instruct the user to input the recevied code.
@@ -691,7 +672,6 @@ const code = textInput.value;
 const { recoveryCodes } = await skygear.auth.mfa.activateOOB({
   authenticatorID,
   code,
-  authenticationSessionToken,
 });
 ```
 
@@ -721,22 +701,17 @@ if (recoveryCodes) {
 try {
   await skygear.auth.login("user@example.com", "password");
 } catch (e) {
-  const authnSession = skygear.decodeAuthenticationSession(e);
-  if (authnSession == null) {
+  if (skygear.auth.authenticationSession == null) {
     throw e;
   }
-  const { authenticationSessionToken } = authnSession;
 
-  const authenticators = await skygear.auth.mfa.getAuthenticators({
-    authenticationSessionToken,
-  });
+  const authenticators = await skygear.auth.mfa.getAuthenticators();
   // Present the authenticators to the user and let them choose
   // which one they want to use.
 
   // Suppose they chose OOB
   await skygear.mfa.triggerOOB({
     authenticatorID: authenticators[0].id,
-    authenticationSessionToken,
   });
 
   // Present an UI to instruct the user to check SMS.
@@ -748,7 +723,6 @@ try {
   const user = await skygear.auth.mfa.authenticateWithOOB({
     code,
     skipMFAForCurrentDevice: true,
-    authenticationSessionToken,
   });
 }
 ```
@@ -950,7 +924,7 @@ async function login(loginID: string, password: string): Promise<User> {
 
 async function beginBearerTokenFlow(error: unknown): Promise<User> {
   // Re-raise the error if it is not authentication session error
-  const authnSession = skygear.decodeAuthenticationSession(error);
+  const authnSession = skygear.auth.authenticationSession;
   if (authnSession == null) {
     throw error;
   }
