@@ -21,22 +21,18 @@ The session contains how the user was authenticated.
 
 ```yaml
 mfa:
-  # 'off', 'optional' or 'required'
+  # If enabled is false, the MFA API is disabled. THe user cannot register authenticator.
+  # Default is false.
+  enabled: false
+  # Valid values are 'off', 'optional' or 'required'.
+  # Default is 'optional'.
   #
-  # `off` means MFA API is disabled. The user cannot register authenticator.
-  # If the default were 'optional', the user would be free to register authenticator
-  # and the developer may not be expecting this. Since MFA requires client side support,
-  # the developer must opt-in to enable MFA.
+  # 'off' means MFA is never required during authentication.
   #
-  # 'optional' means the user is free to register a new authenticator.
-  # When a user has at least one active authenticator, the user must login with MFA.
-  # This is like how other online services such as Google and Facebook offer MFA.
+  # 'optional' means MFA is required during authentication when the user has at least 1 activated authenticator. This is like how other major online services such as Google offer MFA.
   #
-  # 'required' means the user must login with MFA.
-  # This is like how banking services offer MFA.
-  #
-  # Default is 'off'
-  enforcement: 'off'
+  # 'required' means MFA is always required during authentication.
+  enforcement: 'optional'
   # The total maximum number of authenticator the user can register.
   # Valid values is [0, 15].
   # Default is 1.
