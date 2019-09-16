@@ -21,31 +21,11 @@ interface Session {
     createdByIP: string;
     lastAccessedIP: string;
     userAgent: UserAgent;
-    name: string;
-    data: object;
 }
 
 interface ExtraSessionInfoOptions {
-    collectDeviceName: boolean; // indicate SDK should collect device name information
-    deviceName?: string; // if falsy, SDK would try to detect it if possible
+    deviceName?: string;
 }
-
-// list all sessions of current user
-function listSessions(): Promise<Session[]>;
-
-// get specific session information for current user
-// for master-key, can use for any user
-function getSession(sessionID: string): Promise<Session>;
-
-// update specific session name for current user
-// for master-key, can use for any user and also update custom attributes
-function updateSession(sessionID: string, patch: { name?: string; data?: JSONObject }): Promise<void>;
-
-function revokeOtherSessions(): Promise<void>;
-
-// revoking current session is disallowed
-// for master-key, can use for any session
-function revokeSession(sessionID: string): Promise<void>;
 
 class AuthContainer {
     get currentSessionID(): string | null;
@@ -55,7 +35,23 @@ class AuthContainer {
     // after updating extra session info options, call this to save it to
     // persistent storage.
     saveExtraSessionInfoOptions(): Promise<void>;
+
+    // list all sessions of current user
+    listSessions(): Promise<Session[]>;
+
+    // get specific session information for current user
+    // for master-key, can use for any user
+    getSession(sessionID: string): Promise<Session>;
+
+    revokeOtherSessions(): Promise<void>;
+
+    // revoking current session is disallowed
+    // for master-key, can use for any session
+    revokeSession(sessionID: string): Promise<void>;
 }
+
+// get current device name; return empty string if cannot detect.
+function getDeviceName(): Promise<string>;
 ```
 
 ## SDK User Agent
@@ -107,5 +103,3 @@ added:
 
 For `session_delete` event, the `reason` field will have one more possible
 value `revoke`.
-
-

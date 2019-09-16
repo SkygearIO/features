@@ -29,8 +29,6 @@ Each session would be associated with attributes:
 - creation IP
 - last IP
 - user agent
-- name
-- custom attributes
 
 Session attributes can be manipulated through management APIs and web-hook
 handler.
@@ -56,10 +54,6 @@ to be revoked.
 
 Update session API allows updating name of session. Custom attributes can also
 be updated using master key.
-
-When the name of session, or custom attributes are updated, a `session_update`
-event would be generated. Web-hook event context would include session
-attributes and mutations can be used to update them.
 
 
 ## Access / Refresh Token
