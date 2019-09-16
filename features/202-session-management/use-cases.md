@@ -28,24 +28,10 @@ session:
 ```
 
 
-# Custom session attributes
-Developer can assign a custom attributes (e.g. device ID) using update
-session API. If developer would like to allow client-side to update, a wrapper
-API can be provided to allow updating specific attribute.
-
-```typescript
-// cloud function / microservice:
-async function updateDeviceID(sessionID: string, deviceID: string): Promise<void> {
-    // using master key:
-    await skygear.auth.updateSession(sessionID, { deviceID });
-}
-```
-
 # Session information display
 To display a session information in session management UI, developer may want to
 display following information:
 - Device name (if present)
-- Session name (if present)
 - Device Model
 - OS & OS Version
 - IP Address
