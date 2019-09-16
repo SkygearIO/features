@@ -54,6 +54,16 @@ The authentication session error is an error that includes the authentication se
 The client SDK must forward this error and let the application to act accordingly. For example,
 if the next step is `mfa`, direct the user to the MFA screen.
 
+If the authentication session is invalid (expired), the following error is returned.
+
+```json
+{
+  "name": "InvalidAuthenticationSession"
+}
+```
+
+The client SDK must clear the authentication session if it encounters this error.
+
 ## Authentication Session Participating Endpoint
 
 An authentication session participating endpoint is endpoint that may return authentication session error.
