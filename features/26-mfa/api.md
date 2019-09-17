@@ -903,6 +903,39 @@ await skygear.auth.mfa.deleteAuthenticator(authenticatorID);
 - GET /mfa/authenticators
 - DELETE /mfa/authenticator
 
+## Step-up MFA from an existing session
+
+### Microservice
+
+```javascript
+function someSensitiveOperation(req, res) {
+  const now = new Date();
+  const aid = req.headers.get("x-skygear-authenticator-id");
+  const atime = req.headers.get("x-skygear-authenticator-updated-at");
+  if (aid && (now - (new Date(atime))) <= 5 * 60 * 1000) {
+    // MFA was involved in the session and is fresh enough
+    // Continue our business logic...
+  } else {
+    // Tell our application that step-up MFA is required.
+    // The error format is up to the application.
+    res.write(401, "step-up-mfa");
+  }
+}
+```
+
+### SDK
+
+```typescript
+const response = await skygear.fetch("/someSensitiveOperation", {
+  method: "POST",
+  body: JSON.stringify(payload),
+});
+const text = await response.text();
+if (response.status === 401 && text === "step-up-mfa") {
+  navigateToAuthenticationMFAScreen();
+}
+```
+
 # Delete authenticator
 
 Deleting the authenticator will invalidate the associated sessions.
