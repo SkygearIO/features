@@ -72,6 +72,7 @@ mfa:
 
 ```yaml
 mfa:
+  enabled: true
   enforcement: "optional"
   totp:
     maximum: 1
@@ -86,6 +87,7 @@ mfa:
 
 ```yaml
 mfa:
+  enabled: true
   enforcement: "optional"
   maximum: 3
   totp:
@@ -101,6 +103,7 @@ mfa:
 
 ```yaml
 mfa:
+  enabled: true
   enforcement: "optional"
   totp:
     maximum: 1
@@ -110,6 +113,7 @@ mfa:
 
 ```yaml
 mfa:
+  enabled: true
   enforcement: "optional"
   oob:
     sms:
