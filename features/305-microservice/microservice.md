@@ -38,10 +38,10 @@ When the user run `skycli app deploy`, the following steps are taken:
 deployments:
   my-awesome-service:
     type: http-service
+    template: nodejs:10
     path: /api/
     port: 3000
     context: ./backend/nodejs
-    template: nodejs:10
     command: ["npm", "start"]
 ```
 
@@ -49,7 +49,7 @@ deployments:
 
 When the user run `skycli app deploy`, the following steps are taken:
 
-1. Assert `./backend/service` to be a directory.
+1. Assert `./backend/nodejs` to be a directory.
 1. If `template` is specified, `skycli` will request the controller with `template` to download the template in `tarball` format.
 1. Unzip the template and merge to the user code (see [Preconfigured environment](#preconfigured-environment) for details).
 1. `skycli` will use user provided `.skyignore` to ignore user code, and template provided `.dockerignore` to ignore the merged archive. `.dockerignore` mechanism will be used for both ignore config files.
