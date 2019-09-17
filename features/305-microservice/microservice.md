@@ -141,10 +141,6 @@ FROM node:12
 
 WORKDIR /usr/src/app
 
-COPY package.json ./
-
-# Copy package.json again is workaround to avoid errors when
-# package*.json and yarn.lock are missing
 COPY package.json package*.json yarn.lock* ./
 
 RUN set -ex \
