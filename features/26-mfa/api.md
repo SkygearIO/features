@@ -550,15 +550,11 @@ interface AuthenticateWithOOBOptions {
   skipMFAForCurrentDevice?: boolean;
 }
 
-interface AuthenticateWithRecoveryCodeOptions {
-  code: string;
-};
-
 async function authenticateWithTOTP(options: AuthenticateWithTOTPOptions): Promise<User>;
 
 async function authenticateWithOOB(options: AuthenticateWithOOBOptions): Promise<User>;
 
-async function authenticateWithRecoveryCode(options: AuthenticateWithRecoveryCodeOptions): Promise<User>;
+async function authenticateWithRecoveryCode(code: string): Promise<User>;
 
 // Authenticator management
 
