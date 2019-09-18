@@ -583,18 +583,10 @@ interface OOBEmailAuthenticator {
   maskedEmail: string;
 }
 
-interface RegenerateRecoveryCodeResult {
-  recoveryCodes: string[];
-}
-
-interface ListRecoveryCodeResult {
-  recoveryCodes: string[];
-}
-
 async function getAuthenticators(): Promise<Authenticator[]>;
 async function deleteAuthenticator(authenticatorID: string): Promise<void>;
-async function regenerateRecoveryCode(): Promise<RegenerateRecoveryCodeResult>;
-async function listRecoveryCode(): Promise<ListRecoveryCodeResult>;
+async function regenerateRecoveryCode(): Promise<string[]>;
+async function listRecoveryCode(): Promise<string[]>;
 async function revokeAllTrustedDevices(): Promise<void>;
 ```
 
@@ -834,7 +826,7 @@ await skygear.auth.mfa.revokeAllTrustedDevices();
 
 ```typescript
 // If listing is enabled, the user can list the existing recovery code.
-const { recoveryCodes } = await skygear.auth.mfa.listRecoveryCode();
+const recoveryCodes = await skygear.auth.mfa.listRecoveryCode();
 // Present an UI to show the list of recovery codes to the user.
 ```
 
@@ -848,7 +840,7 @@ const { recoveryCodes } = await skygear.auth.mfa.listRecoveryCode();
 
 ```typescript
 // If listing is disabled, the user must regenerate a new set of recovery code.
-const { recoveryCodes } = await skygear.auth.mfa.regenerateRecoveryCode();
+const recoveryCodes = await skygear.auth.mfa.regenerateRecoveryCode();
 // Present an UI to show the list of recovery codes to the user.
 ```
 
