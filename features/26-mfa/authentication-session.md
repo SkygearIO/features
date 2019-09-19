@@ -97,3 +97,7 @@ If the client SDK encounters `InvalidAuthenticationSession` error, it must clear
 If the client SDK stores the session, it must clear the authentication session.
 
 If the client SDK stores the authentication session, it must clear the session.
+
+## Security of Authentication Session Token
+
+The authentication session token is not invalidated after it was used to create a session. Therefore it must be short-lived (5 minutes).
