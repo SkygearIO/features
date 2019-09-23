@@ -529,14 +529,7 @@ async function activateOOB(code: string): Promise<ActivateOOBResult>;
 
 // Error inspection
 
-interface AuthenticationSession {
-  token: string;
-  step: "identity" | "mfa";
-}
-
-interface AuthContainer {
-  authenticationSession?: AuthenticationSession;
-}
+function isMFARequiredError(e: unknown): boolean;
 
 // Authenticate
 
@@ -600,9 +593,8 @@ async function revokeAllTrustedDevices(): Promise<void>;
 try {
   await skygear.auth.login("user@example.com", "password");
 } catch (e) {
-  const authnSession = skygear.auth.authenticationSession;
-  if (authnSession != null && authnSession.step === "mfa") {
-    navigateToRegisterMFAScreen(authnSession);
+  if (isMFARequiredError(e)) {
+    navigateToRegisterMFAScreen();
     return;
   }
   // Handle any other error.
@@ -684,7 +676,7 @@ if (recoveryCodes) {
 try {
   await skygear.auth.login("user@example.com", "password");
 } catch (e) {
-  if (skygear.auth.authenticationSession == null) {
+  if (!isMFARequiredError(e)) {
     throw e;
   }
 
@@ -921,54 +913,6 @@ Deleting the authenticator will invalidate the associated sessions.
 
 - The Client SDK must save the bearer token it receives.
 - The Client SDK must try to handle authentication session error with the bearer token once.
-
-## Bearer token flow
-
-The following pseudo code demonstrate the bearer token flow
-
-```typescript
-// This function is skygear.auth.login
-async function login(loginID: string, password: string): Promise<User> {
-  try {
-    return _login("user@example.com", "password");
-  } catch (e) {
-    return beginBearerTokenFlow(e);
-  }
-}
-
-async function beginBearerTokenFlow(error: unknown): Promise<User> {
-  // Re-raise the error if it is not authentication session error
-  const authnSession = skygear.auth.authenticationSession;
-  if (authnSession == null) {
-    throw error;
-  }
-  // Re-raise the error if the step is not MFA.
-  const { step } = authnSession;
-  if (step !== "mfa") {
-    throw error;
-  }
-  const { token: authn_session_token } = authnSession;
-
-  // Retrieve the saved bearer token
-  // The token may be in cookie so it cannot be retrieved.
-  let bearer_token;
-  try {
-    bearer_token = await getBearerToken();
-  } catch {
-    throw error;
-  }
-
-  // Therefore we must try to authenticate once
-  try {
-    return authenticateWithBearerToken({
-      bearer_token,
-      authn_session_token:,
-    });
-  } catch {
-    throw error;
-  }
-}
-```
 
 # Authenticator Characteristics
 
