@@ -326,11 +326,23 @@ oauth:
     # Space-delimited scopes. Required.
     # Note that the scope must be large enough to fetch user info.
     scope: 'profile email'
-    # When "type" is "azureadv2"
-    # The developer must specify "tenant".
-    # Ask Azure for the value of "tenant".
   - type: azureadv2
     id: azure-ad-1
+    # When "type" is "azureadv2"
+    # The developer must specify "tenant".
+    #
+    # The value typically should be the tenant ID of the Azure AD.
+    #
+    # When the OAuth client is configured to be "Any Azure AD directory - Multitenant",
+    # then the value must be the special value "organizations".
+    #
+    # When the OAuth client is configured to be "Any Azure AD directory - Multitenant and personal Microsoft accounts (e.g. Skype, Xbox)",
+    # then the value must be the special value "common".
+    #
+    # If the developer wants to disallow some AD directories or disallow some kinds of Microsoft accounts,
+    # they must make use of `before_user_create` and `before_identity_create` hook.
+    # The hook payload includes the original ID token.
+    # See https://docs.microsoft.com/en-us/azure/active-directory/develop/id-tokens
     tenant: '53ed053f-c7ca-4b17-9ffc-917def96673c'
     client_id: ''
     client_secret: ''
