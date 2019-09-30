@@ -3,8 +3,12 @@
 ## Overview
 
 The Asset Gear is a gear for uploading and retrieving user-generated asset.
+
 It supports both public and private asset.
+
 It can transform image asset on the fly via query string.
+
+The Asset Gear does not support static asset. Another gear is responsible for static asset.
 
 ## Layout
 
