@@ -188,7 +188,7 @@ This endpoint requires Master Key.
   "assets": [
     {
       "asset_id": "myimage.png",
-      "url": "https://myappname.skygearapps.com/_asset/get/myimage.png?..."
+      "url": "https://myappname.skygearapps.com/_asset/myimage.png?..."
     }
   ]
 }
@@ -199,7 +199,7 @@ This endpoint requires Master Key.
 1. Sign each `asset_id` in `assets`.
 1. Return the result in the original order.
 
-### GET /_asset/get/<asset_id>
+### GET /_asset/<asset_id>
 
 #### Request Query String
 
@@ -436,7 +436,7 @@ if (input.files[0] != null) {
 
 ```javascript
 function resolvePublicAssetURL(req, assetID) {
-  return `https://${req.host}/_asset/get/${assetID}`;
+  return `https://${req.host}/_asset/${assetID}`;
 }
 
 async function getMe(req, res) {
