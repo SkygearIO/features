@@ -8,7 +8,7 @@ It supports both public and private asset.
 
 It can transform image asset on the fly via query string.
 
-The Asset Gear does not support static asset. Another gear is responsible for static asset.
+The Asset Gear does not support static website hosting. Another gear is responsible for that.
 
 ## Layout
 
