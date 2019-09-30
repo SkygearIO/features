@@ -12,7 +12,7 @@ The Asset Gear does not support static website hosting. Another gear is responsi
 
 ## Layout
 
-The Asset Gear uses a single bucket for all apps. The asset name is in the following format.
+The asset name is in the following format.
 
 ```
 /<app-id>/<random-string>[.<ext>]
