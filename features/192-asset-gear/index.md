@@ -356,12 +356,12 @@ interface UploadAssetOptions {
   contentType: string;
 }
 
-function upload(specifier: string, options: UploadAssetOptions): Promise<string>;
+function upload(uri: string, options: UploadAssetOptions): Promise<string>;
 ```
 
-- `specifier` can be the `uri` returned by `CameraRoll.getPhotos`. See https://github.com/facebook/react-native/issues/24185#issuecomment-478973633
-- `specifier` can be file URI.
-- `specifier` can be absolute path which is converted to file URI.
+- `uri` can be the `uri` returned by `CameraRoll.getPhotos`. See https://github.com/facebook/react-native/issues/24185#issuecomment-478973633
+- `uri` can be file URI.
+- `uri` can be absolute path which is converted to file URI.
 
 ### Image Processing Query builder
 
