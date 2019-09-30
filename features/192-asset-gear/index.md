@@ -48,7 +48,7 @@ This endpoint requires API Key and authenticated user.
 ```
 
 - `content_type`: The media type of the asset.
-- `content_md5`: The MD5 hash of the asset.
+- `content_md5`: The MD5 hash of the asset in the format specified in [RFC1864](https://tools.ietf.org/html/rfc1864).
 - `content_length`: The size in bytes of the asset.
 - `access`: The access control of the asset. `public` is the default.
 
