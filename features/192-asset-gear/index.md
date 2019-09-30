@@ -24,7 +24,7 @@ The Asset Gear uses a single bucket for all apps. The asset name is in the follo
 
 ## HTTP API
 
-### POST /_asset/presign
+### POST /_asset/presign_upload
 
 #### Description
 
