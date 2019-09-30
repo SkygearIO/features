@@ -206,7 +206,7 @@ This endpoint requires Master Key.
 The asset is eligible for image processing if all of the following hold
 
 - The asset is less than or equal to 20MiB.
-- The detected file type using libmagic is png, jpeg or webp.
+- The asset is detected to be PNG, JPEG or WebP.
 
 #### Specification
 
