@@ -369,6 +369,8 @@ interface UploadAssetOptions {
   contentType?: string;
   // contentMD5 is required when data is Readable.
   contentMD5?: string;
+  // contentLength is required when data is Readable.
+  contentLength?: number;
 }
 
 function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
