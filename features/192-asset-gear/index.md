@@ -240,6 +240,76 @@ The asset is eligible for image processing if all of the following hold
 1. Process the asset if the image processing query string is present and the asset is eligible for image processing.
 1. Set `Cache-Control`, `Vary`, `Expires` headers correctly.
 
+### GET /_asset/assets
+
+#### Description
+
+This endpoint return a list of assets.
+
+This endpoint requires Master Key.
+
+#### Request Query String
+
+- `pagination_token`: The token to retrieve the next page.
+
+##### Request Example
+
+```
+/_asset/assets
+```
+
+Retrieve the first page.
+
+```
+/_asset/assets?pagination_token=98e69a8413944dd21ea97e6c956a0a47ed135749bfb355bcb177c4333654c737
+```
+
+Retrieve the subsequent page with the token.
+
+#### Response JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "pagination_token": { "type": "string" },
+    "assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "size": { "type": "integer" },
+          "content_type": { "type": "string" }
+        },
+        "required": ["name", "size", "content_type"]
+      }
+    },
+    "required": ["assets"]
+  }
+}
+```
+
+- `pagination_token`: The token to retrieve the next page. If it is absent, there is no next page.
+- `assets.name`: The asset name.
+- `assets.size`: The size of the asset.
+- `assets.content_type`: The media type of the asset.
+
+##### Response Example
+
+```json
+{
+  "pagination_token": "98e69a8413944dd21ea97e6c956a0a47ed135749bfb355bcb177c4333654c737",
+  "assets": [
+    {
+      "name": "myimage.png",
+      "size": 12345,
+      "content_type": "image/png"
+    }
+  ]
+}
+```
+
 ## Image Processing
 
 ### Image Processing Pipeline via Query String
