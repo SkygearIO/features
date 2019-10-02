@@ -74,7 +74,20 @@ This endpoint requires API Key and authenticated user.
         "properties": {
           "name": { "type": "string" },
           "value": { "type": "string" }
-        }
+        },
+        "required": ["name", "value"]
+      }
+    },
+    "form": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "string" },
+          "filename": { "type": "string" }
+        },
+        "required": ["name"]
       }
     }
   },
@@ -86,6 +99,8 @@ This endpoint requires API Key and authenticated user.
 - `url`: The presigned URL to upload the asset.
 - `method`: The method to be used in the upload request.
 - `headers`: The headers to be included in the upload request.
+- `form`: The form data to be included in the upload request.
+  - `filename`: If the form name-value pair has this property, it is the field for the asset.
 
 ##### Response Example
 
@@ -93,15 +108,18 @@ This endpoint requires API Key and authenticated user.
 {
   "asset_id": "myimage.png",
   "url": "https://storage.skygearapps.com/bucket/myappid/myimage.png?...",
-  "method": "PUT",
+  "method": "POST",
   "headers": [
-    { "name": "content-type", "value": "image/png" },
-    { "name": "content-md5", "value": "Zum77CZrrrGRDM18nlplig==" }
+    { "name": "content-type", "value": "multipart/form-data" }
+  ],
+  "form": [
+    { "name": "file", "filename": "myimage.png" },
+    { "name": "Policy", "value": "..." }
   ]
 }
 ```
 
-#### Specification
+#### Server Specification
 
 1. Validate `content_type` if it is present.
 1. Let `name` be a randomly generated string.
@@ -110,6 +128,12 @@ This endpoint requires API Key and authenticated user.
 1. Let `asset_id` be `/<app-id>/<name>`.
 1. Presign `asset_id` with `content_type`, `content_md5` as headers.
 1. Return the presigned request.
+
+#### Client Specification
+
+If the `content-type` header in the presign request is `multipart/form-data`, the client must submit a multipart form request.
+
+The file field must be the last field in the form.
 
 ### POST /_asset/sign
 
@@ -336,6 +360,8 @@ interface UploadAssetOptions {
 function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
 ```
 
+The Node SDK depends on a third party `FormData` library to support multipart form submission.
+
 ### React Native
 
 ```typescript
@@ -351,6 +377,8 @@ function upload(uri: string, options?: UploadAssetOptions): Promise<string>;
 - `uri` can be the `uri` returned by `CameraRoll.getPhotos`. See https://github.com/facebook/react-native/issues/24185#issuecomment-478973633
 - `uri` can be file URI.
 - `uri` can be absolute path which is converted to file URI.
+
+The React Native SDK has a peer dependency on [rn-fetch-blob](https://github.com/joltup/rn-fetch-blob). It is a library with native code.
 
 ### Image Processing Query builder
 
