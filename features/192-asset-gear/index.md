@@ -310,6 +310,40 @@ Retrieve the subsequent page with the token.
 }
 ```
 
+### POST /_asset/delete
+
+#### Description
+
+This endpoint deletes the given assets.
+
+This endpoint requires Master Key.
+
+#### Request JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "asset_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+```
+
+##### Request Example
+
+```json
+{
+  "asset_ids": ["myimage.png"]
+}
+```
+
+#### Response
+
+The response does not have body.
+
 ## Image Processing
 
 ### Image Processing Pipeline via Query String
