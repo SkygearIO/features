@@ -40,16 +40,13 @@ This endpoint requires API Key and authenticated user.
   "properties": {
     "content_type": { "type": "string" },
     "content_md5": { "type": "string" },
-    "content_length": { "type": "integer" },
     "access": { "enum": ["public", "private"] }
-  },
-  "required": ["content_type", "content_md5", "content_length"]
+  }
 }
 ```
 
 - `content_type`: The media type of the asset.
 - `content_md5`: The MD5 hash of the asset in the format specified in [RFC1864](https://tools.ietf.org/html/rfc1864).
-- `content_length`: The size in bytes of the asset.
 - `access`: The access control of the asset. `public` is the default.
 
 ##### Request Example
@@ -57,8 +54,7 @@ This endpoint requires API Key and authenticated user.
 ```json
 {
   "content_type": "image/png",
-  "content_md5": "Zum77CZrrrGRDM18nlplig==",
-  "content_length": 26419
+  "content_md5": "Zum77CZrrrGRDM18nlplig=="
 }
 ```
 
@@ -100,20 +96,19 @@ This endpoint requires API Key and authenticated user.
   "method": "PUT",
   "headers": [
     { "name": "content-type", "value": "image/png" },
-    { "name": "content-md5", "value": "Zum77CZrrrGRDM18nlplig==" },
-    { "name": "content-length", "value": "26419" }
+    { "name": "content-md5", "value": "Zum77CZrrrGRDM18nlplig==" }
   ]
 }
 ```
 
 #### Specification
 
-1. Validate `content_type`.
+1. Validate `content_type` if it is present.
 1. Let `name` be a randomly generated string.
 1. Let `ext` be the file extension derived from `content_type`.
 1. If `ext` is found, append it to `name`.
 1. Let `asset_id` be `/<app-id>/<name>`.
-1. Presign `asset_id` with `content_type`, `content_length`, `content_md5` as headers.
+1. Presign `asset_id` with `content_type`, `content_md5` as headers.
 1. Return the presigned request.
 
 ### POST /_asset/sign
@@ -321,7 +316,6 @@ The initial implementation does not have caching.
 interface UploadAssetOptions {
   // access by default is `public`.
   access?: "public" | "private",
-  // contentType is required when `blob.type` does not have value.
   contentType?: string;
 }
 
@@ -334,15 +328,12 @@ function upload(blob: Blob, options?: UploadAssetOptions): Promise<string>;
 interface UploadAssetOptions {
   // access by default is `public`.
   access?: "public" | "private",
-  // contentType is required because neither Buffer nor Readable has this information.
-  contentType: string;
-  // contentLength is required when data is Readable.
-  contentLength?: number;
+  contentType?: string;
   // contentMD5 is required when data is Readable.
   contentMD5?: string;
 }
 
-function upload(data: Buffer | stream.Readable, options: UploadAssetOptions): Promise<string>;
+function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
 ```
 
 ### React Native
@@ -351,12 +342,10 @@ function upload(data: Buffer | stream.Readable, options: UploadAssetOptions): Pr
 interface UploadAssetOptions {
   // access by default is `public`.
   access?: "public" | "private",
-  // contentType is required because the SDK does not support inferring media type
-  // from file extension.
-  contentType: string;
+  contentType?: string;
 }
 
-function upload(uri: string, options: UploadAssetOptions): Promise<string>;
+function upload(uri: string, options?: UploadAssetOptions): Promise<string>;
 ```
 
 - `uri` can be the `uri` returned by `CameraRoll.getPhotos`. See https://github.com/facebook/react-native/issues/24185#issuecomment-478973633
