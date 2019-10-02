@@ -289,7 +289,21 @@ Transform the asset into JPEG of quality 0.85.
 - `s`: Specify the shorter side of the target. Valid values are 1 to 4096.
 - `color`: Specify the fill color when `m` is `pad`.
 
-For the details on the scaling mode, See https://www.alibabacloud.com/help/doc-detail/44688.htm
+The following explains the scaling mode.
+
+|Scaling mode|Description|
+|---|---|
+|`lfit`|The dimension of the image is at most `w` x `h`. The aspect ratio is the same.|
+|`mfit`|The dimension of the image is at least `w` x `h`. The aspect ratio is the same.|
+|`fill`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is cropped as necessary.|
+|`pad`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is centered. The remaining area is filled with `color`.|
+|`fixed`|The dimension of the image is exactly `w` x `h`. The aspect radio may **NOT** be the same.|
+
+`w` and `h` has precedence over `l` and `s`.
+
+When only one dimension is given, the other dimension is derived with respect to the aspect ratio.
+
+For example, suppose the image is 300px x 200px. `image/resize,w_150` is equivalent to `image/resize,w_150,h_100`.
 
 ###### Example
 
