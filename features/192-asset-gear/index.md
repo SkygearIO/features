@@ -1,14 +1,21 @@
 # Asset Gear
 
-## Overview
+## Goals
 
-The Asset Gear is a gear for uploading and retrieving user-generated asset.
+- Store user-generated asset to fulfill application needs.
+  - Photos and short videos taken by the application.
+  - Images and short videos chosen from the library.
+  - Artwork by the user.
+  - Attachments in a chat application.
+  - Documents of reasonable size.
+- Process image asset on the fly via query string.
+- Access control via presigned URL
 
-It supports both public and private asset.
+## Non-goals
 
-It can transform image asset on the fly via query string.
-
-The Asset Gear does not support static website hosting. Another gear is responsible for that.
+- Video live streaming such as Facebook Live.
+- File sharing application like Imgur.
+- Static website hosting. Another gear is responsible for this.
 
 ## Layout
 
