@@ -46,22 +46,19 @@ This endpoint requires API Key and authenticated user.
   "type": "object",
   "properties": {
     "content_type": { "type": "string" },
-    "content_md5": { "type": "string" },
     "access": { "enum": ["public", "private"] }
   }
 }
 ```
 
 - `content_type`: The media type of the asset.
-- `content_md5`: The MD5 hash of the asset in the format specified in [RFC1864](https://tools.ietf.org/html/rfc1864).
 - `access`: The access control of the asset. `public` is the default.
 
 ##### Request Example
 
 ```json
 {
-  "content_type": "image/png",
-  "content_md5": "Zum77CZrrrGRDM18nlplig=="
+  "content_type": "image/png"
 }
 ```
 
@@ -133,7 +130,7 @@ This endpoint requires API Key and authenticated user.
 1. Let `ext` be the file extension derived from `content_type`.
 1. If `ext` is found, append it to `name`.
 1. Let `asset_id` be `/<app-id>/<name>`.
-1. Presign `asset_id` with `content_type`, `content_md5` as headers.
+1. Presign `asset_id` with `content_type` as headers.
 1. Return the presigned request.
 
 #### Client Specification
