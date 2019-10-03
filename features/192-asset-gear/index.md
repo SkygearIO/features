@@ -45,20 +45,46 @@ This endpoint requires API Key and authenticated user.
 {
   "type": "object",
   "properties": {
-    "content_type": { "type": "string" },
-    "access": { "enum": ["public", "private"] }
+    "exact_name": { "type": "string" },
+    "prefix": { "type": "string" },
+    "access": { "enum": ["public", "private"] },
+    "headers": {
+      "type": "object",
+      "properties": {
+        "content-type": { "type": "string" },
+        "content-disposition": { "type": "string" },
+        "content-encoding": { "type": "string" },
+        "cache-control": { "type": "string" },
+        "access-control-allow-origin": { "type": "string" },
+        "access-control-expose-headers": { "type": "string" },
+        "access-control-expose-headers": { "type": "string" },
+        "access-control-max-age": { "type": "string" },
+        "access-control-allow-credentials": { "type": "string" },
+        "access-control-allow-methods": { "type": "string" },
+        "access-control-allow-headers": { "type": "string" }
+      }
+    }
   }
 }
 ```
 
-- `content_type`: The media type of the asset.
+- `exact_name`: The exact name of the asset.
+- `prefix`: If `exact_name` is not given, a random name is generated with `prefix` prepended.
 - `access`: The access control of the asset. `public` is the default.
+- `headers`: The HTTP headers of the asset when it is retrieved.
+- `headers.content-type`: The Content-Type header. `application/octet-stream` is the default.
+- `headers.content-disposition`: The Content-Disposition header.
+- `headers.content-encoding`: The Content-Encoding header. The developer must make sure the asset is compressed in the given compression.
+- `headers.cache-control`: The Cache-Control header. If it is not given, a default one is added. To remove the header, set it to an empty string.
+- `headers.access-control-*`: The CORS headers. They are only useful if the developer needs to retrieve the asset with Fetch API.
 
 ##### Request Example
 
 ```json
 {
-  "content_type": "image/png"
+  "headers": {
+    "content-type": "image/png"
+  }
 }
 ```
 
@@ -125,12 +151,13 @@ This endpoint requires API Key and authenticated user.
 
 #### Server Specification
 
-1. Validate `content_type` if it is present.
-1. Let `name` be a randomly generated string.
-1. Let `ext` be the file extension derived from `content_type`.
-1. If `ext` is found, append it to `name`.
+1. Let `ext` be an empty string.
+1. If `headers.content-type` is present, set `ext` to the file extension derived from it.
+1. If `exact_name` is given and non-empty, let `name` be `exact_name`. Set `headers.cache-control` to `no-cache` if it is absent.
+1. Otherwise let `name` to be the concatenation of `prefix`, a random string and `ext`. Set `headers.cache-control` to `max-age: 3600` if it is absent.
 1. Let `asset_id` be `/<app-id>/<name>`.
-1. Presign `asset_id` with `content_type` as headers.
+1. Remove any header in `headers` whose value is empty string.
+1. Presign `asset_id` with `headers` and `access`.
 1. Return the presigned request.
 
 #### Client Specification
@@ -456,13 +483,21 @@ The initial implementation does not have caching.
 
 ## SDK API
 
+```typescript
+interface UploadAssetBaseOptions {
+  exactName?: string;
+  prefix?: string;
+  access?: "public" | "private",
+  headers?: {
+    [name: string]: string;
+  }
+}
+```
+
 ### Web
 
 ```typescript
-interface UploadAssetOptions {
-  // access by default is `public`.
-  access?: "public" | "private",
-  contentType?: string;
+interface UploadAssetOptions extends UploadAssetBaseOptions {
 }
 
 function upload(blob: Blob, options?: UploadAssetOptions): Promise<string>;
@@ -471,14 +506,9 @@ function upload(blob: Blob, options?: UploadAssetOptions): Promise<string>;
 ### Node Client
 
 ```typescript
-interface UploadAssetOptions {
-  // access by default is `public`.
-  access?: "public" | "private",
-  contentType?: string;
-  // contentMD5 is required when data is Readable.
-  contentMD5?: string;
-  // contentLength is required when data is Readable.
-  contentLength?: number;
+interface UploadAssetOptions extends UploadAssetBaseOptions {
+  // size is required when data is stream.Readable.
+  size?: number;
 }
 
 function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
@@ -489,10 +519,7 @@ The Node SDK depends on a third party `FormData` library to support multipart fo
 ### React Native
 
 ```typescript
-interface UploadAssetOptions {
-  // access by default is `public`.
-  access?: "public" | "private",
-  contentType?: string;
+interface UploadAssetOptions extends UploadAssetBaseOptions {
 }
 
 function upload(uri: string, options?: UploadAssetOptions): Promise<string>;
@@ -554,7 +581,11 @@ const result = await CameraRoll.getPhotos({
 const uri = result.edges[0].node.image.uri;
 const contentType = "image/jpeg";
 
-const assetID = await skygear.asset.upload(uri, { contentType });
+const assetID = await skygear.asset.upload(uri, {
+  headers: {
+    "content-type": contentType,
+  },
+});
 
 // Associate the asset ID with the current user.
 ```
