@@ -560,7 +560,7 @@ class ImageProcessingPipelineBuilder {
 
 ## Use Cases
 
-### Upload avator image in React Native
+### Upload avatar image in React Native
 
 ```typescript
 import { CameraRoll } from "react-native";
@@ -590,7 +590,7 @@ const assetID = await skygear.asset.upload(uri, {
 // Associate the asset ID with the current user.
 ```
 
-### Upload avator image on Web
+### Upload avatar image on Web
 
 ```typescript
 // Suppose we have the following DOM
@@ -613,8 +613,8 @@ function resolvePublicAssetURL(req, assetID) {
 
 async function getMe(req, res) {
   const user = await getUser();
-  const avatorURL = resolvePublicAssetURL(req, user.avatorAssetID);
-  user.avatorURL = avatorURL;
+  const avatarURL = resolvePublicAssetURL(req, user.avatarAssetID);
+  user.avatarURL = avatarURL;
   // Return user as response.
 }
 ```
@@ -641,8 +641,8 @@ async function resolvePrivateAssetURL(req, assetID) {
 
 async function getMe(req, res) {
   const user = await getUser();
-  const avatorURL = await resolvePrivateAssetURL(req, user.avatorAssetID);
-  user.avatorURL = avatorURL;
+  const avatarURL = await resolvePrivateAssetURL(req, user.avatarAssetID);
+  user.avatarURL = avatarURL;
   // Return user as response.
 }
 ```
@@ -661,7 +661,7 @@ const builder = new ImageProcessingPipelineBuilder().
   format("jpg").quality(0.85);
 
 for (const user of users) {
-  const url = builder.setToURLString(user.avatorURL);
+  const url = builder.setToURLString(user.avatarURL);
   document.getElementById("img-" + user.id).src = url;
 }
 ```
