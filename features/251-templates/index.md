@@ -129,7 +129,7 @@ The matching is done by the package `"golang.org/x/text/language"`.
 
 ## Integration with skycli
 
-### `skycli config list-templates`
+### `skycli app list-templates`
 
 It lists the remote templates. That is, the templates that are previously uploaded.
 
@@ -140,7 +140,7 @@ templates/welcome_email.txt
 templates/welcome_email.html
 ```
 
-### `skycli config update-templates [-y]`
+### `skycli app update-templates [-y]`
 
 It updates the remote templates such that the remote templates is identical to the local hierarchy.
 
