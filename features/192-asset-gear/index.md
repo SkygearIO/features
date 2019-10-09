@@ -274,7 +274,7 @@ This endpoint requires Master Key.
 1. Sign each `asset_id` in `assets`.
 1. Return the result in the original order.
 
-### GET /_asset/<asset_id>
+### GET /_asset/get/<asset_id>
 
 #### Request Query String
 
