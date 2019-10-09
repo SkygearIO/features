@@ -502,6 +502,7 @@ interface UploadAssetBaseOptions {
 
 ```typescript
 interface UploadAssetOptions extends UploadAssetBaseOptions {
+  onUploadProgress?: (e: ProgressEvent) => void;
 }
 
 function upload(blob: Blob, options?: UploadAssetOptions): Promise<string>;
@@ -513,6 +514,8 @@ function upload(blob: Blob, options?: UploadAssetOptions): Promise<string>;
 interface UploadAssetOptions extends UploadAssetBaseOptions {
   // size is required when data is stream.Readable.
   size?: number;
+  // Since there is no xhr2 polyfill with upload progress support in Node,
+  // upload progress callback only works for Web and React Native.
 }
 
 function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
@@ -524,6 +527,7 @@ The Node SDK depends on a third party `FormData` library to support multipart fo
 
 ```typescript
 interface UploadAssetOptions extends UploadAssetBaseOptions {
+  onUploadProgress?: (e: ProgressEvent) => void;
 }
 
 function upload(uri: string, options?: UploadAssetOptions): Promise<string>;

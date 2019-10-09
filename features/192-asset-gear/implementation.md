@@ -42,3 +42,9 @@ The advantage of this approach is that the implementation is much simpler.
 ### Conclusion
 
 The implementation is going to use Approach 2.
+
+## Report upload progress
+
+The JavaScript Client SDK uses Fetch API as the abstraction of HTTP transport.
+However, Fetch API does not support upload progress.
+Therefore, The SDK is going to switch to use `XMLHttpRequest`.
