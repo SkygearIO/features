@@ -286,6 +286,7 @@ The asset is eligible for image processing if all of the following hold
 #### Specification
 
 1. Reverse proxy the request to the origin server.
+1. Remove Accept-Ranges from the upstream response.
 1. Process the asset if the image processing query string is present and the asset is eligible for image processing.
 1. Set `Cache-Control`, `Vary`, `Expires` headers correctly.
 
@@ -505,6 +506,8 @@ To be specified in the future.
 #### Caveat
 
 The initial implementation does not have caching.
+
+HTTP Range request is not supported because it conflicts with image processing.
 
 ## SDK API
 
