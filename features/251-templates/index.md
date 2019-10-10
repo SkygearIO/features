@@ -180,6 +180,6 @@ Continue? ([y]/n)
 
 It download the remote templates to `<dir>`. `<dir>` is `./templates` by default.
 
-If `<dir>` is non-empty, it shows a prompt to warn the developer that files may be overwritten.
+If any file is going to be overwritten, it shows a prompt to warn the developer which files will be overwritten.
 
 The `-y` option skips the prompt.
