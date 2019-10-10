@@ -45,7 +45,6 @@ This endpoint requires API Key and authenticated user.
 {
   "type": "object",
   "properties": {
-    "request_kind": { "enum": ["identity", "multipart/form-data"] },
     "exact_name": { "type": "string" },
     "prefix": { "type": "string" },
     "access": { "enum": ["public", "private"] },
@@ -71,7 +70,6 @@ This endpoint requires API Key and authenticated user.
 }
 ```
 
-- `request_kind`: The kind of the presigned request. `identity` is the default. If it is `identity`, the data must be the request body. If it is `multipart/form-data`, the data must be encoded in `multipart/form-data`.
 - `exact_name`: The exact name of the asset.
 - `prefix`: If `exact_name` is not given, a random name is generated with `prefix` prepended.
 - `access`: The access control of the asset. `public` is the default.
@@ -113,18 +111,6 @@ This endpoint requires API Key and authenticated user.
         },
         "required": ["name", "value"]
       }
-    },
-    "form": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": { "type": "string" },
-          "value": { "type": "string" },
-          "filename": { "type": "string" }
-        },
-        "required": ["name"]
-      }
     }
   },
   "required": ["asset_id", "url", "method", "headers"]
@@ -135,8 +121,6 @@ This endpoint requires API Key and authenticated user.
 - `url`: The presigned URL to upload the asset.
 - `method`: The method to be used in the upload request.
 - `headers`: The headers to be included in the upload request.
-- `form`: The form data to be included in the upload request.
-  - `filename`: If the form name-value pair has this property, it is the field for the asset.
 
 ##### Response Example
 
@@ -146,11 +130,7 @@ This endpoint requires API Key and authenticated user.
   "url": "https://storage.skygearapps.com/bucket/myappid/myimage.png?...",
   "method": "POST",
   "headers": [
-    { "name": "content-type", "value": "multipart/form-data" }
-  ],
-  "form": [
-    { "name": "a", "value": "b" },
-    { "name": "file", "filename": "myimage.png" }
+    { "name": "content-type", "value": "image/png" }
   ]
 }
 ```
@@ -164,32 +144,7 @@ This endpoint requires API Key and authenticated user.
 1. Let `asset_id` be `/<app-id>/<name>`.
 1. Remove any header in `headers` whose value is empty string.
 1. Let `url` be the presigned URL.
-1. If `request_kind` is `multipart/form-data`, prepend `url` to `headers`.
-1. If `request_kind` is `multipart/form-data`, prepend `x-skygear-api-client-id` to `headers`.
 1. Return the presigned request.
-
-#### Client Specification
-
-If `request_kind` is `multipart/form-data`, the client must then call `/_asset/upload_multipart_form_data`.
-
-### POST /_asset/upload_multipart_form_data
-
-#### Description
-
-This endpoint accepts a presigned request of `request_kind` `multipart/form-data`.
-
-This endpoint does not require any special headers.
-
-#### Specification
-
-1. Ensure the Content-Type is `multipart/form-data`.
-1. Read the body as `multipart/form-data`.
-1. Read the first part of the form and assert the name is `x-skygear-api-client-id` and the value is valid.
-1. Read the second part of the form and assert the name is `url`. Let the value be `url`.
-1. Let `request` be the proxied request.
-1. Set `url` to `request`.
-1. Read the remaining parts of the form until the field is `file`. Add the field as header to `request`.
-1. Pipe the value of `file` to the body of `request`.
 
 ### POST /_asset/sign
 
@@ -544,8 +499,6 @@ interface UploadAssetOptions extends UploadAssetBaseOptions {
 
 function upload(data: Buffer | stream.Readable, options?: UploadAssetOptions): Promise<string>;
 ```
-
-The Node SDK depends on a third party `FormData` library to support multipart form submission.
 
 ### React Native
 
