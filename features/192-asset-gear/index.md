@@ -240,9 +240,10 @@ The asset is eligible for image processing if all of the following hold
 
 #### Specification
 
+1. If the image processing query is present, remove the header `Range` and `If-Range` in the request.
 1. Reverse proxy the request to the origin server.
-1. Remove Accept-Ranges from the upstream response.
 1. Process the asset if the image processing query string is present and the asset is eligible for image processing.
+1. If the image processing query is present, set the header `Accept-Ranges` in the response to `none`.
 1. Set `Cache-Control`, `Vary`, `Expires` headers correctly.
 
 ### GET /_asset/assets
@@ -462,7 +463,7 @@ To be specified in the future.
 
 The initial implementation does not have caching.
 
-HTTP Range request is not supported because it conflicts with image processing.
+If image processing query is present, range request is not supported.
 
 ## SDK API
 
