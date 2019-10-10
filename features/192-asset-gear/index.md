@@ -141,7 +141,7 @@ This endpoint requires API Key and authenticated user.
 1. If `headers.content-type` is present, set `ext` to the file extension derived from it.
 1. If `exact_name` is given and non-empty, let `name` be `exact_name`. Set `headers.cache-control` to `no-cache` if it is absent.
 1. Otherwise let `name` to be the concatenation of `prefix`, a random string and `ext`. Set `headers.cache-control` to `max-age: 3600` if it is absent.
-1. Let `asset_id` be `/<app-id>/<name>`.
+1. Let `asset_id` be `<app-id>/<name>`.
 1. Remove any header in `headers` whose value is empty string.
 1. Let `url` be the presigned URL.
 1. Return the presigned request.
