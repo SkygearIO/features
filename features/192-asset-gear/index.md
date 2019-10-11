@@ -44,29 +44,38 @@ This endpoint requires API Key and authenticated user.
 ```json
 {
   "type": "object",
-  "properties": {
-    "exact_name": { "type": "string" },
-    "prefix": { "type": "string" },
-    "access": { "enum": ["public", "private"] },
-    "headers": {
-      "type": "object",
-      "properties": {
-        "content-type": { "type": "string" },
-        "content-disposition": { "type": "string" },
-        "content-encoding": { "type": "string" },
-        "content-length": { "type": "string" },
-        "content-md5": { "type": "string" },
-        "cache-control": { "type": "string" },
-        "access-control-allow-origin": { "type": "string" },
-        "access-control-expose-headers": { "type": "string" },
-        "access-control-expose-headers": { "type": "string" },
-        "access-control-max-age": { "type": "string" },
-        "access-control-allow-credentials": { "type": "string" },
-        "access-control-allow-methods": { "type": "string" },
-        "access-control-allow-headers": { "type": "string" }
+    "additionalProperties": false,
+    "properties": {
+      "exact_name": {
+        "type": "string",
+        "pattern": "^[^\\x00\\\\/:*'<>|]+$"
+      },
+      "prefix": {
+        "type": "string",
+        "pattern": "^[^\\x00\\\\/:*'<>|]*$"
+      },
+      "access": { "type": "string", "enum": ["public", "private"] },
+      "headers": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "content-type": { "type": "string" },
+          "content-disposition": { "type": "string" },
+          "content-encoding": { "type": "string" },
+          "content-length": { "type": "string" },
+          "content-md5": { "type": "string" },
+          "cache-control": { "type": "string" },
+          "access-control-allow-origin": { "type": "string" },
+          "access-control-expose-headers": { "type": "string" },
+          "access-control-max-age": { "type": "string" },
+          "access-control-allow-credentials": { "type": "string" },
+          "access-control-allow-methods": { "type": "string" },
+          "access-control-allow-headers": { "type": "string" }
+        },
+        "required": ["content-length"]
       }
-    }
-  }
+    },
+    "required": ["headers"]
 }
 ```
 
@@ -77,7 +86,7 @@ This endpoint requires API Key and authenticated user.
 - `headers.content-type`: The Content-Type header. `application/octet-stream` is the default.
 - `headers.content-disposition`: The Content-Disposition header.
 - `headers.content-encoding`: The Content-Encoding header. The developer must make sure the asset is compressed in the given compression.
-- `headers.content-length`: The Content-Length header. Depending on the upload method, it may be ignored. However, the client must provide Content-Length in the actual upload request.
+- `headers.content-length`: The Content-Length header. It is required.
 - `headers.content-md5`: The [Content-MD5](https://tools.ietf.org/html/rfc1864) header. Depending on the upload method, it may be ignored.
 - `headers.cache-control`: The Cache-Control header. If it is not given, a default one is added. To remove the header, set it to an empty string.
 - `headers.access-control-*`: The CORS headers. They are only useful if the developer needs to retrieve the asset with Fetch API.
