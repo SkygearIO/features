@@ -152,6 +152,7 @@ This endpoint requires API Key and authenticated user.
 1. Otherwise let `name` to be the concatenation of `prefix`, a random string and `ext`. Set `headers.cache-control` to `max-age: 3600` if it is absent.
 1. Let `asset_id` be `<app-id>/<name>`.
 1. Remove any header in `headers` whose value is empty string.
+1. If `exact_name` is not given, ensure `asset_id` does not exist.
 1. Let `url` be the presigned URL.
 1. Return the presigned request.
 
