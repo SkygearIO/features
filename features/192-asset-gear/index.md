@@ -107,7 +107,7 @@ This endpoint requires API Key and authenticated user.
 {
   "type": "object",
   "properties": {
-    "asset_id": { "type": "string" },
+    "asset_name": { "type": "string" },
     "url": { "type": "string" },
     "method": { "type": "string" },
     "headers": {
@@ -122,11 +122,11 @@ This endpoint requires API Key and authenticated user.
       }
     }
   },
-  "required": ["asset_id", "url", "method", "headers"]
+  "required": ["asset_name", "url", "method", "headers"]
 }
 ```
 
-- `asset_id`: The asset ID. It becomes valid when the asset is uploaded.
+- `asset_name`: The asset name. It becomes valid when the asset is uploaded.
 - `url`: The presigned URL to upload the asset.
 - `method`: The method to be used in the upload request.
 - `headers`: The headers to be included in the upload request.
@@ -135,7 +135,7 @@ This endpoint requires API Key and authenticated user.
 
 ```json
 {
-  "asset_id": "myimage.png",
+  "asset_name": "myimage.png",
   "url": "https://storage.skygearapps.com/bucket/myappid/myimage.png?...",
   "method": "POST",
   "headers": [
@@ -175,9 +175,9 @@ This endpoint requires Master Key.
       "items": {
         "type": "object",
         "properties": {
-          "asset_id": { "type": "string" }
+          "asset_name": { "type": "string" }
         },
-        "required": ["asset_id"]
+        "required": ["asset_name"]
       }
     }
   },
@@ -185,14 +185,14 @@ This endpoint requires Master Key.
 }
 ```
 
-- `asset_id`: The asset ID.
+- `asset_name`: The asset name.
 
 ##### Request Example
 
 ```json
 {
   "assets": [
-    { "asset_id": "myimage.png" }
+    { "asset_name": "myimage.png" }
   ]
 }
 ```
@@ -208,10 +208,10 @@ This endpoint requires Master Key.
       "items": {
         "type": "object",
         "properties": {
-          "asset_id": { "type": "string" },
+          "asset_name": { "type": "string" },
           "url": { "type": "string" }
         },
-        "required": ["asset_id", "url"]
+        "required": ["asset_name", "url"]
       }
     }
   },
@@ -227,7 +227,7 @@ This endpoint requires Master Key.
 {
   "assets": [
     {
-      "asset_id": "myimage.png",
+      "asset_name": "myimage.png",
       "url": "https://myappname.skygearapps.com/_asset/myimage.png?..."
     }
   ]
@@ -236,10 +236,10 @@ This endpoint requires Master Key.
 
 #### Specification
 
-1. Sign each `asset_id` in `assets`.
+1. Sign each `asset_name` in `assets`.
 1. Return the result in the original order.
 
-### GET /_asset/get/<asset_id>
+### GET /_asset/get/<asset_name>
 
 #### Request Query String
 
@@ -340,7 +340,7 @@ This endpoint requires Master Key.
 {
   "type": "object",
   "properties": {
-    "asset_ids": {
+    "asset_names": {
       "type": "array",
       "items": { "type": "string" }
     }
@@ -352,7 +352,7 @@ This endpoint requires Master Key.
 
 ```json
 {
-  "asset_ids": ["myimage.png"]
+  "asset_names": ["myimage.png"]
 }
 ```
 
@@ -577,13 +577,13 @@ const result = await CameraRoll.getPhotos({
 const uri = result.edges[0].node.image.uri;
 const contentType = "image/jpeg";
 
-const assetID = await skygear.asset.upload(uri, {
+const assetName = await skygear.asset.upload(uri, {
   headers: {
     "content-type": contentType,
   },
 });
 
-// Associate the asset ID with the current user.
+// Associate the asset name with the current user.
 ```
 
 ### Upload avatar image on Web
@@ -595,32 +595,32 @@ const assetID = await skygear.asset.upload(uri, {
 const input = document.getElementById("file");
 if (input.files[0] != null) {
   const file = input.files[0];
-  const assetID = await skygear.asset.upload(file);
-  // Associate the asset ID with the current user.
+  const assetName = await skygear.asset.upload(file);
+  // Associate the asset name with the current user.
 }
 ```
 
-### Resolve public asset ID in Microservice
+### Resolve public asset in Microservice
 
 ```javascript
-function resolvePublicAssetURL(req, assetID) {
-  return `https://${req.host}/_asset/${assetID}`;
+function resolvePublicAssetURL(req, assetName) {
+  return `https://${req.host}/_asset/${assetName}`;
 }
 
 async function getMe(req, res) {
   const user = await getUser();
-  const avatarURL = resolvePublicAssetURL(req, user.avatarAssetID);
+  const avatarURL = resolvePublicAssetURL(req, user.avatarAssetName);
   user.avatarURL = avatarURL;
   // Return user as response.
 }
 ```
 
-### Resolve private asset ID in Microservice
+### Resolve private asset in Microservice
 
 ```javascript
 import fetch from "node-fetch";
 
-async function resolvePrivateAssetURL(req, assetID) {
+async function resolvePrivateAssetURL(req, assetName) {
   const endpoint = `https://${req.host}/_asset/sign`;
   const resp = await fetch(endpoint, {
     method: "POST",
@@ -628,7 +628,7 @@ async function resolvePrivateAssetURL(req, assetID) {
       "x-skygear-api-key": process.env.SKYGEAR_MASTER_KEY,
     },
     body: JSON.stringify({
-      "assets": [{ asset_id: assetID }],
+      "assets": [{ asset_name: assetName }],
     })
   });
   const j = await resp.json();
@@ -637,7 +637,7 @@ async function resolvePrivateAssetURL(req, assetID) {
 
 async function getMe(req, res) {
   const user = await getUser();
-  const avatarURL = await resolvePrivateAssetURL(req, user.avatarAssetID);
+  const avatarURL = await resolvePrivateAssetURL(req, user.avatarAssetName);
   user.avatarURL = avatarURL;
   // Return user as response.
 }
