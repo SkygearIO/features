@@ -323,35 +323,15 @@ Retrieve the subsequent page with the token.
 }
 ```
 
-### POST /_asset/delete
+### DELETE /_asset/delete/<asset_name>
 
 #### Description
 
-This endpoint deletes the given assets.
+This endpoint deletes the given asset.
 
 This endpoint requires Master Key.
 
-#### Request JSON Schema
-
-```json
-{
-  "type": "object",
-  "properties": {
-    "asset_names": {
-      "type": "array",
-      "items": { "type": "string" }
-    }
-  }
-}
-```
-
-##### Request Example
-
-```json
-{
-  "asset_names": ["myimage.png"]
-}
-```
+Batch delete is not supported because only S3 supports batch delete.
 
 #### Response
 
