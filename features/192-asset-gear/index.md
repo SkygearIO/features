@@ -294,10 +294,10 @@ Retrieve the subsequent page with the token.
       "items": {
         "type": "object",
         "properties": {
-          "name": { "type": "string" },
+          "asset_name": { "type": "string" },
           "size": { "type": "integer" }
         },
-        "required": ["name", "size"]
+        "required": ["asset_name", "size"]
       }
     },
     "required": ["assets"]
@@ -306,7 +306,7 @@ Retrieve the subsequent page with the token.
 ```
 
 - `pagination_token`: The token to retrieve the next page. If it is absent, there is no next page.
-- `assets.name`: The asset name.
+- `assets.asset_name`: The asset name.
 - `assets.size`: The size of the asset.
 
 ##### Response Example
@@ -316,7 +316,7 @@ Retrieve the subsequent page with the token.
   "pagination_token": "98e69a8413944dd21ea97e6c956a0a47ed135749bfb355bcb177c4333654c737",
   "assets": [
     {
-      "name": "myimage.png",
+      "asset_name": "myimage.png",
       "size": 12345
     }
   ]
