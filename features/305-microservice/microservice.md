@@ -82,6 +82,18 @@ When the user run `skycli app deploy`, the following steps are taken:
 
 When the built image is run, it must expose an HTTP service listening at `port`.
 
+### Environment variable and secrets
+
+```yaml
+deployments:
+  my-awesome-service:
+    type: http-service
+    ....
+    environment:
+    - name: "DEMO_ENV"
+      value: "value of environment"
+```
+
 ## Docker Image Registry
 
 A Docker registry is deployed to store all microservice images.
