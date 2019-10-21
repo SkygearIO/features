@@ -92,6 +92,8 @@ deployments:
     environment:
     - name: "DEMO_ENV"
       value: "value of environment"
+      name: "MONGODB_URL"
+      secret: "<secret_name>"
 ```
 
 ## Docker Image Registry

@@ -380,12 +380,6 @@ aws_access_secret       2019-01-31T15:00:00+08:00
 
 Create new secret in app
 
-### skycli secret rename
-
-Update secret name
-
-`skycli secret rename [SECRET_NAME] [NEW_SECRET_NAME]`
-
 ### skycli secret remove
 
 Remove secret in app
