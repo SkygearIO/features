@@ -37,7 +37,7 @@ The asset name is in the following format.
 
 This endpoint returns a presigned upload request which can be used to upload an asset.
 
-This endpoint requires API Key and authenticated user.
+This endpoint requires (API Key and authenticated user) or Master Key.
 
 #### Request JSON Schema
 
@@ -149,6 +149,97 @@ This endpoint requires API Key and authenticated user.
 1. Ensure `asset_id` does not exist.
 1. Let `url` be the presigned URL.
 1. Return the presigned request.
+
+### POST /_asset/presign_upload_form
+
+#### Description
+
+This endpoints returns a presigned `multipart/form-data` request which can be used to upload an asset.
+
+This endpoint requires (API Key and authenticated user) or Master Key.
+
+#### Request JSON Schema
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false
+}
+```
+
+##### Request Example
+
+```json
+{}
+```
+
+#### Response JSON Schema
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": { "type": "string" },
+  },
+  "required": ["url"]
+}
+```
+
+- `url`: The presigned URL to POST the form.
+
+##### Response Example
+
+```json
+{
+  "url": "https://myapp.skygearapps.com/_asset/upload_form?..."
+}
+```
+
+#### Server Specification
+
+1. Return a [signed URL](#signed-url).
+
+### POST /_asset/upload_form
+
+This endpoint requires valid signature.
+
+#### Request
+
+The request must be a `multipart/form-data` request with `Content-Length`.
+
+The form can have the following form fields to specify the properties of the asset.
+
+- `prefix`: The prefix to be prepended to the randomly generated asset name.
+- `access`: The access control of the asset. `public` is the default.
+
+The form can have the following form fields to set headers.
+
+- `content-type`: Override the Content-Type header of `file`.
+- `content-disposition`: The Content-Disposition header.
+- `content-encoding`: The Content-Encoding header.
+- `content-md5`: The Content-MD5 header.
+- `cache-control`: The Cache-Control header.
+- `access-control-allow-origin`: CORS header.
+- `access-control-expose-headers`: CORS header.
+- `access-control-max-age`: CORS header.
+- `access-control-allow-credentials`: CORS header.
+- `access-control-allow-methods`: CORS header.
+- `access-control-allow-headers`: CORS header.
+
+The name of the last field must be `file`.
+
+#### Response
+
+No response body.
+
+#### Server specification
+
+1. Validate the signature
+1. Ensure media type is `multipart/form-data`.
+1. Ensure `Content-Length` exists.
+1. Infer the content length of `file` while parsing the form.
+1. Presign a PUT Object request.
+1. Reverse proxy the request as a PUT Object request.
 
 ### POST /_asset/get_signed_url
 
