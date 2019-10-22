@@ -92,9 +92,13 @@ deployments:
     environment:
     - name: "DEMO_ENV"
       value: "value of environment"
-      name: "MONGODB_URL"
+    - name: "MONGODB_URL"
       secret: "<secret_name>"
+    - secret: "<secret_name>"
 ```
+
+If `secret` is provided without `name`, the secret name will become the environment
+variable name automatically.
 
 ## Docker Image Registry
 
