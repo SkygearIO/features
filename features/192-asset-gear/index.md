@@ -156,7 +156,7 @@ This endpoint requires API Key and authenticated user.
 1. Let `url` be the presigned URL.
 1. Return the presigned request.
 
-### POST /_asset/sign
+### POST /_asset/get_signed_url
 
 #### Description
 
