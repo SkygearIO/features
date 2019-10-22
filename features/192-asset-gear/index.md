@@ -46,10 +46,6 @@ This endpoint requires API Key and authenticated user.
   "type": "object",
     "additionalProperties": false,
     "properties": {
-      "exact_name": {
-        "type": "string",
-        "pattern": "^[^\\x00\\\\/:*'<>|]+$"
-      },
       "prefix": {
         "type": "string",
         "pattern": "^[^\\x00\\\\/:*'<>|]*$"
@@ -79,8 +75,7 @@ This endpoint requires API Key and authenticated user.
 }
 ```
 
-- `exact_name`: The exact name of the asset.
-- `prefix`: If `exact_name` is not given, a random name is generated with `prefix` prepended.
+- `prefix`: The prefix to be prepended to the randomly generated asset name.
 - `access`: The access control of the asset. `public` is the default.
 - `headers`: The HTTP headers of the asset when it is retrieved.
 - `headers.content-type`: The Content-Type header. `application/octet-stream` is the default.
@@ -148,11 +143,10 @@ This endpoint requires API Key and authenticated user.
 
 1. Let `ext` be an empty string.
 1. If `headers.content-type` is present, set `ext` to the file extension derived from it.
-1. If `exact_name` is given and non-empty, let `name` be `exact_name`. Set `headers.cache-control` to `no-cache` if it is absent.
-1. Otherwise let `name` to be the concatenation of `prefix`, a random string and `ext`. Set `headers.cache-control` to `max-age: 3600` if it is absent.
+1. Let `name` to be the concatenation of `prefix`, a random string and `ext`. Set `headers.cache-control` to `max-age: 3600` if it is absent.
 1. Let `asset_id` be `<app-id>/<name>`.
 1. Remove any header in `headers` whose value is empty string.
-1. If `exact_name` is not given, ensure `asset_id` does not exist.
+1. Ensure `asset_id` does not exist.
 1. Let `url` be the presigned URL.
 1. Return the presigned request.
 
@@ -267,6 +261,7 @@ This endpoint requires Master Key.
 #### Request Query String
 
 - `pagination_token`: The token to retrieve the next page.
+- `prefix`: The prefix of the asset name to match.
 
 ##### Request Example
 
@@ -456,7 +451,6 @@ If image processing query is present, range request is not supported.
 
 ```typescript
 interface UploadAssetBaseOptions {
-  exactName?: string;
   prefix?: string;
   access?: "public" | "private",
   headers?: {
@@ -638,3 +632,41 @@ for (const user of users) {
   document.getElementById("img-" + user.id).src = url;
 }
 ```
+
+## Design Decisions
+
+### Why custom asset name is not supported?
+
+In a previous version of this specification, custom asset name is supported.
+However, it has a flaw.
+
+The presign upload endpoints only requires API Key and authenticated user.
+Therefore, every user can overwrite/write any asset even if the asset is private.
+
+We have the following solutions.
+
+We can make asset write-once only. So it is impossible to overwrite an existing asset.
+However, this effectively makes custom name asset not update-able and may defeat its original purpose.
+
+We can change the presign upload endpoint requires Master Key.
+However, this effectively makes all endpoints of the Asset Gear Master Key only.
+The client SDK can no longer interact with the Asset Gear directly.
+Having no client SDK for the Asset Gear makes the Asset Gear very difficult to use.
+
+We can introduce hooks to allow the developer to participate in determining whether
+a custom asset name is writable. However, implementing such hook is optional.
+If it is not implemented, the Asset Gear still suffers from the original problem.
+
+We can introduce ACL to the Asset Gear. We may have a role-based ACL gear(?) in the future.
+Maybe we could integrate that with the Asset Gear.
+However, at this moment, adding ACL to the Asset Gear would greatly complicate the scope of the Asset Gear.
+
+Only the last solution could solve the problem but it is not feasible at this state.
+Therefore custom asset name is not supported, at least for now.
+
+If the developer wants to somehow identify uploaded assets, they can specify `prefix`.
+For example, if the developer is uploading a profile image of a given user, they can specify
+`prefix` as `profile-image-<user-id>-`.
+The actual asset name would look like `profile-image-2583ac64-dbdd-45a0-9510-e0a3ee347a77-dbac1141-3c19-42bd-86d9-14baa10b0cc8.jpg`.
+During listing, the developer can specify `prefix` as `profile-image-` to find out all assets which are profile image.
+Or they can specify `prefix` as `profile-image-2583ac64-dbdd-45a0-9510-e0a3ee347a77-` to find out all profile images of that user.
