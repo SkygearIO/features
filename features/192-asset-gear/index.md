@@ -724,6 +724,10 @@ for (const user of users) {
 }
 ```
 
+## Signed URL
+
+See [Signed URL](./signed-url.md).
+
 ## Design Decisions
 
 ### Why custom asset name is not supported?
