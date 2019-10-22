@@ -188,7 +188,15 @@ Activate the just created inactive TOTP authenticator.
 
 ## Query parameters
 
-- `otpauth_uri`: The otpauth URI
+- `otpauth_uri`: The [key URI](https://github.com/google/google-authenticator/wiki/Key-Uri-Format).
+- `account_name`: The [account name](https://github.com/google/google-authenticator/wiki/Key-Uri-Format#label).
+- `secret`: The [Base32 encoded secret](https://github.com/google/google-authenticator/wiki/Key-Uri-Format#secret).
+- `issuer`: The [issuer](https://github.com/google/google-authenticator/wiki/Key-Uri-Format#label).
+
+If `otpauth_uri` is given, it is used as is. Otherwise `otpauth_uri` is generated from `account_name`, `secret` and `issuer`.
+
+This endpoint accepts `secret` instead of `authenticator_id` because this endpoint is supposed to be used directly,
+such as setting it to the `src` of `<img>`. So it is stateless and does not require authentication.
 
 ### Response body
 
