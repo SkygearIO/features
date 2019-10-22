@@ -128,11 +128,15 @@ mfa:
 
 ```JSON
 {
-  "display_name": "my TOTP"
+  "display_name": "my TOTP",
+  "account_name": "user@example.com",
+  "issuer": "MyApp"
 }
 ```
 
 - `display_name`: The display name of the new TOTP authenticator.
+- `account_name`: If this is provided, it is used to generate `otpauth_uri`.
+- `issuer`: If this is provided, it is used to generate `otpauth_uri`.
 - `authn_session_token`: Required only when there is no access token.
 
 ### Response body
@@ -141,11 +145,13 @@ mfa:
 {
   "authenticator_id": "xxx",
   "authenticator_type": "totp",
-  "secret": "secret"
+  "secret": "secret",
+  "otpauth_uri": "otpauth://totp/MyApp:user@example.com?secret=secret&issuer=MyApp"
 }
 ```
 
 - `secret`: The secret encoded in Base32 without padding.
+- `otpauth_uri`: The [key URI](https://github.com/google/google-authenticator/wiki/Key-Uri-Format).
 
 ### Description
 
