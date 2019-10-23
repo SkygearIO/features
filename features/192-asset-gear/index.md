@@ -202,6 +202,10 @@ This endpoint requires (API Key and authenticated user) or Master Key.
 
 This endpoint requires valid signature.
 
+This endpoint accepts `multipart/form-data` and returns `application/json`.
+It should not be used directly as `<form action>` because the user will see
+a plain JSON document. It is expected to use `FormData` and AJAX to use this endpoint.
+
 #### Request
 
 The request must be a `multipart/form-data` request with `Content-Length`.
@@ -227,9 +231,27 @@ The form can have the following form fields to set headers.
 
 The name of the last field must be `file`.
 
-#### Response
+#### Response JSON Schema
 
-No response body.
+```json
+{
+  "type": "object",
+  "properties": {
+    "asset_name": { "type": "string" },
+  },
+  "required": ["asset_name"]
+}
+```
+
+- `asset_name`: The asset name.
+
+##### Response Example
+
+```json
+{
+  "asset_name": "myimage.png"
+}
+```
 
 #### Server specification
 
