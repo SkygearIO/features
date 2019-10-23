@@ -14,7 +14,6 @@
 ## Non-goals
 
 - Video live streaming such as Facebook Live.
-- File sharing application like Imgur.
 - Static website hosting. Another gear is responsible for this.
 
 ## Layout
