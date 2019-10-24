@@ -146,12 +146,14 @@ mfa:
   "authenticator_id": "xxx",
   "authenticator_type": "totp",
   "secret": "secret",
-  "otpauth_uri": "otpauth://totp/MyApp:user@example.com?secret=secret&issuer=MyApp"
+  "otpauth_uri": "otpauth://totp/MyApp:user@example.com?secret=secret&issuer=MyApp",
+  "qr_code_image_uri": "data:image/png;base64,..."
 }
 ```
 
 - `secret`: The secret encoded in Base32 without padding.
 - `otpauth_uri`: The [key URI](https://github.com/google/google-authenticator/wiki/Key-Uri-Format).
+- `qr_code_image_uri`: The data URI of a QR code image of `otpauth_uri`.
 
 ### Description
 
