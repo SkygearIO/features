@@ -81,6 +81,22 @@ expired (if refresh token is disabled).
 If a session is invalidated, expired, revoked, or logout, its associated access
 token / refresh token would be treated as invalid.
 
+A session is invalid if it is invalidated, expired, revoked or logged out.
+
+For auth gear, if the endpoint requires authentication and the session is detected as invalid,
+the HTTP response includes a header `x-skygear-try-refresh-token: true`.
+
+For gateway routing request to microservice, if refresh token is enabled and the session is detected as invalid, the gateway does not forward the request and return a HTTP response with header `x-skygear-try-refresh-token: true`. The caveat is that even the endpoint does not requires authentication, the access token is refreshed. If the refresh token was expired, the user will be asked to login again prematurely.
+
+The client SDK must try to refresh the access token if it sees such header in the response.
+
+The refresh flow should take the following steps
+
+1. Attempt to refresh.
+1. If refresh failed due to expired refresh token, clear everything and abort with the refresh error.
+1. If refresh failed due to any other causes, abort with the refresh error.
+1. If refresh succeeded, retry the origin request.
+
 Client-side SDK should handle refreshing of expired access token automatically
 if refresh token is available; SDKs would not expose concept of access token /
 refresh token; however, developers should still handle situation where session

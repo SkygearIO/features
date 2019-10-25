@@ -15,7 +15,22 @@ interface UserAgent {
 
 interface Session {
     id: string;
+
     identityID: string;
+    identityType: "password" | "oauth" | "custom_token";
+    // The last time the identity was updated.
+    // When reauthentication with identity, it will be updated.
+    identityUpdatedAt: Date;
+
+    // If the session involves MFA, the following fields are available.
+    authenticatorID?: string;
+    authenticatorType?: "totp" | "oob" | "recovery_code" | "bearer_token";
+    // Only present if authenticatorType === "oob".
+    authenticatorOOBChannel?: "sms" | "email";
+    // The last time MFA was updated.
+    // WHen reauthentication with MFA, it will be updated.
+    authenticatorUpdatedAt?: Date;
+
     createdAt: Date;
     lastAccessedAt: Date;
     createdByIP: string;
