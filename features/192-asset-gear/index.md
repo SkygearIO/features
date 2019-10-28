@@ -334,7 +334,7 @@ This endpoint requires Master Key.
   "assets": [
     {
       "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
-      "url": "https://myappname.skygearapps.com/_asset/428b11b6-7e92-4517-a9d3-ca9beff04641.png?..."
+      "url": "https://myappname.skygearapps.com/_asset/get/428b11b6-7e92-4517-a9d3-ca9beff04641.png?..."
     }
   ]
 }
