@@ -129,8 +129,8 @@ This endpoint requires (API Key and authenticated user) or Master Key.
 
 ```json
 {
-  "asset_name": "myimage.png",
-  "url": "https://storage.skygearapps.com/bucket/myappid/myimage.png?...",
+  "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
+  "url": "https://storage.skygearapps.com/bucket/myappid/428b11b6-7e92-4517-a9d3-ca9beff04641.png?...",
   "method": "POST",
   "headers": [
     { "name": "content-type", "value": "image/png" }
@@ -249,7 +249,7 @@ The name of the last field must be `file`.
 
 ```json
 {
-  "asset_name": "myimage.png"
+  "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png"
 }
 ```
 
@@ -298,7 +298,7 @@ This endpoint requires Master Key.
 ```json
 {
   "assets": [
-    { "asset_name": "myimage.png" }
+    { "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png" }
   ]
 }
 ```
@@ -333,8 +333,8 @@ This endpoint requires Master Key.
 {
   "assets": [
     {
-      "asset_name": "myimage.png",
-      "url": "https://myappname.skygearapps.com/_asset/myimage.png?..."
+      "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
+      "url": "https://myappname.skygearapps.com/_asset/428b11b6-7e92-4517-a9d3-ca9beff04641.png?..."
     }
   ]
 }
@@ -423,7 +423,7 @@ Retrieve the subsequent page with the token.
   "pagination_token": "98e69a8413944dd21ea97e6c956a0a47ed135749bfb355bcb177c4333654c737",
   "assets": [
     {
-      "asset_name": "myimage.png",
+      "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
       "size": 12345
     }
   ]
