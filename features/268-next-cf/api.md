@@ -661,24 +661,16 @@ following operations are allowed.
 
 - skycli secret create
 - skycli secret remove
-- skycli secret rename
 
 To avoid human error, deployment will be failed if config file is using secrets
-that are not exist. Removing or renaming a secret will not affect existing deployment.
-If skygear user want to update a secret (e.g. key rotation), he will need to rename the
-existing secret to another name. Create a secret with the same name and re-deploy the functions.
+that are not exist. Removing secret will not affect existing deployment.
 
 ### Example: Key rotation
 
-```sh
-$ skycli secret rename MY_SECRET_KEY MY_SECRET_KEY_OLD
-$ skycli secret create MY_SECRET_KEY [KEY_VALUE]
-$ skycli cf deploy
-
-# Test the function and works great
-# Remove the old key
-$ skycli secret remove MY_SECRET_KEY_OLD
-```
+1. Create new secret with another key.
+2. Update `skygear.yaml` `environment` to use new secret key and re-deploy.
+3. Test and see if new deployment works.
+4. Remove the old secret by `skycli secret remove`.
 
 ### Implementation Details
 

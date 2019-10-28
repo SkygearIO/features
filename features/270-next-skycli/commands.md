@@ -376,15 +376,17 @@ aws_access_secret       2019-01-31T15:00:00+08:00
 
 ### skycli secret create
 
-`skycli secret create [SECRET_NAME] [SECRET_VALUE]`
+`skycli secret create [SECRET_NAME] [SECRET_VALUE] --type=[SECRET_TYPE] --file==[FILE_NAME]`
 
 Create new secret in app
 
-### skycli secret rename
+#### Flags
 
-Update secret name
+- `--type` Secret type, used to facilitate programmatic handling of secret data. Available types: `opaque`, `dockerconfigjson`. Default is `opaque`.
+    - `opaque`: Secret used in environment variable.
+    - `dockerconfigjson`: Docker config used as image pull secret.
 
-`skycli secret rename [SECRET_NAME] [NEW_SECRET_NAME]`
+- `--file` Secret value from file.
 
 ### skycli secret remove
 

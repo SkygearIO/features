@@ -31,6 +31,27 @@ When the user run `skycli app deploy`, the following steps are taken:
 1. Follow the existing docker deployment flow.
 1. `command` is optional. If it is provided, it will be set as `args` of container spec in k8s.
 
+### Microservice with pre-built docker image
+
+```yaml
+deployments:
+  my-awesome-service:
+    type: http-service
+    image: myimage:latest
+    path: /
+    port: 3000
+    command: ["<start server command in array>"]
+    image_pull_secret: "<secret_name>"
+```
+
+When the user run `skycli app deploy`, the following steps are taken:
+
+1. If `image` is specified, `skycli` will use the config to create microservice directly.
+1. `command` is optional. If it is provided, it will be set as `args` of container spec in k8s.
+1. `image_pull_secret` is optional. It is for the docker image which stores in the private registry only. To use private docker image:
+    1. Create docker config secret with `skycli secret create --type=dockerconfigjson --name=<secret name> --file=<docker_json_file>`.
+    1. Specify `image_pull_secret` with the secret name in `skygear.yaml`.
+
 
 ### Microservice with preconfigured environment (e.g. nodejs)
 
@@ -60,6 +81,24 @@ When the user run `skycli app deploy`, the following steps are taken:
 1. `command` is optional. If it is provided, it will be set as `args` of container spec in k8s. Template should provide default `ENTRYPOINT` and `CMD`.
 
 When the built image is run, it must expose an HTTP service listening at `port`.
+
+### Environment variable and secrets
+
+```yaml
+deployments:
+  my-awesome-service:
+    type: http-service
+    ....
+    environment:
+    - name: "DEMO_ENV"
+      value: "value of environment"
+    - name: "MONGODB_URL"
+      secret: "<secret_name>"
+    - secret: "<secret_name>"
+```
+
+If `secret` is provided without `name`, the secret name will become the environment
+variable name automatically.
 
 ## Docker Image Registry
 

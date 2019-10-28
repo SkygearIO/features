@@ -73,7 +73,6 @@ skycli [group] [verb/action] [parameters]
 - skycli secret
     - [skycli secret list](commands.md#skycli-secret-list)
     - [skycli secret create [SECRET_NAME] [SECRET_VALUE]](commands.md#skycli-secret-create)
-    - [skycli secret rename [SECRET_NAME] [NEW_SECRET_NAME]](commands.md#skycli-secret-rename)
     - [skycli secret remove [SECRET_NAME]](commands.md#skycli-secret-remove)
 
 - skycli service
