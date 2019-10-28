@@ -502,17 +502,17 @@ Transform the asset into JPEG of quality 0.85.
 
 The following explains the scaling mode.
 
-|Scaling mode|Description|
-|---|---|
-|`lfit`|The dimension of the image is at most `w` x `h`. The aspect ratio is the same.|
-|`mfit`|The dimension of the image is at least `w` x `h`. The aspect ratio is the same.|
-|`fill`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is cropped as necessary.|
-|`pad`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is centered. The remaining area is filled with `color`.|
-|`fixed`|The dimension of the image is exactly `w` x `h`. The aspect radio may **NOT** be the same.|
+When only one dimension is given, the other dimension is either equal to the given dimension or derived with respect to the aspect ratio.
+
+|Scaling mode|Description|When only one dimension is given, the other dimension is|
+|---|---|---|
+|`lfit`|The dimension of the image is at most `w` x `h`. The aspect ratio is the same.|Derived with respect to the aspect ratio|
+|`mfit`|The dimension of the image is at least `w` x `h`. The aspect ratio is the same.|Derived with respect to the aspect ratio|
+|`fill`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is cropped as necessary.|Equal to the given dimension|
+|`pad`|The dimension of the image is exactly `w` x `h`. The aspect ratio is the same. The image is centered. The remaining area is filled with `color`.|Equal to the given dimension|
+|`fixed`|The dimension of the image is exactly `w` x `h`. The aspect radio may **NOT** be the same.|Derived with respect to the aspect ratio|
 
 `w` and `h` has precedence over `l` and `s`.
-
-When only one dimension is given, the other dimension is derived with respect to the aspect ratio.
 
 For example, suppose the image is 300px x 200px. `image/resize,w_150` is equivalent to `image/resize,w_150,h_100`.
 
