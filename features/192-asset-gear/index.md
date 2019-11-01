@@ -281,7 +281,12 @@ This endpoint requires Master Key.
       "items": {
         "type": "object",
         "properties": {
-          "asset_name": { "type": "string" }
+          "asset_name": { "type": "string" },
+          "expire": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 604800
+          }
         },
         "required": ["asset_name"]
       }
@@ -291,14 +296,22 @@ This endpoint requires Master Key.
 }
 ```
 
-- `asset_name`: The asset name.
+- `assets.asset_name`: The asset name.
+- `assets.expire`: Set the expire of the signed URL of the asset.
 
 ##### Request Example
 
 ```json
 {
   "assets": [
-    { "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png" }
+    {
+      "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
+      "expire": 3600
+    },
+    {
+      "asset_name": "b0ea119f-093c-43e6-8511-641a66f2a12a.png",
+      "expire": 86400
+    }
   ]
 }
 ```
@@ -325,7 +338,7 @@ This endpoint requires Master Key.
 }
 ```
 
-- `url`: The signed URL.
+- `assets.url`: The signed URL.
 
 ##### Response Example
 
@@ -335,6 +348,10 @@ This endpoint requires Master Key.
     {
       "asset_name": "428b11b6-7e92-4517-a9d3-ca9beff04641.png",
       "url": "https://myappname.skygearapps.com/_asset/get/428b11b6-7e92-4517-a9d3-ca9beff04641.png?..."
+    },
+    {
+      "asset_name": "b0ea119f-093c-43e6-8511-641a66f2a12a.png",
+      "url": "https://myappname.skygearapps.com/_asset/get/b0ea119f-093c-43e6-8511-641a66f2a12a.png?..."
     }
   ]
 }
@@ -343,6 +360,7 @@ This endpoint requires Master Key.
 #### Specification
 
 1. Sign each `asset_name` in `assets`.
+1. If `expire` is specified, it is used to set the expire. Otherwise, the default is 1 hour.
 1. Return the result in the original order.
 
 ### GET /_asset/get/<asset_name>
