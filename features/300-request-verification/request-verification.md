@@ -2,94 +2,57 @@
 
 ## Motivation
 
-The gateway injects HTTP headers to tell the current authenticated user.
+Different Skygear components may communicate with other components:
+- Gateway <-> Gears/Microservices for incoming HTTP traffic.
+- Auth Gear <-> Microservices/External services for web-hook events.
 
-The auth gear sends webhooks.
+We need ways to verify the authenticity of these communications.
 
-We need ways to verify the HTTP headers and the body are from the gateway
-and the auth gear.
+To verify authenticity of communication, we need to verify two property:
+- the identity of receiver (i.e. microservices)
+- the identity of sender (i.e. gateway/auth gear)
 
-## Special Headers
+The industry standard of securing and authenticating communication is to use
+mTLS. However, for simplicity, Skygear would use a simpler design to acheive
+this objective. This document describe Skygear's design of verification.
 
-`x-skygear-headers-signature`
+## Gateway communication verification
 
-This header contains the signature for headers verification.
+Gateway communication occurs between Gateway and Microservices/Gears.
 
-`x-skygear-body-signature`
+Microservices/Gears are designed to host on Kubernetes. Therefore, for
+communication between Gateway and Microservices/Gears, we use Network Policy to
+ensure that only Gateway may interact with Microservices/Gears.
 
-This header contains the signature for body verification.
+## Web-hook communication verification
 
-## Headers signature generation
+Web-hook communication occurs between Auth Gear and Microservices/external
+services.
 
-1. Derive a byte sequence from all Skygear headers excluding the special headers.
-1. Calculate the uppercase hex digest HMAC-SHA256 of the byte sequence with a shared secret.
-1. Pass this digest as `x-skygear-headers-signature`
+To verify the identity of receiver, we require that the web-hook handler
+endpoint must use HTTPS. Therefore we can assume that identity of the endpoint
+is expected as specified in configuration.
 
-## Headers byte sequence derivation algorithm
+To verify the identity of sender, we use a signature header with shared secret
+to allow receiver to verify the authenticity of request.
 
-1. Let `headers` be the original list of headers.
-1. Let `headers` be `headers` with lowercased header name.
-1. Let `headers` be `headers` whose name starts with `x-skygear-`.
-1. Let `headers` be `headers` excluding the special headers.
-1. Let `headers` be the sorted version `headers` by name alphabetically.
-1. Let `lines` be `headers` with name and value joined with `:`.
-1. Let `content` be `lines` joined with `\r\n`.
-1. If `content` is empty, return.
-1. Return the UTF-8 encoding of `content`.
+### Shared secret
 
-### Example
+The shared secret is set in user configuration per web-hook handler. Developer
+must to set them in configuration to use web-hook feature.
 
-```python
-import hmac
-import hashlib
+To access the shared secret in microservices, it is recommended to use the
+built-in secret management feature.
 
+### Signature generation
 
-SPECIAL_HEADERS = [
-    'x-skygear-headers-signature',
-    'x-skygear-body-signature',
-]
-
-# Input
-headers = [
-    ('content-type', 'application/json'),
-    ('content-length', '100'),
-    ('X-Skygear-Auth-userid', 'a'),
-    ('X-SKYGEAR-AUTH-VERIFIED', 'true'),
-    ('x-skygear-auth-disabled', 'false'),
-    ('x-skygear-headers-signature', 'fake'),
-]
-secret = b'secret'
-
-# Headers byte sequence derivation algorithm
-headers = [(n.lower(), v) for n, v in headers]
-headers = [h for h in headers if h[0].startswith('x-skygear-')]
-headers = [h for h in headers if h[0] not in SPECIAL_HEADERS]
-headers = sorted(headers, key=lambda h: h[0])
-lines = [n + ':' + v for n, v in headers]
-content = '\r\n'.join(lines)
-bytes_ = content.encode('utf-8')
-
-
-assert bytes_ == b'x-skygear-auth-disabled:false\r\nx-skygear-auth-userid:a\r\nx-skygear-auth-verified:true'
-
-
-signature = hmac.new(
-    secret,
-    bytes_,
-    hashlib.sha256
-).hexdigest().upper()
-
-
-assert signature == 'E672553238E3862BD538E29AFF739E457168A32EA0FB61C6891A250DA57E5877'
-```
-
-## Body signature generation
+When sending a web-hook event requests, Auth Gear would generates a signature
+of the event body and send it to target endpoint as HTTP header:
 
 1. Calculate the uppercase hex digest HMAC-SHA256 of the body with a shared secret.
-1. Pass this digest as `x-skygear-body-signature`
+1. Pass this digest as `x-skygear-body-signature` header.
 
-### Example
-
+Example code:
 ```python
 import hmac
 import hashlib
@@ -113,22 +76,13 @@ signature = hmac.new(
 assert signature == '6B656B832F2C85EEB128D32A188E624359062190C1390598A9D45495C2D14E65'
 ```
 
-## Secret
-
-The secret is defined per application. It is generated during application creation.
-How it is provided to cloud code environment will be specified in another document.
-
-## Verification
+### Signature verification
 
 The verification process must follow the corresponding generation process
 to generate signature, and then use a secure string comparison to
 compare the received signature and the generated signature.
 
-The verification should be done by the runtime. In cloud code case,
-it should be done by the fission environment.
-
-### Example
-
+Example code:
 ```python
 import hmac
 
