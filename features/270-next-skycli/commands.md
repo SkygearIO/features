@@ -35,6 +35,13 @@ and password interactively.
 #### Flags
 
 - `--email=EMAIL` Login as cluster user, ask for password interactively.
+- `--password-stdin` Read password from stdin.
+
+#### Example
+
+```
+$ cat ~/password.txt | skycli auth login --email user@example.com --password-stdin
+```
 
 ### skycli auth logout
 
