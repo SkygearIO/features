@@ -40,7 +40,11 @@ and password interactively.
 #### Example
 
 ```
+# Provide password from file
 $ cat ~/password.txt | skycli auth login --email user@example.com --password-stdin
+
+# Provide password from environment variable
+$ printf "$MY_PASSWORD" | skycli auth login --email user@example.com --password-stdin
 ```
 
 ### skycli auth logout
