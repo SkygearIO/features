@@ -35,6 +35,17 @@ and password interactively.
 #### Flags
 
 - `--email=EMAIL` Login as cluster user, ask for password interactively.
+- `--password-stdin` Read password from stdin.
+
+#### Example
+
+```
+# Provide password from file
+$ cat ~/password.txt | skycli auth login --email user@example.com --password-stdin
+
+# Provide password from environment variable
+$ printf "$MY_PASSWORD" | skycli auth login --email user@example.com --password-stdin
+```
 
 ### skycli auth logout
 
@@ -62,9 +73,9 @@ admin-key=
 app=myapp
 ```
 
-### skycli config set-cluster-server
+### skycli config set-cluster
 
-`skycli config set-cluster-server --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
+`skycli config set-cluster --cluster=[CLUSTER_NAME] --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
 
 Change current cluster controller server endpoint and api key, it is provided
 by cluster admin. If cluster admin want to use admin only api, they should provide
@@ -72,8 +83,24 @@ master key in the api key flag.
 
 #### Flags
 
-- `--endpoint=[CLUSTER_SERVER_URL]` Provide cluster controller endpoint url.
-- `--api-key=[API_KEY|MASTER_KEY]` Provide api key.
+- `--cluster=[CLUSTER_NAME]` Provide cluster name, currently only `skygeario` is supported.
+- `--endpoint=[CLUSTER_SERVER_URL]` Provide cluster controller endpoint url for custom cluster.
+- `--api-key=[API_KEY|MASTER_KEY]` Provide api key for custom cluster.
+
+#### Example
+
+```sh
+# Interactive mode
+$ skycli config set-cluster
+❯ skygeario 
+  Connect to my own cluster 
+
+# Select skygear cloud
+$ skycli config set-cluster --cluster=skygeario
+
+# Select user own cluster
+$ skycli config set-cluster --endpoint=https://mycluster-controller --api-key=api_key
+```
 
 ## skycli user
 
