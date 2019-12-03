@@ -27,8 +27,9 @@ This section defines the login id types and its validation and normalization rul
 
 #### Normalization
 
-- Change domain part to lower case (Compulsory)
-- Change local part to lower case (Configurable, default ON)
+- Case fold and encode the domain part to punycode (Compulsory)
+- Case sensitive local part (Configurable, default OFF, case fold the value for case insensitive)
+- Perform NFKC to the local part (Compulsory)
 - Remove words after `+` sign in the local part (Configurable, default OFF)
 - Remove all `.` sign in the local part (Configurable, default OFF)
 
@@ -57,7 +58,7 @@ user_config:
 
 #### Normalization
 
-- Case insensitive (Configurable, default ON)
+- Case sensitive (Configurable, default OFF, case fold the value for case insensitive)
 - Perform NFKC (Compulsory)
 
 #### Configuration
