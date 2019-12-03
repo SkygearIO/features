@@ -53,12 +53,12 @@ user_config:
 - Disallow username with reserved keywords in [Django list](https://github.com/ubernostrum/django-registration/blob/31478a8acbf705a654565105c791f1ec4cdbf581/src/django_registration/validators.py#L127) (Configurable, default ON)
 - Disallow username with user defined list (Configurable, default empty list)
 - Disallow non-ASCII username (Configurable, default OFF)
-- Disallow username with confusing homoglyphs (Configurable, default ON)
+- Disallow username with confusing homoglyphs (Compulsory)
 
 #### Normalization
 
 - Case insensitive (Configurable, default ON)
-- Perform NFKC (Configurable, default ON)
+- Perform NFKC (Compulsory)
 
 #### Configuration
 ```yaml
@@ -71,9 +71,7 @@ user_config:
           - skygear
           - skygeario
         non_ascii: false
-        block_homoglyphs: true
         case_sensitive: false
-        nfkc: true
     login_id_keys:
       - type: username
         key: username
