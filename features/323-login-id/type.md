@@ -51,7 +51,9 @@ user_config:
 
 #### Validation
 
-- Disallow username with reserved keywords in [Django list](https://github.com/ubernostrum/django-registration/blob/31478a8acbf705a654565105c791f1ec4cdbf581/src/django_registration/validators.py#L127) (Configurable, default ON)
+- Disallow username with reserved keywords listed below (Configurable, default ON)
+  - https://github.com/marteinn/The-Big-Username-Blacklist/blob/master/list_raw.txt
+  - https://github.com/ubernostrum/django-registration/blob/31478a8acbf705a654565105c791f1ec4cdbf581/src/django_registration/validators.py#L127
 - Disallow username with user defined list (Configurable, default empty list)
 - Disallow non-ASCII username (Configurable, default OFF)
 - Disallow username with confusing homoglyphs (Compulsory)
