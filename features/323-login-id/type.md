@@ -73,7 +73,7 @@ user_config:
         excluded_keywords:
           - skygear
           - skygeario
-        non_ascii: false
+        ascii_only: false
         case_sensitive: false
     login_id_keys:
       - type: username
