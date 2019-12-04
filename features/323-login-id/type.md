@@ -37,7 +37,7 @@ This section defines the login id types and its validation and normalization rul
 ```yaml
 user_config:
   auth:
-    login_id:
+    login_id_handling:
       email:
         case_sensitive: false
         ignore_local_part_after_plus_sign: false
@@ -67,7 +67,7 @@ user_config:
 ```yaml
 user_config:
   auth:
-    login_id:
+    login_id_handling:
       username:
         block_reserved_keywords: true
         excluded_keywords:
