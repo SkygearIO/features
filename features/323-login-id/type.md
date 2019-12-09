@@ -63,7 +63,7 @@ user_config:
   - https://github.com/marteinn/The-Big-Username-Blacklist/blob/master/list_raw.txt
   - https://github.com/ubernostrum/django-registration/blob/31478a8acbf705a654565105c791f1ec4cdbf581/src/django_registration/validators.py#L127
 - Disallow username with user defined list (Configurable, default empty list)
-- Disallow non-ASCII username (Configurable, default OFF)
+- ASCII only username, only `a-zA-Z0-9_-.` are allowed when this is on (Configurable, default OFF)
 - Disallow username with confusing homoglyphs (Compulsory)
 
 #### Normalization
