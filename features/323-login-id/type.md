@@ -59,11 +59,12 @@ user_config:
 
 #### Validation
 
-- Disallow username with reserved keywords listed below (Configurable, default ON)
+- Disallow username with reserved usernames listed below, perform checking with case insensitive exact match (Configurable, default ON)
   - https://github.com/marteinn/The-Big-Username-Blacklist/blob/master/list_raw.txt
   - https://github.com/ubernostrum/django-registration/blob/31478a8acbf705a654565105c791f1ec4cdbf581/src/django_registration/validators.py#L127
-- Disallow username with user defined list (Configurable, default empty list)
-- Disallow non-ASCII username (Configurable, default OFF)
+- Disallow username contains user defined keywords, perform case insensitive substring search (Configurable, default empty list)
+- Ensure valid for PRECIS IdentifierClass profile (Compulsory)
+- ASCII only username, only `a-zA-Z0-9_-.` are allowed when this is on (Configurable, default ON)
 - Disallow username with confusing homoglyphs (Compulsory)
 
 #### Normalization
@@ -81,7 +82,7 @@ user_config:
   auth:
     login_id_types:
       username:
-        block_reserved_keywords: true
+        block_reserved_usernames: true
         excluded_keywords:
           - skygear
           - skygeario
