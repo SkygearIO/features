@@ -339,6 +339,30 @@ instructions again.
 
 After verification success. The domain will be usable immediately with letsencrypt ssl.
 
+### skycli domain view
+
+`skycli domain view [CUSTOM_DOMAIN]`
+
+View the given domain, to retrieve the DNS records for verification.
+
+#### Example
+
+```
+$ skycli domain view api.example.com
+
+General
+
+  DOMAIN              VERIFIED         CUSTOM_CERT        SSL_CERT_EXPIRY               CREATED_AT
+  myapp.myapp.com     true             true               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+
+DNS records
+
+  TYPE      HOST                     VALUE
+  TXT       _skygear.example.com     5636486ffc5a4dfebf4a13f480bd9a95
+  A         api.example.com          <ingress controller lb ip>
+
+```
+
 ### skycli domain update
 
 `skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt`
