@@ -7,6 +7,7 @@ Allow developer to setup custom domain for their application, basically followin
 - Allow developer to setup custom domain.
 - Let's Encrypt certificate will be provided by default, certificate will be renew automatically.
 - Developer can configure to use custom SSL certificates for their domain. They will need to update the certificates before it expires in this case.
+- Support configure custom domain to serve the app or redirect to another domain.
 
 ## Use Cases
 
@@ -15,16 +16,16 @@ Allow developer to setup custom domain for their application, basically followin
 1. Add custom domain
 
     ```sh
-    $ skycli domain add myapp.example.com --app=myapp
-    Added domain myapp.example.com successfully!
+    $ skycli domain add www.example.com --app=myapp
+    Added domain www.example.com successfully!
 
     Add following DNS records in your DNS provider.
 
     TYPE      HOST                     VALUE
     TXT       _skygear.example.com     5636486ffc5a4dfebf4a13f480bd9a95
-    A         myapp.example.com          <ingress controller lb ip>
+    A         www.example.com          <ingress controller lb ip>
 
-    After updating DNS records, run `skycli domain verify myapp.example.com` to verify domain.
+    After updating DNS records, run `skycli domain verify www.example.com` to verify domain.
     ```
 
 1. Developer update the DNS records through their DNS provider.
@@ -32,8 +33,8 @@ Allow developer to setup custom domain for their application, basically followin
 1. Ask Skygear Cluster to verify the domain
 
     ```sh
-    $ skycli domain verify myapp.example.com --app=myapp
-    Success! You can now access your app through myapp.example.com.
+    $ skycli domain verify www.example.com --app=myapp
+    Success! You can now access your app through www.example.com.
     Your site may show a security certificate warning until the certificate has been provisioned.
     ```
 
@@ -45,14 +46,30 @@ Allow developer to setup custom domain for their application, basically followin
     Success! Created secret myapp-tls
 
     # Update domain using custom certificates
-    $ skycli domain update myapp.example.com --tls-secret=myapp-tls --app=myapp
-    Success! Updated domain myapp.example.com
+    $ skycli domain update www.example.com --tls-secret=myapp-tls --app=myapp
+    Success! Updated domain www.example.com
 
     # The domain is now using the custom certificate
     $ skycli domain list --app=myapp
-    DOMAIN              VERIFIED         CUSTOM_CERT        SSL_CERT_EXPIRY               CREATED_AT
-    myapp.myapp.com     true             true               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+    DOMAIN            VERIFIED         CUSTOM_CERT      REDIRECT        SSL_CERT_EXPIRY               CREATED_AT
+    www.myapp.com     true             true             -               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
     ```
+
+1. (Optional) Setup apex domain redirect to `www`.
+
+    1. Repeat previous steps to add apex domain `example.com`.
+
+    1. Setup redirect
+        ```sh
+        skycli domain update example.com --redirect-domain=www.example.com
+        Success! Updated domain example.com
+
+
+        $ skycli domain list --app=myapp
+        DOMAIN            VERIFIED         CUSTOM_CERT      REDIRECT            SSL_CERT_EXPIRY               CREATED_AT
+        www.myapp.com     true             true             -                   2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+        myapp.com         true             false            www.myapp.com       -                             2019-11-26 18:00:00 +08:00
+        ```
 
 ## Features Details
 

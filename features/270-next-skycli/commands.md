@@ -365,14 +365,16 @@ DNS records
 
 ### skycli domain update
 
-`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt`
+`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt --disable-redirect --redirect-domain=[REDIRECT_DOMAIN]`
 
-Update domain tls certificates, user can only provide either `tls-secret` or `use-letsencrypt`.
+Update domain tls certificates and configure redirect, user can only provide either `tls-secret` or `use-letsencrypt`.
 
 #### Flags
 
 - `--tls-secret=[SECRET_NAME]` Custom certificate secret name.
 - `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
+- `--disable-redirect` Disable domain redirect.
+- `--redirect-domain` Configure domain redirect, 307 redirect will be performed.
 
 ### skycli domain list
 
@@ -384,10 +386,11 @@ List all custom domain of apps.
 
 ```
 $skycli domain list
-DOMAIN              VERIFIED         CUSTOM_CERT        SSL_CERT_EXPIRY               CREATED_AT
-api.myapp.com       true             true               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
-test.myapp.com      true             false              -                             2019-11-30 18:00:00 +08:00
-test2.myapp.com     false            false              -                             2019-11-30 18:00:00 +08:00
+DOMAIN              VERIFIED         CUSTOM_CERT        REDIRECT          SSL_CERT_EXPIRY               CREATED_AT
+myapp.com           true             false              www.api.com       -                             2019-11-30 18:00:00 +08:00
+api.myapp.com       true             true               -                 2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+www.myapp.com       true             false              -                 -                             2019-11-30 18:00:00 +08:00
+test2.myapp.com     false            false              -                 -                             2019-11-30 18:00:00 +08:00
 ```
 
 ## skycli secret
