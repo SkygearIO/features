@@ -92,9 +92,13 @@ function linkOAuthProvider(providerID: string, callbackURL: string): Promise<Use
 
 function loginApple(providerID: string, callbackURL: string, options?: SSOLoginOptions): Promise<User>;
 function linkApple(providerID: string, callbackURL: string): Promise<User>;
+
+function getCredentialStateForAppleUserID(appleUserID: string): Promise<"Authorized" | "NotFound" | "Revoked" | "Transferred">;
 ```
 
 ### Example
+
+#### Login example
 
 ```typescript
 function LoginScreen() {
@@ -117,6 +121,21 @@ function LoginScreen() {
       <SignInWithAppleButton onPress={onPress} />
     </View>
   );
+}
+```
+
+#### Revoke example
+
+```typescript
+async function onAppLaunch() {
+  await skygear.configure({ apiKey: "apiKey", endpoint: "https://example.com"});
+  const i = skygear.auth.currentIdentity;
+  if (i != null && i.type === "oauth" && i.providerType === "apple") {
+    const state = await skygear.auth.getCredentialStateForAppleUserID(i.providerUserID);
+    if (state === "Revoked") {
+      // Logout the user and present suitable UI.
+    }
+  }
 }
 ```
 
