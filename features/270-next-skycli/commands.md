@@ -353,17 +353,6 @@ Key and cert need to be provided at the same time.
 - `--cert=[CERT_FILE]` Provide custom tls cert.
 - `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
 
-### skycli domain set-alias
-
-`skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]`
-
-Point the custom domain to specific CF version. Before setting the alias, the
-custom domain will point to the default domain `[APP_NAME].skygear.io`.
-
-#### Example
-
-`skycli domain set-alias api.example.com myapp.[HASH].skygear.io`
-
 ### skycli domain list
 
 `skycli domain list`
