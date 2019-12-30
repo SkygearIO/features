@@ -304,7 +304,7 @@ $skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
 - `--payload` Invoke function with payload
 - `--access-key` Skygear auth access token
 
-### skycli domain
+## skycli domain
 
 #### Overview
 
@@ -321,12 +321,11 @@ this stage. User need to verify the domain.
 $ skycli domain add api.example.com
 Added domain api.example.com successfully!
 
-1. Add the TXT record below to your DNS provider to verify your own example.com
+Add following DNS records in your DNS provider.
 
-    Type    Host            Value
-    TXT     example.com     skygear-cloud-verification=5636486ffc5a4dfebf4a13f480bd9a95
-
-2. Add `CNAME` record to make sure your domain is pointing to `cf.skygearapis.io`.
+  TYPE    HOST                     VALUE
+  TXT     _skygear.example.com     5636486ffc5a4dfebf4a13f480bd9a95
+  A       api.example.com          <ingress controller lb ip>
 
 After updating DNS records, run `skycli domain verify api.example.com` to verify domain.
 ```
@@ -361,9 +360,10 @@ List all custom domain of apps.
 
 ```
 $skycli domain list
-DOMAIN              CUSTOM_CERTS            SSL_CERT_EXPIRY
-api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
-test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
+DOMAIN              VERIFIED         CUSTOM_CERT        SSL_CERT_EXPIRY               CREATED_AT
+api.myapp.com       true             true               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+test.myapp.com      true             false              -                             2019-11-30 18:00:00 +08:00
+test2.myapp.com     false            false              -                             2019-11-30 18:00:00 +08:00
 ```
 
 ## skycli secret
