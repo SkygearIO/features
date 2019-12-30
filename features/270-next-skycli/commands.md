@@ -342,15 +342,13 @@ After verification success. The domain will be usable immediately with letsencry
 
 ### skycli domain update
 
-`skycli domain update [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE] --use-letsencrypt`
+`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt`
 
-Setup or update domain tls certificates. Cert and key should be PEM-encoded X.509, RSA (2048) key.
-Key and cert need to be provided at the same time.
+Update domain tls certificates, user can only provide either `tls-secret` or `use-letsencrypt`.
 
 #### Flags
 
-- `--key=[KEY_FILE]` Provide custom tls key.
-- `--cert=[CERT_FILE]` Provide custom tls cert.
+- `--tls-secret=[SECRET_NAME]` Custom certificate secret name.
 - `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
 
 ### skycli domain list
@@ -392,7 +390,7 @@ aws_access_secret       2019-01-31T15:00:00+08:00
 
 ### skycli secret create
 
-`skycli secret create [SECRET_NAME] [SECRET_VALUE] --type=[SECRET_TYPE] --file==[FILE_NAME]`
+`skycli secret create [SECRET_NAME] [SECRET_VALUE] --type=[SECRET_TYPE] --file==[FILE_NAME] --cert=[PEM_ENCODED_CERT_FILE] --key=[PEM_ENCODED_KEY_FILE]`
 
 Create new secret in app
 
@@ -401,8 +399,25 @@ Create new secret in app
 - `--type` Secret type, used to facilitate programmatic handling of secret data. Available types: `opaque`, `dockerconfigjson`. Default is `opaque`.
     - `opaque`: Secret used in environment variable.
     - `dockerconfigjson`: Docker config used as image pull secret.
+    - `tls`: TLS secret for custom domain, create from the given public/private key pair.
 
-- `--file` Secret value from file.
+- `--file` Secret value from file. Supported types: `opaque`, `dockerconfigjson`.
+- `--cert` Path to PEM encoded public key certificate. Supported type: `tls`. Required.
+- `--key` Path to private key associated with given certificate. Supported type: `tls`. Required.
+
+#### Examples
+
+Create docker config secret named my-secret with json file:
+
+```
+skycli secret create my-secret --type=dockerconfigjson --file=path/to/config.json
+```
+
+Create TLS secret named myapp.example.com-tls with the given key pair:
+
+```
+skycli secret create myapp.example.com-tls --type=tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
 
 ### skycli secret remove
 
