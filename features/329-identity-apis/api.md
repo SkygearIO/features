@@ -52,8 +52,9 @@ type Identity = PasswordIdentity | OAuthIdentity | CustomTokenIdentity;
 async function listIdentities(): Promise<Identity[]>;
 
 async function addLoginID(loginID: { [key: string]: string }, realm?: string): Promise<void>;
-async function removeLoginID(loginID: string, realm?: string): Promise<void>;
-async function updateLoginID(oldLoginID: string, newLoginID: { [key: string]: string }): Promise<User>;
+// Login ID key is required to ensure no ambiguity would exist due to normalization.
+async function removeLoginID(loginID: { [key: string]: string }, realm?: string): Promise<void>;
+async function updateLoginID(oldLoginID: { [key: string]: string }, newLoginID: { [key: string]: string }): Promise<User>;
 
 async function changePassword(newPassword: string, oldPassword?: string): Promise<User>;
 
