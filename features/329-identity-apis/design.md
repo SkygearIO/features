@@ -132,3 +132,11 @@ Conceptually, identities are immutable. Developer should instead:
 1. Create new identity
 2. Ensure the new identity is in desired state (e.g. verification)
 3. Delete old identity
+
+## Adding login ID without existing login IDs
+If user without existing login IDs tried to add a new login ID (e.g. a SSO
+user), a password identity would be created, but the password would not be
+known. In this case, the password identity would be created without password
+(i.e. user cannot login using this identity). User should change the password
+using re-authentication through SSO to enable logging in with the password
+identity. Note that reauthentication must be enabled for this to work.
