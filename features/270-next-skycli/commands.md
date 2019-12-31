@@ -376,6 +376,14 @@ Update domain tls certificates and configure redirect, user can only provide eit
 - `--disable-redirect` Disable domain redirect.
 - `--redirect-domain` Configure domain redirect, 307 redirect will be performed.
 
+
+### skycli domain remove
+
+`skycli domain remove [CUSTOM_DOMAIN]`
+
+Remove custom domain.
+
+
 ### skycli domain list
 
 `skycli domain list`

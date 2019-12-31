@@ -68,6 +68,7 @@ skycli [group] [verb/action] [parameters]
     - [skycli domain verify [CUSTOM_DOMAIN]](commands.md#skycli-domain-verify)
     - [skycli domain view [CUSTOM_DOMAIN]](commands.md#skycli-domain-view)
     - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
+    - [skycli domain remove [CUSTOM_DOMAIN]](commands.md#skycli-domain-remove)
     - [skycli domain list](commands.md#skycli-domain-list)
 
 - skycli secret
