@@ -257,9 +257,9 @@ $ skycli app view-user-config > ./user-config.yaml
 $ skycli app update-user-config -f ./user-config.yaml
 ```
 
-### skycli app get-credentials
+### skycli app get-k8s-credentials
 
-`skycli app get-credentials`
+`skycli app get-k8s-credentials`
 
 Fetch the credentials to access k8s resources with kubectl.
 The credentials are written to the machine's kubeconfig.
@@ -271,13 +271,13 @@ This command requires the presence of kubectl in PATH.
 #### Example
 
 ```sh
-$ skycli --app myapp app get-credentials
+$ skycli --app myapp app get-k8s-credentials
 Run kubectl config use-context skygear-myapp to switch to the context of this app.
 ```
 
-### skycli app delete-credentials
+### skycli app delete-k8s-credentials
 
-`skycli app delete-credentials`
+`skycli app delete-k8s-credentials`
 
 Delete the credentials remotely if exists. Then delete the config from the machine's kubeconfig.
 
