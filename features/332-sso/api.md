@@ -101,18 +101,26 @@ function getCredentialStateForUserID(appleUserID: string): Promise<"Authorized" 
 #### Login example
 
 ```typescript
+import { getSystemVersion } from "react-native-device-info";
+
+function getMajorSystemVersion(): number {
+  const version = getSystemVersion();
+  const parts = version.split(".");
+  return parseInt(parts[0], 10);
+}
+
 function LoginScreen() {
   // For a React Native app, Sign in with Apple must provide two experiences.
   //
-  // On iOS, the developer must use loginApple which uses AuthenticationServices
+  // On iOS >= 13, the developer must use loginApple which uses AuthenticationServices
   // to provide a native experience.
   //
-  // On Android, the developer must use loginOAuthProvider which is the standard
+  // On other iOS versions and Android, the developer must use loginOAuthProvider which is the standard
   // web-based OpenID Connect flow.
   const onPress = useCallback(() => {
-    if (Platform.OS === "ios") {
+    if (Platform.OS === "ios" && getMajorSystemVersion() >= 13) {
       skygear.auth.loginApple("apple-app", "myapp://host/path");
-    } else if (Platform.OS === "android") {
+    } else if (Platform.OS === "ios" || Platform.OS === "android") {
       skygear.auth.loginOAuthProvider("apple-web", "myapp://host/path");
     }
   }, []);
