@@ -55,6 +55,9 @@ skycli uses `kubectl config` to write the credentials into kubeconfig.
 Behind the scene, a service account is created per developer per app if not exists.
 A role binding is created to bind the above role to the service account.
 
+The service account is deleted when it is explicitly deleted by the developer with skycli or
+when the developer is removed from the collaborators.
+
 # Caveats
 
 The token of a service account is a JWT token that never expire.
