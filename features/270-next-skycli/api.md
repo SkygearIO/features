@@ -58,6 +58,8 @@ skycli [group] [verb/action] [parameters]
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-user-config](commands.md#skycli-app-view-config)
     - [skycli app update-user-config -f [USER_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app get-credentials](commands.md#skycli-app-get-credentials)
+    - [skycli app delete-credentials](commands.md#skycli-app-delete-credentials)
     - [skycli app deploy](commands.md#skycli-app-deploy)
     - [skycli app view-deploy](commands.md#skycli-app-view-deploy)
 
