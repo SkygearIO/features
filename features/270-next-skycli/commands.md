@@ -281,29 +281,6 @@ static-index        static           /
 static-asset        static           /static
 ```
 
-### skycli app logs
-
-`skycli app logs [DEPLOYMENT_ITEM_NAME]`
-
-Show logs of specific cloud code item (e.g. function, http-handler or http-service).
-
-### skycli app invoke-function
-
-`skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
-
-Invoke cloud function.
-
-#### Example
-```
-$skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
-{"result":"OK"}
-```
-
-#### Flags
-
-- `--payload` Invoke function with payload
-- `--access-key` Skygear auth access token
-
 ## skycli domain
 
 #### Overview
