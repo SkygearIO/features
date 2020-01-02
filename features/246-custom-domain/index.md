@@ -74,9 +74,25 @@ Allow developer to setup custom domain for their application, basically followin
 ## Features Details
 
 - `A` record is used for setting up DNS record, so both apex domain and subdomain can be supported.
-- Developers only need to verify domain once for different subdomains in the same domain within an app.
-  - If developer add multiple subdomains in the same domain at the same time, the verification `TXT` record value should be the same.
-  - If there are verified domain records in the app, developer doesn't need to add the `TXT` for new subdomains in the same domain.
+- After developer verified a domain, Skygear Cluster will verify the root domain by checking `TXT` record. Once the root domain is verified, the root domain will be added to that specific app. Developer will not need to add `TXT` record again for the new subdomains in that app, only `A` record will be checked.
+
+## Scenario
+
+### Scenario 1: Using same root domain in 2 different apps
+
+1. Developer adds `api.example.com` to `myapp1`, he will be requested to update the DNS with `A` record for `api.example.com` and `TXT` record for `_skygear.example.com`. After verification, `myapp1` will have
+    1. Custom domain: `api.example.com`. (Can be viewed through `skycli domain list` command and portal)
+    1. Root domain: `example.com`. (Store in backend only)
+1. Developer adds `myapp1.example.com` to `myapp1`, only `A` record for `myapp1.example.com` will be checked. Since `myapp1` has root domain `example.com` verified.
+1. Developer adds `myapp2.example.com` to `myapp2`, he will be requested to update the DNS with `A` record for `myapp2.example.com` and `TXT` record for `_skygear.example.com`. Since `myapp2` doesn't not verified root domain `example.com`. For developer who want to verify same root domain in multiple apps, they can append the values into the `TXT` record list.
+1. Developer delete all domains in `myapp1`, the root domain `example.com` will also be removed. He will need to verify the domain again.
+
+### Scenario 2: Two apps use the same custom domain
+
+1. Developer adds `api.example.com` to `myapp1`.
+1. Developer adds `api.example.com` to `myapp2`.
+1. Developer completes verification in `myapp1`.
+1. Since `api.example.com` is verified and used in `myapp1`, verifying `api.example.com` in `myapp2` will be rejected.
 
 ## APIs
 
