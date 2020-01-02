@@ -46,13 +46,15 @@ When the developer runs `skycli app get-k8s-credentials`, skycli roughly does th
 $ kubectl config set-credentials cluster-admin \
   --exec-command=/path/to/skycli \
   --exec-api-version=client.authentication.k8s.io/v1beta \
+  --exec-arg=--context \
+  --exec-arg=thecontext \
   --exec-arg=--app \
   --exec-arg=myapp \
   --exec-arg=app \
   --exec-arg=get-k8s-token-request
 ```
 
-When kubectl needs to authenticate the developer, it execute `/path/to/skycli --app myapp app get-k8s-token-request`.
+When kubectl needs to authenticate the developer, it execute `/path/to/skycli --context thecontext --app myapp app get-k8s-token-request`.
 
 skycli then requests a TokenRequest from the controller.
 A service account is created per developer per app if not exists.
