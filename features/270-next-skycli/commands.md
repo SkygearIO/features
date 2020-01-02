@@ -264,7 +264,7 @@ $ skycli app update-user-config -f ./user-config.yaml
 Fetch the credentials to access k8s resources with kubectl.
 The credentials are written to the machine's kubeconfig.
 
-The name of the context is `skygear-<app-name>`.
+The name of the context is `skygear-<cluster-name>-<app-name>`.
 
 This command requires the presence of kubectl in PATH.
 
@@ -272,7 +272,7 @@ This command requires the presence of kubectl in PATH.
 
 ```sh
 $ skycli --app myapp app get-k8s-credentials
-Run kubectl config use-context skygear-myapp to switch to the context of this app.
+Run kubectl config use-context skygear-skygear-production-myapp to switch to the context of this app.
 ```
 
 ### skycli app delete-k8s-credentials
