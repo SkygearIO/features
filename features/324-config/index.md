@@ -1,3 +1,5 @@
+# This document is legacy.
+
 # Revamp TenantConfiguration
 
 ## Background

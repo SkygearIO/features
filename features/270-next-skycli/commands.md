@@ -197,46 +197,50 @@ the cluster instead.
 Add user into the current app. Change current app by
 `skycli config set-app`.
 
-### skycli app view-user-config
+### skycli app view-config
 
-`skycli app view-user-config`
+`skycli app view-config`
 
-View the current app user config in yaml format.
+View the current app config in yaml format.
 
 #### Example
 
 ```
-$ skycli app view-user-config
-master_key: xxxxx
-api_key: xxxxx
-sso:
-  allowed_callback_urls:
-  - http://127.0.0.1:5000/
-  - http://localhost:5000/
-  merge_users_with_identical_email: true
+$ skycli app view-config
+version: '2'
+app_config:
+  master_key: xxxxx
+  api_key: xxxxx
+  sso:
+    allowed_callback_urls:
+    - http://127.0.0.1:5000/
+    - http://localhost:5000/
+    merge_users_with_identical_email: true
 ```
 
-### skycli app update-user-config
+### skycli app update-config
 
-`skycli app update-user-config -f [USER_CONFIG_YAML_FILE]`
+`skycli app update-config -f [USER_CONFIG_YAML_FILE]`
 
-Update user config interactively or by providing a file.
+Update config interactively or by providing a file.
 
 #### Example
 
 **Update in editor**
 ```sh
-$ skycli app update-user-config
-? Edit user config. Press <enter> to launch your preferred editor.
+$ skycli app update-config
+? Edit config. Press <enter> to launch your preferred editor.
 
 # Enter editor mode with existing config
-master_key: xxxxx
-api_key: xxxxx
-sso:
-  allowed_callback_urls:
-  - http://127.0.0.1:5000/
-  - http://localhost:5000/
-  merge_users_with_identical_email: true
+version: '2'
+app_config:
+  master_key: xxxxx
+  api_key: xxxxx
+  sso:
+    allowed_callback_urls:
+    - http://127.0.0.1:5000/
+    - http://localhost:5000/
+    merge_users_with_identical_email: true
 ~
 ~
 ~
@@ -248,13 +252,13 @@ sso:
 
 **Update by providing a file**
 ```sh
-# 1. If you don't have a copy of the user config file, get it from the view command.
-$ skycli app view-user-config > ./user-config.yaml
+# 1. If you don't have a copy of the app config file, get it from the view command.
+$ skycli app view-config > ./app-config.yaml
 
-# 2. Update the user-config.yaml file
+# 2. Update the app-config.yaml file
 
 # 3. Apply the change to the app
-$ skycli app update-user-config -f ./user-config.yaml
+$ skycli app update-config -f ./app-config.yaml
 ```
 
 ### skycli app get-k8s-credentials
