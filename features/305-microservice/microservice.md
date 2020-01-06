@@ -10,13 +10,13 @@ The document specifies the details of `type: http-service` of a deployment item.
 
 ```yaml
 deployments:
-  my-awesome-service:
-    type: http-service
-    path: /api/
-    port: 8888
-    context: ./backend/service
-    dockerfile: Dockerfile
-    command: ["<start server command in array>"]
+- name: my-awesome-service
+  type: http-service
+  path: /api/
+  port: 8888
+  context: ./backend/service
+  dockerfile: Dockerfile
+  command: ["<start server command in array>"]
 ```
 
 *`dockerfile`, `command` are optional.*
@@ -35,13 +35,13 @@ When the user run `skycli app deploy`, the following steps are taken:
 
 ```yaml
 deployments:
-  my-awesome-service:
-    type: http-service
-    image: myimage:latest
-    path: /
-    port: 3000
-    command: ["<start server command in array>"]
-    image_pull_secret: "<secret_name>"
+- name: my-awesome-service
+  type: http-service
+  image: myimage:latest
+  path: /
+  port: 3000
+  command: ["<start server command in array>"]
+  image_pull_secret: "<secret_name>"
 ```
 
 When the user run `skycli app deploy`, the following steps are taken:
@@ -57,13 +57,13 @@ When the user run `skycli app deploy`, the following steps are taken:
 
 ```yaml
 deployments:
-  my-awesome-service:
-    type: http-service
-    template: nodejs:10
-    path: /api/
-    port: 3000
-    context: ./backend/nodejs
-    command: ["npm", "start"]
+- name: my-awesome-service
+  type: http-service
+  template: nodejs:10
+  path: /api/
+  port: 3000
+  context: ./backend/nodejs
+  command: ["npm", "start"]
 ```
 
 *`command` is optional.*
@@ -86,15 +86,15 @@ When the built image is run, it must expose an HTTP service listening at `port`.
 
 ```yaml
 deployments:
-  my-awesome-service:
-    type: http-service
-    ....
-    environment:
-    - name: "DEMO_ENV"
-      value: "value of environment"
-    - name: "MONGODB_URL"
-      secret: "<secret_name>"
-    - secret: "<secret_name>"
+- name: my-awesome-service
+  type: http-service
+  ....
+  environment:
+  - name: "DEMO_ENV"
+    value: "value of environment"
+  - name: "MONGODB_URL"
+    secret: "<secret_name>"
+  - secret: "<secret_name>"
 ```
 
 If `secret` is provided without `name`, the secret name will become the environment

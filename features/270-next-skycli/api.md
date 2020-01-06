@@ -133,25 +133,25 @@ access skycli instead of using user account.
 config_version: 1
 app: myapp
 deployments:
-  function1:
-    type: http-handler
-    path: /hello-world
-    env: node
-    src: js/hellow-world
-    secrets:
-      - DATABASE_URL
-    permission:
-      - name: key_required
-      - name: user_required
-  static-index:
-    type: static
-    src: index.html
-    path: /
-  static-asset:
-    type: static
-    src: asset
-    path: /static
-  ...
+- name: function1
+  type: http-handler
+  path: /hello-world
+  env: node
+  src: js/hellow-world
+  environment:
+  - secret: DATABASE_URL
+  permission:
+    - name: key_required
+    - name: user_required
+- name: static-index
+  type: static
+  src: index.html
+  path: /
+- name: static-asset
+  type: static
+  src: asset
+  path: /static
+...
 ```
 
 ## Use cases
