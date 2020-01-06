@@ -70,7 +70,6 @@ Following snippets use TypeScript:
     - Keys are allowed login ID keys; value are login ID configs:
         - `type`: type of the login ID, can be standard keys (e.g. `email`, `phone`),
                   or `raw` for unspecified type.
-        - `minimum`: The inclusive minimum amount of login IDs, default to 0.
         - `maximum`: The inclusive maximum amount of login IDs, default to 1.
     - Various auth features (e.g. welcome email/user verification/user portal)
       may make use of the login ID types.

@@ -27,9 +27,6 @@
 - Let type `LoginIDConfig` be a string-keyed map, with entries:
     - `type`: string, required;
               The corresponding standard key, or `raw`.
-    - `minimum`: integer, optional, default to 0;
-                 The inclusive minimum amount of login IDs.
-                 This limit will be enforced on sign up / deleting login IDs.
     - `maximum`: integer, optional, default to 1;
                  The inclusive maximum amount of login IDs.
                  This limit will be enforced on sign up / creating login IDs.
@@ -41,7 +38,6 @@ Example:
         "phone": true,
         "login_email": {
             "type": "email",
-            "minimum": 1,
             "maximum": 5
         },
         "fingerprint": {
