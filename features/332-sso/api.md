@@ -1,8 +1,6 @@
 # Overview
 
-The Auth gear supports single sign-on (SSO) via OAuth 2.0 and Custom Token.
-
-In the future we may support OpenID Connect.
+The Auth gear supports single sign-on (SSO) via OAuth 2.0, OpenID Connect, Sign in with Apple, and Custom Token.
 
 The only implemented OAuth 2.0 flow is [Authorization Code](https://tools.ietf.org/html/rfc6749#section-4.1) for devices that have access to a browser.
 
@@ -78,6 +76,75 @@ skygear.auth.loginOAuthProviderWithRedirect("google").catch(error => {
 skygear.auth.getLoginRedirectResult().then(user => {
   // login suceedeed
 });
+```
+
+## React Native
+
+### API
+
+```typescript
+interface SSOLoginOptions {
+  onUserDuplicate?: "abort" | "merge" | "create";
+}
+
+function loginOAuthProvider(providerID: string, callbackURL: string, options?: SSOLoginOptions): Promise<User>;
+function linkOAuthProvider(providerID: string, callbackURL: string): Promise<User>;
+
+function loginApple(providerID: string, callbackURL: string, options?: SSOLoginOptions): Promise<User>;
+function linkApple(providerID: string, callbackURL: string): Promise<User>;
+
+function getCredentialStateForUserID(appleUserID: string): Promise<"Authorized" | "NotFound" | "Revoked" | "Transferred">;
+```
+
+### Example
+
+#### Login example
+
+```typescript
+import { getSystemVersion } from "react-native-device-info";
+
+function getMajorSystemVersion(): number {
+  const version = getSystemVersion();
+  const parts = version.split(".");
+  return parseInt(parts[0], 10);
+}
+
+function LoginScreen() {
+  // For a React Native app, Sign in with Apple must provide two experiences.
+  //
+  // On iOS >= 13, the developer must use loginApple which uses AuthenticationServices
+  // to provide a native experience.
+  //
+  // On other iOS versions and Android, the developer must use loginOAuthProvider which is the standard
+  // web-based OpenID Connect flow.
+  const onPress = useCallback(() => {
+    if (Platform.OS === "ios" && getMajorSystemVersion() >= 13) {
+      skygear.auth.loginApple("apple-app", "myapp://host/path");
+    } else if (Platform.OS === "ios" || Platform.OS === "android") {
+      skygear.auth.loginOAuthProvider("apple-web", "myapp://host/path");
+    }
+  }, []);
+  return (
+    <View>
+      <SignInWithAppleButton onPress={onPress} />
+    </View>
+  );
+}
+```
+
+#### Revoke example
+
+```typescript
+async function onAppLaunch() {
+  await skygear.configure({ apiKey: "apiKey", endpoint: "https://example.com"});
+  const i = skygear.auth.currentIdentity;
+  if (i != null && i.type === "oauth" && i.providerType === "apple") {
+    const state = await getCredentialStateForUserID(i.providerUserID);
+    if (state === "Revoked") {
+      // Logout the user and present suitable UI.
+    }
+  }
+}
 ```
 
 # External access token flow
@@ -217,7 +284,11 @@ The existing implementation simply return all snapshots of user info of all prov
 - Facebook
 - Instagram
 - LinkedIn
+
+# List of Supported OpenID Connect Providers
+
 - [Microsoft identify platform](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow)
+- [Sign in with Apple](https://developer.apple.com/sign-in-with-apple/)
 
 # Custom Token
 
