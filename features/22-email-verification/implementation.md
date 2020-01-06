@@ -1,3 +1,5 @@
+**This document describe Skygear v1 feature. For Skygear v2, refer to #336 instead.**
+
 # Implementation for user data verification
 
 ## Server
