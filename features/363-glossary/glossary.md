@@ -17,6 +17,7 @@ Glossory
 - **Skygear Cluster**: the Skygear services (Gears, Gateway, and Controller), hosted on Kubernetes.
 - **Skygear Controller**: the management interface of Skygear Cluster.
 - **Skygear Portal**: the web management interface of Skygear Cluster.
+- **skycli**: the command-line management interface of Skygear Cluster.
 - **Skygear App**: a collection of microservices on Skygear Cluster, can omit 'Skygear' prefix if context if clear.
 - **Skygear Gateway**: the proxy which incoming traffic to Gears and Microservices must go through.
 - **Gear**: officially-supported multi-tenant-aware services.
