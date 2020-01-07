@@ -304,7 +304,7 @@ $skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
 - `--payload` Invoke function with payload
 - `--access-key` Skygear auth access token
 
-### skycli domain
+## skycli domain
 
 #### Overview
 
@@ -321,12 +321,11 @@ this stage. User need to verify the domain.
 $ skycli domain add api.example.com
 Added domain api.example.com successfully!
 
-1. Add the TXT record below to your DNS provider to verify your own example.com
+Add following DNS records in your DNS provider.
 
-    Type    Host            Value
-    TXT     example.com     skygear-cloud-verification=5636486ffc5a4dfebf4a13f480bd9a95
-
-2. Add `CNAME` record to make sure your domain is pointing to `cf.skygearapis.io`.
+  TYPE    HOST                     VALUE
+  TXT     _skygear.example.com     5636486ffc5a4dfebf4a13f480bd9a95
+  A       api.example.com          <ingress controller lb ip>
 
 After updating DNS records, run `skycli domain verify api.example.com` to verify domain.
 ```
@@ -340,29 +339,50 @@ instructions again.
 
 After verification success. The domain will be usable immediately with letsencrypt ssl.
 
-### skycli domain update
+### skycli domain view
 
-`skycli domain update [CUSTOM_DOMAIN] --key=[KEY_FILE] --cert=[CERT_FILE] --use-letsencrypt`
+`skycli domain view [CUSTOM_DOMAIN]`
 
-Setup or update domain tls certificates. Cert and key should be PEM-encoded X.509, RSA (2048) key.
-Key and cert need to be provided at the same time.
-
-#### Flags
-
-- `--key=[KEY_FILE]` Provide custom tls key.
-- `--cert=[CERT_FILE]` Provide custom tls cert.
-- `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
-
-### skycli domain set-alias
-
-`skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]`
-
-Point the custom domain to specific CF version. Before setting the alias, the
-custom domain will point to the default domain `[APP_NAME].skygear.io`.
+View the given domain, to retrieve the DNS records for verification.
 
 #### Example
 
-`skycli domain set-alias api.example.com myapp.[HASH].skygear.io`
+```
+$ skycli domain view api.example.com
+
+General
+
+  DOMAIN              VERIFIED         CUSTOM_CERT        SSL_CERT_EXPIRY               CREATED_AT
+  myapp.myapp.com     true             true               2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+
+DNS records
+
+  TYPE      HOST                     VALUE
+  TXT       _skygear.example.com     5636486ffc5a4dfebf4a13f480bd9a95
+  A         api.example.com          <ingress controller lb ip>
+
+```
+
+### skycli domain update
+
+`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt --disable-redirect --redirect-domain=[REDIRECT_DOMAIN]`
+
+Update domain tls certificates and configure redirect, user can only provide either `tls-secret` or `use-letsencrypt`.
+
+#### Flags
+
+- `--tls-secret=[SECRET_NAME]` Custom certificate secret name.
+- `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
+- `--disable-redirect` Disable domain redirect.
+- `--redirect-domain` Configure domain redirect, 307 redirect will be performed.
+
+
+### skycli domain remove
+
+`skycli domain remove [CUSTOM_DOMAIN]`
+
+Remove custom domain.
+
 
 ### skycli domain list
 
@@ -374,9 +394,11 @@ List all custom domain of apps.
 
 ```
 $skycli domain list
-DOMAIN              CUSTOM_CERTS            SSL_CERT_EXPIRY
-api.myapp.com       true                    Apr 18 06:10:35 2019 GMT
-test.myapp.com      false                   Apr 18 06:10:35 2019 GMT
+DOMAIN              VERIFIED         CUSTOM_CERT        REDIRECT          SSL_CERT_EXPIRY               CREATED_AT
+myapp.com           true             false              www.api.com       -                             2019-11-30 18:00:00 +08:00
+api.myapp.com       true             true               -                 2020-11-26 20:00:00 +08:00    2019-11-26 18:00:00 +08:00
+www.myapp.com       true             false              -                 -                             2019-11-30 18:00:00 +08:00
+test2.myapp.com     false            false              -                 -                             2019-11-30 18:00:00 +08:00
 ```
 
 ## skycli secret
@@ -403,7 +425,7 @@ aws_access_secret       2019-01-31T15:00:00+08:00
 
 ### skycli secret create
 
-`skycli secret create [SECRET_NAME] [SECRET_VALUE] --type=[SECRET_TYPE] --file==[FILE_NAME]`
+`skycli secret create [SECRET_NAME] [SECRET_VALUE] --type=[SECRET_TYPE] --file==[FILE_NAME] --cert=[PEM_ENCODED_CERT_FILE] --key=[PEM_ENCODED_KEY_FILE]`
 
 Create new secret in app
 
@@ -412,8 +434,25 @@ Create new secret in app
 - `--type` Secret type, used to facilitate programmatic handling of secret data. Available types: `opaque`, `dockerconfigjson`. Default is `opaque`.
     - `opaque`: Secret used in environment variable.
     - `dockerconfigjson`: Docker config used as image pull secret.
+    - `tls`: TLS secret for custom domain, create from the given public/private key pair.
 
-- `--file` Secret value from file.
+- `--file` Secret value from file. Supported types: `opaque`, `dockerconfigjson`.
+- `--cert` Path to PEM encoded public key certificate. Supported type: `tls`. Required.
+- `--key` Path to private key associated with given certificate. Supported type: `tls`. Required.
+
+#### Examples
+
+Create docker config secret named my-secret with json file:
+
+```
+skycli secret create my-secret --type=dockerconfigjson --file=path/to/config.json
+```
+
+Create TLS secret named myapp.example.com-tls with the given key pair:
+
+```
+skycli secret create myapp.example.com-tls --type=tls --cert=path/to/tls.cert --key=path/to/tls.key
+```
 
 ### skycli secret remove
 

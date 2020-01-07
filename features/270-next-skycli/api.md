@@ -64,10 +64,11 @@ skycli [group] [verb/action] [parameters]
     - [skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-app-invoke-functions)
 
 - skycli domain
-    - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-create)
+    - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-add)
     - [skycli domain verify [CUSTOM_DOMAIN]](commands.md#skycli-domain-verify)
+    - [skycli domain view [CUSTOM_DOMAIN]](commands.md#skycli-domain-view)
     - [skycli domain update [CUSTOM_DOMAIN]](commands.md#skycli-domain-update)
-    - [skycli domain set-alias [CUSTOM_DOMAIN] [CF_VERSIONED_LINK]](commands.md#skycli-domain-set-alias)
+    - [skycli domain remove [CUSTOM_DOMAIN]](commands.md#skycli-domain-remove)
     - [skycli domain list](commands.md#skycli-domain-list)
 
 - skycli secret
