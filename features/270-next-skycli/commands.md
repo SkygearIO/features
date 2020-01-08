@@ -257,6 +257,32 @@ $ skycli app view-user-config > ./user-config.yaml
 $ skycli app update-user-config -f ./user-config.yaml
 ```
 
+### skycli app get-k8s-credentials
+
+`skycli app get-k8s-credentials`
+
+Fetch the credentials to access k8s resources with kubectl.
+The credentials are written to the machine's kubeconfig.
+
+The name of the context is `skygear-<cluster-name>-<app-name>`.
+
+This command requires the presence of kubectl in PATH.
+
+#### Example
+
+```sh
+$ skycli --app myapp app get-k8s-credentials
+Run kubectl config use-context skygear-skygear-production-myapp to switch to the context of this app.
+```
+
+### skycli app delete-k8s-credentials
+
+`skycli app delete-k8s-credentials`
+
+Delete the credentials remotely if exists. Then delete the config from the machine's kubeconfig.
+
+This command requires the presence of kubectl in PATH.
+
 ### skycli app deploy
 
 `skycli app deploy`
@@ -280,29 +306,6 @@ function1           function         /function1
 static-index        static           /
 static-asset        static           /static
 ```
-
-### skycli app logs
-
-`skycli app logs [DEPLOYMENT_ITEM_NAME]`
-
-Show logs of specific cloud code item (e.g. function, http-handler or http-service).
-
-### skycli app invoke-function
-
-`skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]`
-
-Invoke cloud function.
-
-#### Example
-```
-$skycli app invoke-function helloworld --payload {"string": "value", "int": 1}
-{"result":"OK"}
-```
-
-#### Flags
-
-- `--payload` Invoke function with payload
-- `--access-key` Skygear auth access token
 
 ## skycli domain
 

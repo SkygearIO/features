@@ -58,10 +58,10 @@ skycli [group] [verb/action] [parameters]
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
     - [skycli app view-user-config](commands.md#skycli-app-view-config)
     - [skycli app update-user-config -f [USER_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app get-k8s-credentials](commands.md#skycli-app-get-k8s-credentials)
+    - [skycli app delete-k8s-credentials](commands.md#skycli-app-delete-k8s-credentials)
     - [skycli app deploy](commands.md#skycli-app-deploy)
     - [skycli app view-deploy](commands.md#skycli-app-view-deploy)
-    - [skycli app logs [DEPLOYMENT_ITEM_NAME]](commands.md#skycli-app-logs)
-    - [skycli app invoke-function [FUNCTION_NAME] --payload [PAYLOAD_JSON]](commands.md#skycli-app-invoke-functions)
 
 - skycli domain
     - [skycli domain add [CUSTOM_DOMAIN]](commands.md#skycli-domain-add)
