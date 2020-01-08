@@ -58,16 +58,12 @@ information about the event:
 For BEFORE events about a user, following fields can be mutated:
 - `metadata`: user metadata
 - `verify_info`: verify info of user
-- `is_verified`: verified status of user
 - `is_disabled`: disbled status of user
 
 **NOTE**
 - The mutations would not affect authorization of current operation. e.g.
   disabling user through mutations would not fail an operation requiring
   non-disabled users.
-- `is_verified` is normally derived from `verify_info`. If it is mutated to be
-   different than the derived value, it would be reset to the derived value
-   when `verify_info` is updated.
 
 
 ## Event Types
