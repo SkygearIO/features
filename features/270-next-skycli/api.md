@@ -56,8 +56,8 @@ skycli [group] [verb/action] [parameters]
     - [skycli app scaffold](commands.md#skycli-app-scaffold)
     - [skycli app list](commands.md#skycli-app-list)
     - [skycli app add-user [USER_EMAIL]](commands.md#skycli-app-add-user)
-    - [skycli app view-user-config](commands.md#skycli-app-view-config)
-    - [skycli app update-user-config -f [USER_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
+    - [skycli app view-config](commands.md#skycli-app-view-config)
+    - [skycli app update-config -f [USER_CONFIG_YAML_FILE]](commands.md#skycli-app-update-config)
     - [skycli app get-k8s-credentials](commands.md#skycli-app-get-k8s-credentials)
     - [skycli app delete-k8s-credentials](commands.md#skycli-app-delete-k8s-credentials)
     - [skycli app deploy](commands.md#skycli-app-deploy)
@@ -181,8 +181,8 @@ deployments:
     $ skycli app add-user dev@example.com --app=myapp
 
     # Update tenant config to enable welcome email
-    $ skycli app update-user-config welcome_email --app=myapp
-    ? Edit user config. Press <enter> to launch your preferred editor.
+    $ skycli app update-config welcome_email --app=myapp
+    ? Edit config. Press <enter> to launch your preferred editor.
     # Enter editor mode with existing config
     enabled: false
     sender: no-reply@skygeario.com
