@@ -229,20 +229,20 @@ Example:
 
 ```yaml
 deployments:
-  function1:
-    type: http-handler
-    path: /hello-world
-    env: nodejs
-    src: js/hellow-world
-    secrets:
-      - DATABASE_URL
-    permission:
-      - name: key_required
-      - name: user_required
+- name: function1
+  type: http-handler
+  path: /hello-world
+  env: nodejs
+  src: js/hellow-world
+  environment:
+  - secret: DATABASE_URL
+  permission:
+    - name: key_required
+    - name: user_required
 ```
 
-- `deployments` indicates the dictionary is the deployments configuration in the file
-- `function1` is the name of deployment item, item deployed with the same name will considered as the same item with different version
+- `deployments` is an array of deployment items.
+- `name` is the name of deployment item, item deployed with the same name will considered as the same item with different version
 - `type` is the type of the function
   - `http-handler`
     - a single function that accepts http requests from an exact path
@@ -276,25 +276,24 @@ hooks, hooks can be defined in the `hooks` section in `skygear.yaml`.
 
 ```
 deployments:
-  function1:
-    type: http-handler
-    path: /hello-world
-    env: nodejs
-    src: js/hellow-world
-    secrets:
-      - DATABASE_URL
-  api:
-    type: http-service
-    path: /api
-    context: express
-    port: 8080
+- name: function1
+  type: http-handler
+  path: /hello-world
+  env: nodejs
+  src: js/hellow-world
+  environment:
+  - secret: DATABASE_URL
+- name: api
+  type: http-service
+  path: /api
+  context: express
+  port: 8080
 
 hooks:
   - url: /api/after_signup
     event: after_signup
   - url: http://external-service.com/signup-hook
     event: after_signup
-
 ```
 
 - `hooks` defines list of auth hooks event listener. Auth gear will make http
@@ -324,9 +323,9 @@ Example:
 
 ```yaml
 deployments:
-  static-asset:
-    type: static
-    src: asset
+- name: static-asset
+  type: static
+  src: asset
 ```
 
 - `static` indicates the dictionary is the static assets configuration in the file
@@ -342,10 +341,10 @@ Example:
 
 ```yaml
 deployments:
-  static-asset:
-    type: static
-    src: asset
-    path: /asset
+- name: static-asset
+  type: static
+  src: asset
+  path: /asset
 ```
 
 #### Multiple entries
@@ -356,14 +355,14 @@ Example:
 
 ```yaml
 deployments:
-  static-folder:
-    type: static
-    src: build
-    path: /static
-  asset-folder:
-    type: static
-    src: asset
-    path: /asset
+- name: static-folder
+  type: static
+  src: build
+  path: /static
+- name: asset-folder
+  type: static
+  src: asset
+  path: /asset
 ```
 
 ### Error response for SPA
@@ -377,14 +376,14 @@ With s3 or cloudfront, they both provide configuration for custom error response
 The following is a platform independent approach:
 ```yaml
 deployments:
-  frontend-index:
-    type: static
-    src: build/index.html
-    path: /
-  build-folder:
-    type: static
-    src: build
-    path: /static
+- name: frontend-index
+  type: static
+  src: build/index.html
+  path: /
+- name: build-folder
+  type: static
+  src: build
+  path: /static
 ```
 
 Following the route order, request path that matches `/static/*` would be served with the content in folder `build` and the all other request would be served with `build/index.html`.
@@ -395,16 +394,16 @@ Since the `index.html` is also placed in the `build` directory, the path `https:
 
 ```yaml
 deployments:
-  frontend-index:
-    type: static
-    src: build/index.html
-    path: /
-  build-folder:
-    type: static
-    src: build
-    exclude:
-      - index.html  # so build/index.html would not be uploaded
-    path: /static
+- name: frontend-index
+  type: static
+  src: build/index.html
+  path: /
+- name: build-folder
+  type: static
+  src: build
+  exclude:
+    - index.html  # so build/index.html would not be uploaded
+  path: /static
 ```
 
 # Route matching
@@ -428,26 +427,26 @@ For example, with the following skycli configuration:
 
 ```yaml
 deployments:
-  functionABC:
-    type: function
-    path: /functionABC
-    # other config
-  function-server:
-    type: http-service
-    path: /function
-    # other config
-  api-server:
-    type: http-service
-    path: /api
-    # other config
-  static-index:
-    type: static
-    src: index.html
-    path: /
-  static-asset:
-    type: static
-    src: asset
-    path: /static
+- name: functionABC
+  type: function
+  path: /functionABC
+  # other config
+- name: function-server
+  type: http-service
+  path: /function
+  # other config
+- name: api-server
+  type: http-service
+  path: /api
+  # other config
+- name: static-index
+  type: static
+  src: index.html
+  path: /
+- name: static-asset
+  type: static
+  src: asset
+  path: /static
 ```
 
 - `https://myapp.skygear.io/function/ABC` -> `function-server`, forwarded path `/ABC`
@@ -473,31 +472,31 @@ deployments:
 
 ```yaml
 deployments:
-  function1:
-    type: http-handler
-    path: /function1
-    env: node
-    src: /functions/1
-    permission:
-      - name: key_required
-  function2:
-    type: http-handler
-    path: /function2
-    env: node
-    src: /functions/2
-    permission:
-      - name: key_required
-      - name: user_required
-  api-server:
-    type: http-service
-    path: /api
-    env: node
-    src: js
-    secrets:
-      - DATABASE_URL
-    permission:
-      - name: key_required
-      - name: user_required
+- name: function1
+  type: http-handler
+  path: /function1
+  env: node
+  src: /functions/1
+  permission:
+    - name: key_required
+- name: function2
+  type: http-handler
+  path: /function2
+  env: node
+  src: /functions/2
+  permission:
+    - name: key_required
+    - name: user_required
+- name: api-server
+  type: http-service
+  path: /api
+  env: node
+  src: js
+  environment:
+  - secret: DATABASE_URL
+  permission:
+    - name: key_required
+    - name: user_required
 ```
 
 There are three separate function configurations here, the `api-server` is a `http-service` so will match all `/api/*` request.
@@ -506,23 +505,23 @@ There are three separate function configurations here, the `api-server` is a `ht
 
 ```yaml
 deployments:
-  api-server:
-    type: http-service
-    path: /api
-    env: golang
-    src: api
-    secrets:
-      - DATABASE_URL
-  static-index:
-    type: static
-    src: build/index.html
-    path: /
-  static-asset:
-    type: static
-    src: build
-    exclude:
-      - index.html
-    path: /static
+- name: api-server
+  type: http-service
+  path: /api
+  env: golang
+  src: api
+  environment:
+  - secret: DATABASE_URL
+- name: static-index
+  type: static
+  src: build/index.html
+  path: /
+- name: static-asset
+  type: static
+  src: build
+  exclude:
+    - index.html
+  path: /static
 ```
 
 There is one `http-service` which is the api server, and two static asset configurations.
@@ -567,22 +566,22 @@ A common `index.html` file may look like this
 
 ```yaml
 deployments:
-  ssr-server:
-    type: http-server
-    path: /
-    env: js
-    src: web
-  api-server:
-    type: http-service
-    path: /api
-    env: golang
-    src: api
-    secrets:
-      - DATABASE_URL
-  static-asset:
-    type: static
-    src: asset
-    path: /static
+- name: ssr-server
+  type: http-server
+  path: /
+  env: js
+  src: web
+- name: api-server
+  type: http-service
+  path: /api
+  env: golang
+  src: api
+  environment:
+  - secret: DATABASE_URL
+- name: static-asset
+  type: static
+  src: asset
+  path: /static
 ```
 
 This one is similar to the previous example, except moving `build/index.html` to `ssr-server`.
@@ -609,16 +608,16 @@ We have two options:
 
 ```yaml
 deployments:
-  service-internal:
-    type: http-service
-    private: true
-    # other config
-  api-server:
-    type: http-service
-    path: /api/
-    link:
-      - service-internal
-    # other config
+- name: service-internal
+  type: http-service
+  private: true
+  # other config
+- name: api-server
+  type: http-service
+  path: /api/
+  link:
+    - service-internal
+  # other config
 ```
 
 *Need to prove if this feature can be implemented in a user-friendly way, i.e. wheather one service can connect to another one by a custom hostname, or they must use one given by k8s. Please see the notes below.*
