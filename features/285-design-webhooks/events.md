@@ -58,6 +58,7 @@ information about the event:
 For BEFORE events about a user, following fields can be mutated:
 - `metadata`: user metadata
 - `verify_info`: verify info of user
+- `is_manually_verified`: manually verified status of user
 - `is_disabled`: disbled status of user
 
 **NOTE**
