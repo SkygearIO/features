@@ -73,7 +73,8 @@ and delivered as described above. The format of Verification Code and expiration
 time can be configured by developers.
 
 The delivered message can be configured using templates. The default template
-includes a link to built-in verification page to verify the user directly.
+includes a link to built-in verification page to verify the user directly in
+email messages, or the generated Verification Code for SMS messages.
 Alternatively, developer can update the template to direct user to their app,
 and verify the user using API with the Verification Code.
 
