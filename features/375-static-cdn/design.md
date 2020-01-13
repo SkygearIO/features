@@ -32,29 +32,46 @@ When `static` deployment type is used:
 When a request matched a `static` deployment, only its path would be considered
 during routing. The request would be routed as followed:
 
-1. Let `U` be the request URI, let `P` be the routing path.
+1. Let `U` be the request URI, let `P` be the routing path without trailing slashes.
 2. If file `P` exists, return `P`.
 3. If file `Q` = `P/index.html` exists, return `Q`.
 4. If `fallback` is configured, set `U` = `U` with path `fallback` and route again.
 5. Otherwise, no file is matched.
 
+This procedure is similar to nginx directives:
+```
+index index.html
+try_files $uri <fallback>
+```
+
+Sometimes routing procedure is restarted (e.g. in step 4). The routing procedure
+can be performed at most 5 times to prevent infinite loop. In this case, `500
+Internal Server Error` response would be produced.
+
 **Example**:
 
-Suppose a `static` deployment with name `assets` is configured to serve file in `static` local directory, and a `fallback` path of `/index.html` is configured:
+Suppose developer configured a `static` deployment as follow:
+```yaml
+  - name: assets
+    type: static
+    path: /
+    context: ./static
+    fallback: /index.html
+```
 
 - **https://example.com/main.js**:  
-    Route to `assets` and serve file at `./static/main.js`.
+    Route to `assets` and serve file at `./static/main.js`. (step 2)  
 - **https://example.com/**:  
-    Route to `assets` and serve file at `./static`.
-    Not a file, so instead serve file at `./static/index.html`.
+    Route to `assets` and serve file at `./static`. (step 2)  
+    Not a file, so instead serve file at `./static/index.html`. (step 3)  
 - **https://example.com/index.html**:  
-    Route to `assets` and serve file at `./static/index.html`.
+    Route to `assets` and serve file at `./static/index.html`. (step 2)  
 - **https://example.com/login**:  
-    Route to `assets` and serve file at `./static/login`.  
-    File is not found, so instead serve file at `./static/login/index.html`.  
+    Route to `assets` and serve file at `./static/login`. (step 2)  
+    File is not found, so instead serve file at `./static/login/index.html`. (step 3)  
     File is not found, so instead rewrite URL with fallback path
-    `https://example.com/index.html` and route again.  
-    Route to `assets` and serve file at `./static/index.html`.
+    `https://example.com/index.html` and route again. (step 4)  
+    Route to `assets` and serve file at `./static/index.html`. (step 1)
 
 ### Static Asset CDN
 
