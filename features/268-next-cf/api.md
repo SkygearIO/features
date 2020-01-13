@@ -253,13 +253,11 @@ deployments:
   - `function`:
     - a single function (in a program) that read input from stdin and write output to stdout
     - anytime may be scaled down to zero
-  - `static`:
-    - static assets configuration
 - `env` indicates the environment that the code would be built with, e.g.
   - `docker` is the base environment that the Dockerfile would be deployed directly, or would be wrapped by another minimal Dockerfile
   - environment of other languages (e.g. `node`, `python`, `golang`) would accept source files from the developers and build with a Dockerfile provided by us
   - `http-handler`, `http-service` and `function` only
-- `src` may specify where to find Dockerfile, source code files or static asset files
+- `src` may specify where to find Dockerfile or source code files
 - `secrets` list what secrets would be passed to the functions, developer need to set secrets with skycli
   - `http-handler`, `http-service` and `function` only
 - `permission` describes how the request can access the function
@@ -311,101 +309,6 @@ hooks:
 - get the path of the request after the gateway rewrite
 - set the corresponding http headers and write content to the response body
 
-## Static assets
-
-In skygear v1 cloud, requests with path `/static/*` will go to s3 endpoint with proxy pass. This implies that
-- these requests will be served with the same domain of the api server
-- the content data will always pass through the skygear cluster
-
-Besides, there will be another top level skycli configuration for static assets.
-
-Example:
-
-```yaml
-deployments:
-- name: static-asset
-  type: static
-  src: asset
-```
-
-- `static` indicates the dictionary is the static assets configuration in the file
-- `src` specifies where to find the asset files
-
-### Further support
-
-#### Custom path
-
-Besides serving assets at `/static/*`, we may support serving at custom paths. This requires updating ingress or handle by gateway.
-
-Example:
-
-```yaml
-deployments:
-- name: static-asset
-  type: static
-  src: asset
-  path: /asset
-```
-
-#### Multiple entries
-
-By having custom path, we may allow developer to specify multiple source at different paths. This also requires updating ingress or handle by gateway.
-
-Example:
-
-```yaml
-deployments:
-- name: static-folder
-  type: static
-  src: build
-  path: /static
-- name: asset-folder
-  type: static
-  src: asset
-  path: /asset
-```
-
-### Error response for SPA
-
-SPA requires client side routing, because all pages ares served by one single html file. Thus requests that routes to different path need to be responsed with that html file.
-
-With s3 or cloudfront, they both provide configuration for custom error response.
-- s3: `ErrorDocument` in `WebsiteConfiguration`, see https://docs.aws.amazon.com/en_us/AmazonS3/latest/API/RESTBucketPUTwebsite.html
-- cloudfront: `CustomErrorResponse`, see https://docs.aws.amazon.com/en_us/cloudfront/latest/APIReference/API_UpdateDistribution.html
-
-The following is a platform independent approach:
-```yaml
-deployments:
-- name: frontend-index
-  type: static
-  src: build/index.html
-  path: /
-- name: build-folder
-  type: static
-  src: build
-  path: /static
-```
-
-Following the route order, request path that matches `/static/*` would be served with the content in folder `build` and the all other request would be served with `build/index.html`.
-
-For example, if someone enter url `myapp.skygear.io/page/1` in the browser, `build/index.html` will serve the request. In the html file, there will be a script element with src, for example, `https://myapp.skygear.io/static/bundle.js`. The js runtime would handle the path `/page/1` at client side and route to the corresponding page.
-
-Since the `index.html` is also placed in the `build` directory, the path `https://myapp.skygear.io/static/bundle.js` would also be served, which may not be the ideal behaviour. We may provide an `exclude` config to exclude the file from being uploaded when deploy.
-
-```yaml
-deployments:
-- name: frontend-index
-  type: static
-  src: build/index.html
-  path: /
-- name: build-folder
-  type: static
-  src: build
-  exclude:
-    - index.html  # so build/index.html would not be uploaded
-  path: /static
-```
-
 # Route matching
 
 To easily distinguish gear route and non-gear route, I suggest we add the following two rules:
@@ -439,14 +342,6 @@ deployments:
   type: http-service
   path: /api
   # other config
-- name: static-index
-  type: static
-  src: index.html
-  path: /
-- name: static-asset
-  type: static
-  src: asset
-  path: /static
 ```
 
 - `https://myapp.skygear.io/function/ABC` -> `function-server`, forwarded path `/ABC`
@@ -459,12 +354,6 @@ deployments:
 - `https://myapp.skygear.io/api/function` -> `api-server`, forwarded path `/function`
 - `https://myapp.skygear.io/api/` -> `api-server`, forwarded path `/`
 - `https://myapp.skygear.io/api` -> `api-server`, forwarded path `/`
-- `https://myapp.skygear.io/static` -> Not found because directory is not served
-
-- `https://myapp.skygear.io/static/abc/cde.jpg` -> static assets with path `/abc/cde.jpg` in `asset`
-- `https://myapp.skygear.io/static/abc` -> static assets with path `/abc` in `asset`
-- `https://myapp.skygear.io/` -> static assets `index.html`
-- `https://myapp.skygear.io/any/other/path` -> static assets `index.html`
 
 # Example Configuration
 
@@ -501,66 +390,6 @@ deployments:
 
 There are three separate function configurations here, the `api-server` is a `http-service` so will match all `/api/*` request.
 
-## Typical SPA with api server
-
-```yaml
-deployments:
-- name: api-server
-  type: http-service
-  path: /api
-  env: golang
-  src: api
-  environment:
-  - secret: DATABASE_URL
-- name: static-index
-  type: static
-  src: build/index.html
-  path: /
-- name: static-asset
-  type: static
-  src: build
-  exclude:
-    - index.html
-  path: /static
-```
-
-There is one `http-service` which is the api server, and two static asset configurations.
-
-To achieve client side routing in an SPA, all page routes should be served with `build/index.html`. On the other hand, js files, stylesheets, images and any static assets are put in the `build` folder and would be served to requests path start with `/static`.
-
-A common `index.html` file may look like this
-
-```html
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="theme-color" content="#000000">
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <title>My App</title>
-  </head>
-  <body>
-    <noscript>
-      You need to enable JavaScript to run this app.
-    </noscript>
-    <div id="root"></div>
-    <script type="text/javascript" src="/static/js/bundle.js"></script>
-    <script type="text/javascript">
-      // The following is to demo calling the api server
-      var xhr = new XMLHttpRequest();
-      xhr.open("POST", "/api/greet", true);
-      xhr.setRequestHeader("Content-Type", "application/json");
-      xhr.onreadystatechange = function() { // Call a function when the state changes.
-          if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-              // Request finished. Do processing here.
-          }
-      }
-      xhr.send("{}");
-    </script>
-  </body>
-</html>
-```
 
 ## Server side rendering and api server
 
@@ -578,13 +407,7 @@ deployments:
   src: api
   environment:
   - secret: DATABASE_URL
-- name: static-asset
-  type: static
-  src: asset
-  path: /static
 ```
-
-This one is similar to the previous example, except moving `build/index.html` to `ssr-server`.
 
 # Security Concern
 
@@ -748,9 +571,6 @@ Denormalized routing table for gateway routing.
 - `backend_url`: cloud code backend url
 - `tag`: deployment tag, the live version will have tag with `latest`
 
-**`static_asset` (TBD)**
-
-
 #### Deployment and Cloud Code Status
 
 Deployment and cloud code status values: pending, running, deploy failed, stopping, stopped, stop failed
@@ -813,4 +633,4 @@ Status of cleanup flow
 #### Improvement
 
 - During deployment, skip the items if there are no change in content
-  (code and static assets) and config. By checking the zip checksum.
+  (code) and config. By checking the zip checksum.
