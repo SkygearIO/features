@@ -127,30 +127,3 @@ abcdef 2018-12-31 15:00:00 deploy function update_blog     | Release qwerty, lat
 abcdee 2018-12-30 15:00:00 deploy functions                | Release qwertx, tag: live
 abcded 2018-12-30 14:50:00 deploy micro service myservice1 |
 ```
-
-## Static assets versioning
-
-Use s3 as example storage, each version can be held in a folder with version id as name.
-
-### Storage and upload time optimisation
-
-Since each static assets configuration item is one moving unit, if the files of an item does not change (maybe done by looking the last modified date), the upload can be skipped.
-
-To further optimise, developers can put files in different static assets configuration items to skip not-updated file as much as possible, for example,
-
-```yaml
-static:
-  - src: build/index.html
-    path: /
-  # js files are most likely updated in each deployment
-  - src: build/js
-    path: /static/js
-  # assets are not updated as frequently as js files
-  - src: build/public
-    exclude:
-      - public/video/very-large-one.mp4
-    path: /static
-  # the very large file is even less likely to be updated
-  - src: build/public/video/very-large-one.mp4
-    path: /static/public/video/very-large-one.mp4
-```
