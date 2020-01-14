@@ -14,7 +14,7 @@ high performance CDN.
 ### Static Deployment
 
 A new type of deployment, `static`, would be supported. This deployment type
-supports configurating a deployment context (`context`) and fallback rewrite
+supports configurating a deployment context (`context`) and fallback absolute
 path (`fallback`).
 
 When `static` deployment type is used:
