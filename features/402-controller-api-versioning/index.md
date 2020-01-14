@@ -1,6 +1,6 @@
 # API Versioning in Skygear Controller
 
-Skygear Controller adopts a simple versioning scheme to handle breaking changes and new feature changes.
+Skygear Controller adopts a simple versioning scheme to handle breaking changes and backward-compatible configuration changes.
 
 The versioning scheme is applied globally on Skygear Controller rather than individual endpoint or resource.
 
@@ -24,7 +24,7 @@ The major version must be incremented when any breaking changes are introduced.
 ## Minor Version
 
 The second integer in API Version indicates the minor version.
-The minor version must be incremented when any new features are introduced.
+The minor version must be incremented when any backward-compatible configuration changes are introduced.
 
 When the major version is incremented, the minor version is reset to 0.
 
