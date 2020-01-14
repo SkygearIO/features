@@ -24,8 +24,8 @@ When `static` deployment type is used:
 - If a file is matched, the gateway would proxy the request to the backing
   object storage file.
 - If no file is matched, a generic 404 page would be returned.
-- The response would have appropiate cache control header, allowing maximum
-  cache duration of 24 hour.
+- The response would have appropiate cache control headers, as configured by
+  developer.
 
 ### Static Deployment Routing
 
@@ -73,6 +73,45 @@ Suppose developer configured a `static` deployment as follow:
     `https://example.com/index.html` and route again. (step 4)  
     Route to `assets` and serve file at `./static/index.html`. (step 1)
 
+### Caching
+
+Developer can configure cache duration per `static` deployment. The gateway
+would attach appropiate cache control headers to response according to
+configuration.
+
+By default, the cache duration is 1 hour. Developers can disable caching by
+setting it explicitly to zero, but the maximum cache duration is 7 days.
+
+**Example**
+
+For common SPA deployment, application has an `index.html` with a short cache
+duration, and content-hash named assets with a long cache duration:
+```
+- build
+| - index.html
+| - favicon.ico
+| - assets
+| | - main.809f60b0.js
+| | - app.19bbb809.css
+| | - ...
+```
+
+Developer can configure two `static` deployments to achieve this:
+```yaml
+deployments:
+  - name: root
+    type: static
+    path: /
+    context: ./build
+    fallback: /index.html
+    expires: 3600 # 1 hour
+  - name: assets
+    type: static
+    path: /assets
+    context: ./build/assets
+    expires: 604800 # 7 days
+```
+
 ### Static Asset CDN
 
 Static asset would be served through CDN if possible. If CDN is enabled, all
@@ -84,7 +123,6 @@ they are responsible to set the correct cache headers to reduce impact of stale
 cache and cache misses.
 
 At the moment, we would have following limitations:
-- Cache duration of static deployment cannot be configured.
 - CDN cache cannot be invalidated manually.
 - CDN can be enabled for custom domains only.
 
