@@ -65,6 +65,15 @@ AppConfiguration has a field `api_version` to indicate the API Version.
 Skygear Controller always returns AppConfiguration in its own API Version.
 Skygear Controller must allow updating [Compatible](#check-compatible-version) AppConfiguration without information loss.
 
+## API Version in TenantConfiguration
+
+TenantConfiguration has a field `api_version` to indicate the API Version.
+
+The major version of TenantConfiguration in the storage may be less than the own major version of Skygear Gateway.
+In this case, Skygear Gateway must migrate on the fly.
+
+It is an error if the major version of TenantConfiguration in the storage is greater than the own major version of Skygear Gateway.
+
 ## API Version in skygear.yaml
 
 skygear.yaml has a field `api_version` to indicate the API Version.
