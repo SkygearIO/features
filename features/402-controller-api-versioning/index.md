@@ -73,6 +73,8 @@ The major version of TenantConfiguration in the storage may be less than the own
 In this case, Skygear Gateway must migrate on the fly.
 
 It is an error if the major version of TenantConfiguration in the storage is greater than the own major version of Skygear Gateway.
+This implies it is possible to downgrade Skygear Cluster at minor version level though some features will become unavailable.
+Downgrading Skygear Cluster at major version level is unsupported.
 
 ## API Version in skygear.yaml
 
