@@ -61,11 +61,11 @@ The API version of Skygear Portal should always be in sync with that of Skygear 
 
 ## API Version in AppConfiguration
 
-AppConfiguration has a field `apiVersion` to indicate the API Version.
+AppConfiguration has a field `api_version` to indicate the API Version.
 Skygear Controller always returns AppConfiguration in its own API Version.
 Skygear Controller must allow updating [Compatible](#check-compatible-version) AppConfiguration without information loss.
 
 ## API Version in skygear.yaml
 
-skygear.yaml has a field `apiVersion` to indicate the API Version.
+skygear.yaml has a field `api_version` to indicate the API Version.
 Skygear Controller must allow deploying [Compatible](#check-compatible-version) skygear.yaml.
