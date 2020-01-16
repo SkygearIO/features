@@ -17,6 +17,7 @@ deployments:
 
 - **type**: A new type `static` is added.
 - **context**: If type is `static`: The static content directory.
-- **fallback**: Valid only if type is `static`. The fallback absolute path.
-- **expires**: Valid only if type is `static`. The cache duration in seconds.
-               Default to 3600 (1 hour). Valid values are 0 to 604800 (7 days).
+- **fallback**: Valid only if type is `static`. Optional.
+                The fallback absolute path.
+- **expires**: Valid only if type is `static`. Required.
+               The cache duration in seconds. Valid values are 0 to 604800 (7 days).

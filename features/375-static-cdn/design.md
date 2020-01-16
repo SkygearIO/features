@@ -18,8 +18,9 @@ supports configurating a deployment context (`context`) and fallback absolute
 path (`fallback`).
 
 When `static` deployment type is used:
-- The deployment context would be persisted to object storage (symlinks are
-  resolved at upload time).
+- The deployment context would be persisted to object storage
+    - symlinks are resolved at upload time
+    - `.skyignore` can be used to exclude files
 - A request with matching path would be routing using static deployment routing
   algorithm (described below).
 - If a file is matched, the gateway would proxy the request to the backing
