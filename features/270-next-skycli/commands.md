@@ -283,7 +283,7 @@ Run kubectl config use-context skygear-skygear-production-myapp to switch to the
 
 `skycli app delete-k8s-credentials`
 
-Delete the credentials remotely if exists. Then delete the config from the machine's kubeconfig.
+Delete the config from the local machine's kubeconfig.
 
 This command requires the presence of kubectl in PATH.
 
