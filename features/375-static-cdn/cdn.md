@@ -33,17 +33,6 @@ When custom domain is added, the cluster controller would provision required
 CDN resources before providing verification instruction (with DNS records) to
 developers.
 
-## CDN DNS Configuration
-
-Most CDN requires the domain DNS to use CNAME record to point to CDN servers.
-However, root domain cannot use CNAME records, and support for DNS Alias is not
-consistent across providers. Therefore:
-- For root domain, an A record would be provided, and CDN cannot be enabled.
-- For subdomains, a CNAME record would be provided, and CDN would be used.
-
-Developers are advised to redirect users to a `www` subdomain in order to use
-CDN.
-
 ## Considerations
 
 ### Traffic Cost
@@ -62,3 +51,31 @@ following reasons:
   use single distribution for all tenant domains.
 - Azure does not support wilcard domains / TLS certificates.
 - CloudFlare requires enterprise subscription to use CDN with wildcard domain.
+
+### Provider-specifc Network Architecture
+For AWS CloudFront, we will provision a Distribution for each custom domain.
+All provisioned Distribution would have the gateway as origin server.
+Custom domains would have a CNAME record points to the Distribution domain.
+
+For GCP Cloud CDN, we will provision a CDN-enabled load balancer for the
+whole cluster.
+The provisioned load balancer would have the gateway as upstream server.
+Custom domains would have a A record points to the load balancer.
+
+For Azure CDN, we will provision a CDN Profile for the whole cluster, and an
+Endpoint for each custom domain.
+All provisioned Endpoints would have the gateway as origin server.
+Custom domains would have a CNAME record points to the Azure CDN endpoint.
+
+Some CDN requires the domain DNS to use CNAME record to point to CDN endpoint.
+However, root domain cannot use CNAME records, and support for DNS Alias is not
+consistent across providers. Therefore:
+- For root domain, an A record pointing to gateway would be provided,
+  and CDN cannot be enabled.
+- For subdomains, a CNAME record would be provided, and CDN would be used.
+
+Developers are advised to redirect users to from root domain to a
+`www` subdomain in order to use CDN.
+
+CDN-managed certificates are not used. Instead, TLS certificates are
+provisioned by the controller, and synchronize to CDN certificate store.
