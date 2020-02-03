@@ -9,7 +9,7 @@ deployments:
     type: static
     path: /
     context: ./frontend/build
-    fallback: /index.html
+    error_page: /index.html
     expires: 3600
 ```
 
@@ -17,7 +17,7 @@ deployments:
 
 - **type**: A new type `static` is added.
 - **context**: If type is `static`: The static content directory.
-- **fallback**: Valid only if type is `static`. Optional.
-                The fallback absolute path.
+- **error_page**: Valid only if type is `static`. Optional.
+                 The 4xx error page absolute path.
 - **expires**: Valid only if type is `static`. Required.
                The cache duration in seconds. Valid values are 0 to 604800 (7 days).

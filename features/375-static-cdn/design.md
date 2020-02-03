@@ -14,8 +14,8 @@ high performance CDN.
 ### Static Deployment
 
 A new type of deployment, `static`, would be supported. This deployment type
-supports configurating a deployment context (`context`) and fallback absolute
-path (`fallback`).
+supports configurating a deployment context (`context`) and error page absolute
+path (`error_page`).
 
 When `static` deployment type is used:
 - The deployment context would be persisted to object storage
@@ -37,13 +37,13 @@ during routing. The request would be routed as followed:
 1. Let `U` be the request URI, let `P` be the routing path without trailing slashes.
 2. If file `P` exists, return `P`.
 3. If file `Q` = `P/index.html` exists, return `Q`.
-4. If `fallback` is configured, set `U` = `U` with path `fallback` and route again.
+4. If `error_page` is configured, set `U` = `U` with path `error_page` and route again.
 5. Otherwise, no file is matched.
 
 This procedure is similar to nginx directives:
 ```
 index index.html
-try_files $uri <fallback>
+try_files $uri <error_page>
 ```
 
 Sometimes routing procedure is restarted (e.g. in step 4). The routing procedure
@@ -58,7 +58,7 @@ Suppose developer configured a `static` deployment as follow:
     type: static
     path: /
     context: ./static
-    fallback: /index.html
+    error_page: /index.html
 ```
 
 - **https://example.com/main.js**:  
@@ -71,7 +71,7 @@ Suppose developer configured a `static` deployment as follow:
 - **https://example.com/login**:  
     Route to `assets` and serve file at `./static/login`. (step 2)  
     File is not found, so instead serve file at `./static/login/index.html`. (step 3)  
-    File is not found, so instead rewrite URL with fallback path
+    File is not found, so instead rewrite URL with error page path
     `https://example.com/index.html` and route again. (step 4)  
     Route to `assets` and serve file at `./static/index.html`. (step 1)
 
@@ -111,7 +111,7 @@ deployments:
     type: static
     path: /
     context: ./build
-    fallback: /index.html
+    error_page: /index.html
     expires: 3600 # 1 hour
   - name: assets
     type: static
