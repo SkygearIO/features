@@ -9,7 +9,7 @@ deployments:
     type: static
     path: /
     context: ./frontend/build
-    error_page: /index.html
+    error_page: /404.html
     expires: 3600
 ```
 
