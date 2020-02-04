@@ -79,11 +79,10 @@ Suppose developer configured a `static` deployment as follow:
 
 ### Caching
 
-Developer can configure cache duration per `static` deployment. The gateway
-would attach appropiate headers to response according to configuration.
-
-Developers can disable caching by setting it explicitly to zero, but the
-maximum cache duration is 7 days.
+Developer must configure cache duration per `static` deployment. The gateway
+would attach appropiate headers to response according to configuration. Caching
+can be disabled by using zero as duration, but the maximum cache duration is
+7 days.
 
 The gateway would attach `Cache-Control` header according to cache duration:
 - `Cache-Control: public, no-cache, max-age=0` if duration is zero.
