@@ -144,14 +144,6 @@ deployments:
   permission:
     - name: key_required
     - name: user_required
-- name: static-index
-  type: static
-  src: index.html
-  path: /
-- name: static-asset
-  type: static
-  src: asset
-  path: /static
 ...
 ```
 
