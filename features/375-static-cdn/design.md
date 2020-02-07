@@ -14,8 +14,11 @@ high performance CDN.
 ### Static Deployment
 
 A new type of deployment, `static`, would be supported. This deployment type
-supports configurating a deployment context (`context`), error page absolute
-path (`error_page`), and index page file name (`index_file`).
+supports configurations:
+- deployment context (`context`)
+- error page absolute path (`error_page`)
+- fallback page absolute path (`fallback_page`)
+- index page file name (`index_file`)
 
 When `static` deployment type is used:
 - The deployment context would be persisted to object storage
@@ -37,20 +40,27 @@ during routing. The request would be routed as followed:
 1. Let `U` be the request URI,
    let `P` be the routing path without trailing slashes,
    let `I` be the index page file name (default to `index.html`).
-2. If file `P` exists, return `P`.
-3. If file `Q` = `P/I` exists, return `Q`.
-4. If `error_page` is configured, set `U` = `U` with path `error_page` and route again.
-5. Otherwise, no file is matched.
+2. If file `P` exists: return `P`.
+3. If file `Q` = `P/I` exists: return `Q`.
+4. If `fallback_page` is configured, and `U` is not refering to it:
+   set `U` = `U` with path `fallback_page` and route again.
+5. If `error_page` is configured, and `U` is not refering to it:
+   set `U` = `U` with path `error_page` and route again.
+6. Otherwise, no file is matched.
 
 This procedure is similar to nginx directives:
 ```
 index index.html
-try_files $uri <error_page>
+try_files $uri <fallback_page>
+error_page 404 <error_page>
 ```
 
-Sometimes routing procedure is restarted (e.g. in step 4). The routing procedure
-can be performed at most 5 times to prevent infinite loop. In this case, `500
-Internal Server Error` response would be produced.
+After the routing procedure, if `error_page` is used by step 5, the response
+HTTP status code would be 404. Otherwise, the status code would be 200.
+
+Sometimes routing procedure is restarted (e.g. in step 4 & 5). The routing
+procedure can be performed at most 5 times to prevent infinite loop. In this
+case, `500 Internal Server Error` response would be produced.
 
 **Example**:
 
@@ -60,7 +70,7 @@ Suppose developer configured a `static` deployment as follow:
     type: static
     path: /
     context: ./static
-    error_page: /index.html
+    fallback_page: /index.html
 ```
 
 - **https://example.com/main.js**:  
@@ -112,7 +122,7 @@ deployments:
     type: static
     path: /
     context: ./build
-    error_page: /index.html
+    fallback_page: /index.html
     expires: 3600 # 1 hour
   - name: assets
     type: static

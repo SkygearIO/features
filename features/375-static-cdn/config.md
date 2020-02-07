@@ -18,6 +18,8 @@ deployments:
 
 - **type**: A new type `static` is added.
 - **context**: If type is `static`: The static content directory.
+- **fallback_page**: Valid only if type is `static`. Optional.
+                  The fallback page absolute path.
 - **error_page**: Valid only if type is `static`. Optional.
                   The 4xx error page absolute path.
 - **index_file**: Valid only if type is `static`. Optional. Default to `index.html`.
