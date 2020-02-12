@@ -5,13 +5,18 @@
 # skygear.yaml
 
 deployments:
-  - name: assets
+  - name: root
     type: static
     path: /
-    context: ./frontend/build
-    error_page: /404.html
-    index_file: index.htm
+    context: ./build
+    fallback_page: /index.html
     expires: 3600
+  - name: assets
+    type: static
+    path: /assets
+    context: ./build/assets
+    error_page: /404.html
+    expires: 604800
 ```
 
 ## Updated Fields
