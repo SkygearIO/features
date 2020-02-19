@@ -1,12 +1,10 @@
 # Static Asset Hosting
 
 ## Background
-Developer would want to host static content (e.g. single-page-application files) on Skygear and serve them through
-high performance CDN.
+Developer would want to host static content (e.g. single-page-application files) on Skygear.
 
 ## Objectives
 - Developers should be able to upload static content to be hosted at specific path.
-- Hosted static content should be served & cached with CDN if possible.
 - SPA style routing should be supported.
 
 ## Design
@@ -131,21 +129,6 @@ deployments:
     expires: 604800 # 7 days
 ```
 
-### Static Asset CDN
-
-Static asset would be served through CDN if possible. If CDN is enabled, all
-traffic through the domain would be proxied through the CDN to the gateway.
-
-Asset gear and static deployment would set appropiate cache headers to enable
-CDN caching. If micro-service developers would like to utilize CDN for caching,
-they are responsible to set the correct cache headers to reduce impact of stale
-cache and cache misses.
-
-At the moment, we would have following limitations:
-- CDN cache cannot be invalidated manually.
-- CDN can be enabled for custom domains only.
-
 ## Appendix
 
 - [Configuration](./config.md)
-- [CDN Architecture](./cdn.md)

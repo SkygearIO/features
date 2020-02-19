@@ -57,10 +57,13 @@ For AWS CloudFront, we will provision a Distribution for each custom domain.
 All provisioned Distribution would have the gateway as origin server.
 Custom domains would have a CNAME record points to the Distribution domain.
 
-For GCP Cloud CDN, we will provision a CDN-enabled load balancer for the
-whole cluster.
+For GCP Cloud CDN, we will provision a CDN-enabled load balancer every 15
+domains, since each load balancer can serve at most 15 TLS certificates.
 The provisioned load balancer would have the gateway as upstream server.
 Custom domains would have a A record points to the load balancer.
+
+> GCP allows at most 30 HTTPS proxy & 30 TLS certificates per project.
+> Each active GCE load balancer incurs an hourly charge.
 
 For Azure CDN, we will provision a CDN Profile for the whole cluster, and an
 Endpoint for each custom domain.
