@@ -30,7 +30,8 @@ Signup cluster user, command will ask for password interactively.
 `skycli auth login [--email=EMAIL]`
 
 Login as cluster user, if no flags are provided. Will ask for email
-and password interactively.
+and password interactively. The logged in user will be associated with current
+context.
 
 #### Flags
 
@@ -78,8 +79,10 @@ app=myapp
 `skycli config set-cluster --cluster=[CLUSTER_NAME] --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
 
 Configure Cluster endpoint and API key, it is provided by cluster admin.
-If there is no existing Cluster, the configured Cluster would be set as the
-current cluster.
+If there is no current context set, the configured Cluster would be set as the
+current context.
+If there exist a cluster with same name, it is updated with provided
+information.
 
 #### Flags
 
@@ -102,35 +105,36 @@ $ skycli config set-cluster --cluster=skygeario
 $ skycli config set-cluster --endpoint=https://mycluster-controller --api-key=api_key
 ```
 
-### skycli config get-clusters
+### skycli config get-contexts
 
-`skycli config get-clusters`
+`skycli config get-contexts`
 
-Get all configured clusters. Current cluster is indicated with an asterisk.
+Get all configured contexts. Current context is indicated with an asterisk.
 
 #### Example
 
 ```sh
-$ skycli config get-clusters
-* skygeario
-  skygeario-staging
+$ skycli config get-contexts
+CURRENT   CLUSTER             USER            
+          skygeario                           
+*         skygeario-staging   user@example.com
 ```
 
-### skycli config use-cluster
+### skycli config use-context
 
-`skycli config use-cluster [CLUSTER_NAME]`
+`skycli config use-context [CONTEXT_NAME]`
 
-Change current cluster.
+Change current context.
 
 #### Flags
 
-- `[CLUSTER_NAME]`: Configured cluster name
+- `[CONTEXT_NAME]`: Context name
 
 #### Example
 
 ```sh
-$ skycli config use-cluster skygeario
-Current cluster changed to 'skygeario'.
+$ skycli config use-context skygeario
+Current context changed to 'skygeario'.
 ```
 
 ## skycli user
