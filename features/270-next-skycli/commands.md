@@ -77,13 +77,13 @@ app=myapp
 
 `skycli config set-cluster --cluster=[CLUSTER_NAME] --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
 
-Change current cluster controller server endpoint and api key, it is provided
-by cluster admin. If cluster admin want to use admin only api, they should provide
-master key in the api key flag.
+Configure Cluster endpoint and API key, it is provided by cluster admin.
+If there is no existing Cluster, the configured Cluster would be set as the
+current cluster.
 
 #### Flags
 
-- `--cluster=[CLUSTER_NAME]` Provide cluster name, currently only `skygeario` is supported.
+- `--cluster=[CLUSTER_NAME]` Provide cluster name.
 - `--endpoint=[CLUSTER_SERVER_URL]` Provide cluster controller endpoint url for custom cluster.
 - `--api-key=[API_KEY|MASTER_KEY]` Provide api key for custom cluster.
 
@@ -100,6 +100,37 @@ $ skycli config set-cluster --cluster=skygeario
 
 # Select user own cluster
 $ skycli config set-cluster --endpoint=https://mycluster-controller --api-key=api_key
+```
+
+### skycli config get-clusters
+
+`skycli config get-clusters`
+
+Get all configured clusters. Current cluster is indicated with an asterisk.
+
+#### Example
+
+```sh
+$ skycli config get-clusters
+* skygeario
+  skygeario-staging
+```
+
+### skycli config use-cluster
+
+`skycli config use-cluster [CLUSTER_NAME]`
+
+Change current cluster.
+
+#### Flags
+
+- `[CLUSTER_NAME]`: Configured cluster name
+
+#### Example
+
+```sh
+$ skycli config use-cluster skygeario
+Current cluster changed to 'skygeario'.
 ```
 
 ## skycli user
