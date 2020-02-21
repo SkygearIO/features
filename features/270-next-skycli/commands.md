@@ -66,13 +66,20 @@ View the current config.
 #### Example
 ```
 $ skycli config view
-[cluster]
-email=user@skygear.io
-cluster-server=https://1.2.3.4
-admin-key=
-
-[app]
-app=myapp
+api_version: v1
+clusters:
+  - name: skygeario
+    cluster:
+      env: cloud
+      endpoint: 'https://controller.example.com'
+      api_key: api-key
+users: []
+contexts:
+  - name: skygeario
+    context:
+      cluster: skygeario
+      user: skygeario
+current_context: skygeario
 ```
 
 ### skycli config set-cluster
