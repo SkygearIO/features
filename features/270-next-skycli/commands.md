@@ -7,6 +7,7 @@
 #### Flags
 
 - `--app=APP_NAME` Provide app name for commands. Overrides the app provided in `skygear.yaml`.
+- `--context=CONTEXT_NAME` Provide context name for commands. Overrides the current context in config.
 
 #### Example
 ```
@@ -300,10 +301,10 @@ $ skycli app update-config -f ./app-config.yaml
 
 `skycli app get-k8s-credentials`
 
-Fetch the credentials to access k8s resources with kubectl.
+Fetch the credentials to access k8s resources with kubectl using current context.
 The credentials are written to the machine's kubeconfig.
 
-The name of the context is `skygear-<cluster-name>-<app-name>`.
+The name of the k8s context is `skygear-<cluster-name>-<app-name>`.
 
 This command requires the presence of kubectl in PATH.
 
