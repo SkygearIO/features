@@ -74,8 +74,9 @@ Allow developer to setup custom domain for their application, basically followin
 ## Features Details
 
 - `A` record is used for setting up DNS record, so both apex domain and subdomain can be supported.
-- After developer verified a domain, Skygear Cluster will verify the root domain by checking `TXT` record. Once the root domain is verified, the root domain will be added to that specific app. Developer will not need to add `TXT` record again for the new subdomains in that app, only `A` record will be checked.
+- After developer verified a domain, Skygear Cluster will verify the root domain by checking `TXT` record. Once the root domain is verified, the root domain will be added to that specific app. Developer will not need to add `TXT` record again for the new subdomains in that app.
 - Configure custom domain requires root domain ownership verification, so it is not supported if developer can control the subdomain only (e.g. free domain).
+- If the provided DNS records other than `TXT` is not present during verification, a warning would be issued to remind developer of potential misconfiguration. If this is intentional, e.g. using CDN DNS records, the warning can be safely ignored.
 
 ## Scenario
 
