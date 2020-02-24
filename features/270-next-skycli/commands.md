@@ -110,7 +110,7 @@ $ skycli config set-cluster
 $ skycli config set-cluster --cluster=skygeario
 
 # Select user own cluster
-$ skycli config set-cluster --endpoint=https://mycluster-controller --api-key=api_key
+$ skycli config set-cluster --cluster=my-cluster --endpoint=https://mycluster-controller --api-key=api_key
 ```
 
 ### skycli config get-contexts
