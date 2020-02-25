@@ -7,6 +7,7 @@
 #### Flags
 
 - `--app=APP_NAME` Provide app name for commands. Overrides the app provided in `skygear.yaml`.
+- `--context=CONTEXT_NAME` Provide context name for commands. Overrides the current context in config.
 
 #### Example
 ```
@@ -30,7 +31,8 @@ Signup cluster user, command will ask for password interactively.
 `skycli auth login [--email=EMAIL]`
 
 Login as cluster user, if no flags are provided. Will ask for email
-and password interactively.
+and password interactively. The logged in user will be associated with current
+context.
 
 #### Flags
 
@@ -64,26 +66,35 @@ View the current config.
 #### Example
 ```
 $ skycli config view
-[cluster]
-email=user@skygear.io
-cluster-server=https://1.2.3.4
-admin-key=
-
-[app]
-app=myapp
+api_version: v1
+clusters:
+  - name: skygeario
+    cluster:
+      env: cloud
+      endpoint: 'https://controller.example.com'
+      api_key: api-key
+users: []
+contexts:
+  - name: skygeario
+    context:
+      cluster: skygeario
+      user: skygeario
+current_context: skygeario
 ```
 
 ### skycli config set-cluster
 
 `skycli config set-cluster --cluster=[CLUSTER_NAME] --endpoint=[CLUSTER_SERVER_URL] --api-key=[API_KEY|MASTER_KEY]`
 
-Change current cluster controller server endpoint and api key, it is provided
-by cluster admin. If cluster admin want to use admin only api, they should provide
-master key in the api key flag.
+Configure Cluster endpoint and API key, it is provided by cluster admin.
+If there is no current context set, the configured Cluster would be set as the
+current context.
+If there exist a cluster with same name, it is updated with provided
+information.
 
 #### Flags
 
-- `--cluster=[CLUSTER_NAME]` Provide cluster name, currently only `skygeario` is supported.
+- `--cluster=[CLUSTER_NAME]` Provide cluster name.
 - `--endpoint=[CLUSTER_SERVER_URL]` Provide cluster controller endpoint url for custom cluster.
 - `--api-key=[API_KEY|MASTER_KEY]` Provide api key for custom cluster.
 
@@ -99,7 +110,39 @@ $ skycli config set-cluster
 $ skycli config set-cluster --cluster=skygeario
 
 # Select user own cluster
-$ skycli config set-cluster --endpoint=https://mycluster-controller --api-key=api_key
+$ skycli config set-cluster --cluster=my-cluster --endpoint=https://mycluster-controller --api-key=api_key
+```
+
+### skycli config get-contexts
+
+`skycli config get-contexts`
+
+Get all configured contexts. Current context is indicated with an asterisk.
+
+#### Example
+
+```sh
+$ skycli config get-contexts
+CURRENT   CLUSTER             USER            
+          skygeario                           
+*         skygeario-staging   user@example.com
+```
+
+### skycli config use-context
+
+`skycli config use-context [CONTEXT_NAME]`
+
+Change current context.
+
+#### Flags
+
+- `[CONTEXT_NAME]`: Context name
+
+#### Example
+
+```sh
+$ skycli config use-context skygeario
+Current context changed to 'skygeario'.
 ```
 
 ## skycli user
@@ -265,10 +308,10 @@ $ skycli app update-config -f ./app-config.yaml
 
 `skycli app get-k8s-credentials`
 
-Fetch the credentials to access k8s resources with kubectl.
+Fetch the credentials to access k8s resources with kubectl using current context.
 The credentials are written to the machine's kubeconfig.
 
-The name of the context is `skygear-<cluster-name>-<app-name>`.
+The name of the k8s context is `skygear-<cluster-name>-<app-name>`.
 
 This command requires the presence of kubectl in PATH.
 
