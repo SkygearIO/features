@@ -7,7 +7,6 @@ Sessions of auth gear should be configurable and manageable.
 
 - App Developer/User should be able to manage sessions.
 - App Developer should be able to configure session lifetime.
-- App Developer should be able to configure session token transport.
 
 
 # Proposed Design
@@ -56,32 +55,29 @@ Update session API allows updating name of session. Custom attributes can also
 be updated using master key.
 
 
-## Access / Refresh Token
+## Access token, refresh token and session token
 
-Each session would have an access token, and optionally a refresh token. Both
-type of tokens are opaque: token formats are unspecified and developer should
-not attempt to interpret the content of tokens.
+Each session at least has an access token and a refresh token, and optionally a session token.
+The format of all 3 tokens are opaque. The developer should not attempt to interpret the content of tokens.
 
-Access token would always have a lifetime; access token would be treated as
-invalid after its expiry.
+Access token would always have a lifetime; access token would be treated as invalid after its expiry. The access token must be used in bearer token in `Authorization:` header.
 
 Refresh token can be used to obtain a new access token. If the old access token
 is still valid, the old access token is invalidated; there would be at most one
-valid access token for a session at any time.
+valid access token for a session at any time. The lifetime of the refresh token is the lifetime of the session.
 
-Refresh token would always have a maximum lifetime.
+Session token must be used in cookie. It identifies the session. The lifetime of the session token is the lifetime of the session.
 
-Optionally, a session idle timeout can be specified: refresh token (or access
-token if refresh token is disabled) must be used at least once before the
-timeout, otherwise the session would be expired.
+Optionally, a session idle timeout can be specified: either one token must be used at least once before the timeout, otherwise the session would be expired.
 
 A session is invalidated if its identity is deleted, or its user is disabled.
-A session is expired if its refresh token is expired, or its access token is
-expired (if refresh token is disabled).
-If a session is invalidated, expired, revoked, or logout, its associated access
-token / refresh token would be treated as invalid.
+A session is expired if it reaches its maximum lifetime.
+If a session is invalidated, expired, revoked, or logout, its associated tokens
+would be treated as invalid.
 
 A session is invalid if it is invalidated, expired, revoked or logged out.
+
+### Legacy refresh token flow
 
 For auth gear, if the endpoint requires authentication and the session is detected as invalid,
 the HTTP response includes a header `x-skygear-try-refresh-token: true`.
@@ -102,32 +98,25 @@ if refresh token is available; SDKs would not expose concept of access token /
 refresh token; however, developers should still handle situation where session
 is no longer valid due to various reasons.
 
+### New refresh token flow
 
-## Session Cookie
+The flow is the same but the condition to happen is changed. The SDK must be configured to use `Authorization:` in order to trigger the flow. It is because the session token cannot be refreshed.
 
-Optionally, developer can choose to use cookies to transport session tokens, in
-order to facilitate server-side rendering.
+## Session token
 
-If developer choose to enable session cookie:
-- Refresh token would not be issued. (See [Appendix](#session-cookie-and-refresh-token))
-- Access token would be transported in session cookie.
-- Access token would not be returned from APIs.
-- Gateway would read access token from cookie only, ignoring `Authorization`
-  header. If a token is present in both header and cookie, it would be treated
-  as if session is not found.
-- To prevent unrecoverable failure (i.e. site unaccessible until cookies are cleared),
-  the session cookie would be cleared when the session is not found or invalid,
-  instead of producing error response.
-- Some SDKs (e.g. mobile SDKs) would not be able to consume it.
+The session has a session token that must be used in cookie. Session token is essential for
+server-side rendering app.
+
+To obtain a session token for the app domain, the SDK calls a special endpoint in the app domain. The endpoint accepts the access token and the refresh token and return the session token in cookie.
 
 ### Security Consideration
 
 - HTTPS is required (can be disabled for development purpose).
-- Session cookie is HTTP-only; web app and web SDK would not have access to the
+- Session token is HTTP-only; web app and web SDK would not have access to the
   session tokens.
-- Session cookie is set with `SameSite=lax` by default; generally, cross-domain
+- Session token is set with `SameSite=lax` by default; generally, cross-domain
   requests would not contain the cookie.
-- Session cookie would not be shared across custom domains.
+- Session token is host-only.
 - App developers are responsible to prevent CSRF in their services.
 - For untrusted multi-tenant hosting where sub-domain is allocated to each
   tenant, the top-level domain must be included in Public Suffix List.
@@ -156,12 +145,7 @@ Developer can create a API key for each client. Each API key identifies a
 specific client, and different attributes can be configured for the client:
 - Name
 - Enabled status
-- Session token transport (cookie / `Authorization` header)
 - Session token properties (e.g. lifetime)
-
-Session token transport must be specified at client creation. Developer should
-not change it after creation.
-
 
 # Future Works
 - Audit log should include session attributes for historical records (#340)
@@ -176,6 +160,7 @@ not change it after creation.
 
 [Use cases](./use-cases.md)
 
+[Breaking Changes](./breaking-changes.md)
 
 ## Session Cookie and Refresh Token
 
