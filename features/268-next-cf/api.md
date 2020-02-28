@@ -311,20 +311,15 @@ hooks:
 
 # Route matching
 
-To easily distinguish gear route and non-gear route, I suggest we add the following two rules:
-- All gear routes start with `_`, e.g. auth gear routes are `/_auth/`, signup path would be `/_auth/signup`
-  - So any request with its path start with `_` would be considered request to gear
-- Non-gear path cannot be start with `_`
-
-Here is the route matching rules when a request enter the cluster:
-- If the path starts with `_`, it would try find the gear by matching `/_{gear_name}` first
-  - If a gear is found, the request would be forwarded to that gear
-  - Otherwise, return function not found error
-- Trailing slash in `path` is insignificant. That is, `/a` and `/a/` is equivalent.
-- All paths are matched in a longest prefix match fashion.
-- There is no partial match. That is, the pattern `/a` does not match the path `/apple`.
-- The matched prefix of `http-service` is removed.
-- If none of the registered path is matched, return not found error.
+- Each gear has its own domain.
+- The app has its own domain.
+- If the request targets a gear, the request is proxied without route matching.
+- The following route matching applies only to the app.
+  - Trailing slash in `path` is insignificant. That is, `/a` and `/a/` is equivalent.
+  - All paths are matched in a longest prefix match fashion.
+  - There is no partial match. That is, the pattern `/a` does not match the path `/apple`.
+  - The matched prefix of `http-service` is removed.
+  - If none of the registered path is matched, return not found error.
 
 For example, with the following skycli configuration:
 
