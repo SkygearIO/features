@@ -285,18 +285,3 @@ For admin user, it should support:
 - ...
 
 To support above functionalities, it would be provided by auth gear internally. It can connect auth gear DB directly, and no need to provide query interface to the public.
-
-## [TBD] Auth UIKit
-
-![](https://i.imgur.com/c4Vqk6G.png)
-
-Consider skygear has a general purpose UIKit for user login/signup, the UI should response by following settings:
-
-- auth criteria: username, email, phone number, ..., etc.
-- auth protocols: SSO, LDAP, SAML, ..., etc.
-- multi-factor authentication
-- ...
-
-![](https://i.imgur.com/0Rg7IOA.png)
-
-It should be a separate service to handle such settings, and then Auth UIKit knows how to update its UI accordingly.
