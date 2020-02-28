@@ -76,7 +76,6 @@ user_config:
     js_sdk_cdn_url: https://code.skygear.io/js/skygear/latest/skygear.min.js
     state_jwt_secret: ""
     auto_link_provider_keys: []
-    allowed_callback_urls: []
     providers: []
   user_verification:
     url_prefix: ""

@@ -255,9 +255,6 @@ app_config:
   master_key: xxxxx
   api_key: xxxxx
   sso:
-    allowed_callback_urls:
-    - http://127.0.0.1:5000/
-    - http://localhost:5000/
     merge_users_with_identical_email: true
 ```
 
@@ -280,9 +277,6 @@ app_config:
   master_key: xxxxx
   api_key: xxxxx
   sso:
-    allowed_callback_urls:
-    - http://127.0.0.1:5000/
-    - http://localhost:5000/
     merge_users_with_identical_email: true
 ~
 ~

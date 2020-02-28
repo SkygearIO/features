@@ -371,9 +371,6 @@ oauth:
   # The secret used to sign the JWT token, which itself is used as state.
   # See https://tools.ietf.org/html/rfc6749#section-4.1.1
   state_jwt_secret: ''
-  # A whitelist of allowed callback URLs
-  allowed_callback_urls:
-  - 'http://example.com/login'
   # Whether external access token flow is enabled. Default to false.
   external_access_token_flow_enabled: false
   # Whether merge is allowed. Default to false.

@@ -68,12 +68,14 @@
 # UserConfiguration Example
 
 ```yaml
+clients:
+- client_name: My App
+  redirect_uris:
+  # The callback URL must match the ones declared in the iOS application and in the Android application.
+  - "myapp://host/path"
 sso:
   oauth:
     state_jwt_secret: statesecret
-    allowed_callback_urls:
-    # The callback URL must match the ones declared in the iOS application and in the Android application.
-    - "myapp://host/path"
     providers:
     - id: apple-app
       type: apple
