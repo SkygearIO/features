@@ -54,6 +54,25 @@ to be revoked.
 Update session API allows updating name of session. Custom attributes can also
 be updated using master key.
 
+## Different kinds of session
+
+### OIDC session
+
+The sessions created by JSON API or OIDC flow have `client_id`.
+
+### OP session
+
+The sessions created by the web UI of Auth Gear does not have `client_id` because Auth Gear is acting as an OP.
+
+### Revoking sessions
+
+The user can revoke session of any kinds. However, revoking a OIDC session does not necessarily cause logout in the RP.
+
+When the RP is a third-party app that has its session management.
+When it receives a ID token from Auth Gear it creates its own session.
+Revoking the OIDC session has no direct effect on the third-party app session, unless both Auth Gear and the third-party app supports OIDC Session Management which offers single logout.
+
+If the RP is the same Skygear App, then revoking the OIDC session works seamlessly. It is because Skygear App does maintain a separate session.
 
 ## Access token, refresh token and session token
 
