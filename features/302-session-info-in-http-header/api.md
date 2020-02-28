@@ -2,14 +2,43 @@
 
 ## Overview
 
-The gateway resolve the access token into a session.
-If the session is valid, multiple HTTP headers are added to the request.
+The gateway (could be Skygear Gateway or any other third party) authenticates each request by initiating a subrequest to a endpoint of Auth Gear. Some headers of the response of the subrequest are then copied to the original request.
 
-If there is no access token or the session is invalid, the headers are absent.
+## The request authentication endpoint of Auth Gear
 
-The gateway must remove the headers from the original request before adding the headers.
+The endpoint `/auth_request` ignores request body. It looks at cookie or `Authorization:` for the session. Cookie has precedence over `Authorization:`. It validates the session and include [headers](the-http-headers). It always returns 200.
+
+> The protocol adopted by common proxies is as follows. If the authentication server returns 200, the original request is continued. If the authentication server returns 401 or 403, the response of the subrequest is returned to the client instead. Since Auth Gear does not have enough context on what to return in case the session is invalid. It always return 200 and indicates the auth result in the response headers instead.
+
+## The gateway
+
+The gateway must remove the headers from the original request before initiating the subrequest.
+
+When `x-skygear-auth-request-result: invalid` and `x-skygear-session-transport: cookie`, the gateway must clear the cookie named by `x-skygear-session-cookie-name`.
+
+When `x-skygear-auth-request-result: invalid`, it must write `x-skygear-try-refresh-token: true`.
 
 ## The HTTP headers
+
+### x-skygear-auth-request-result
+
+Tell the authentication result of the original request.
+
+If the value is `valid`, then more headers are included.
+
+If the value is `invalid`, it indicates that the original request has an invalid session.
+
+If the value is `none`, it indicates that the original request does not contain any session.
+
+### x-skygear-session-transport
+
+Tell the session transport used to resolve the session when `x-skygear-auth-request-result` is not `none`.
+
+The value is either `cookie` or `header`.
+
+### x-skygear-session-cookie-name
+
+Tell the cookie name of the session identifier.
 
 ### x-skygear-user-id
 
