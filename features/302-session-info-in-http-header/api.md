@@ -14,25 +14,25 @@ The endpoint `/auth_request` ignores request body. It looks at cookie or `Author
 
 The gateway must remove the headers from the original request before initiating the subrequest.
 
-When `x-skygear-auth-request-result: invalid` and `x-skygear-session-transport: cookie`, the gateway must clear the cookie named by `x-skygear-session-cookie-name`.
+When `x-skygear-session-valid: false` and `x-skygear-session-transport: cookie`, the gateway must clear the cookie named by `x-skygear-session-cookie-name`.
 
-When `x-skygear-auth-request-result: invalid`, it must write `x-skygear-try-refresh-token: true`.
+When `x-skygear-session-valid: false`, it must write `x-skygear-try-refresh-token: true`.
 
 ## The HTTP headers
 
-### x-skygear-auth-request-result
+### x-skygear-session-valid
 
-Tell the authentication result of the original request.
+Tell whether the session of the original request is valid.
 
-If the value is `valid`, then more headers are included.
+If this header is absent, it means that the original request does not contain any session.
 
-If the value is `invalid`, it indicates that the original request has an invalid session.
+If the value is `true`, it indicates the original request has valid session. More headers will be included.
 
-If the value is `none`, it indicates that the original request does not contain any session.
+If the value is `false`, it indicates that the original request has an invalid session.
 
 ### x-skygear-session-transport
 
-Tell the session transport used to resolve the session when `x-skygear-auth-request-result` is not `none`.
+Tell the session transport used to resolve the session when `x-skygear-session-valid` is present.
 
 The value is either `cookie` or `header`.
 
@@ -157,4 +157,36 @@ Example
 
 ```
 x-skygear-session-identity-updated-at: 2019-09-17T00:00:00.000Z
+```
+
+## Example
+
+### No session associated with the original request
+
+No headers are added.
+
+### Valid session associated with the original request
+
+```
+x-skygear-session-valid: true
+x-skygear-session-transport: cookie
+x-skygear-session-cookie-name: session
+x-skygear-user-id: a
+x-skygear-user-verified: true
+x-skygear-user-disabled: false
+x-skygear-session-identity-id: a
+x-skygear-session-identity-type: password
+x-skygear-session-identity-updated-at: 2019-09-17T00:00:00.000Z
+x-skygear-session-authenticator-id: a
+x-skygear-session-authenticator-type: oob
+x-skygear-session-authenticator-oob-channel: sms
+x-skygear-session-authenticator-updated-at: 2019-09-17T00:00:00.000Z
+```
+
+### Invalid session associated with the original request
+
+```
+x-skygear-session-valid: false
+x-skygear-session-transport: header
+x-skygear-session-cookie-name: session
 ```

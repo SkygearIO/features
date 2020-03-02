@@ -12,8 +12,8 @@ If RefreshTokenDisabled is false, then the request is terminated with 401 and th
 
 When the SDK receives a response with `x-skygear-try-refresh-token: true`, it tries to refresh the access token.
 
-The gateway never terminate request and write `x-skygear-auth-request-result` instead. It is up to the upstream server to return 401.
-The gateway writes `x-skygear-try-refresh-token: true` if `x-skygear-auth-request-result: invalid`.
+The gateway never terminate request and write `x-skygear-session-valid` instead. It is up to the upstream server to return 401.
+The gateway writes `x-skygear-try-refresh-token: true` if `x-skygear-session-valid: false`.
 
 The refresh access token flow is _NOT_ broken.
 
@@ -21,8 +21,8 @@ The refresh access token flow is _NOT_ broken.
 
 When the SDK receives a response with `x-skygear-try-refresh-token: true` and it is configured to use `Authorization:`, it tries to refresh the access token.
 
-The gateway never terminate request and write `x-skygear-auth-request-result` instead. It is up to the upstream server to return 401.
-The gateway writes `x-skygear-try-refresh-token: true` if `x-skygear-auth-request-result: invalid`.
+The gateway never terminate request and write `x-skygear-session-valid` instead. It is up to the upstream server to return 401.
+The gateway writes `x-skygear-try-refresh-token: true` if `x-skygear-session-valid: false`.
 
 The refresh access token flow is only triggered when the SDK is using `Authorization:`.
 
