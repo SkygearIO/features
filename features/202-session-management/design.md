@@ -72,7 +72,7 @@ When the RP is a third-party app that has its session management.
 When it receives a ID token from Auth Gear it creates its own session.
 Revoking the OIDC session has no direct effect on the third-party app session, unless both Auth Gear and the third-party app supports OIDC Session Management which offers single logout.
 
-If the RP is the same Skygear App, then revoking the OIDC session works seamlessly. It is because Skygear App does maintain a separate session.
+If the RP is the same Skygear App, then revoking the OIDC session works seamlessly. It is because Skygear App does not maintain a separate session.
 
 ## Access token, refresh token and session token
 
