@@ -4,10 +4,6 @@
 
 Skygear Auth offers authentication flow which conforms OIDC specification. You can integrate Skygear Auth as OpenID Provider (OP) in your application or use Skygear Platform with Skygear Microservices directly.
 
-## OpenID Provider
-
-Skygear Auth implements [Authorization Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) with [PKCE](https://tools.ietf.org/html/rfc7636).
-
 ## Integrate Skygear Auth OIDC (Skygear App as OP + External Application)
 
 ### Example Scenarios
@@ -87,3 +83,143 @@ Skygear Auth implements [Authorization Code Flow](https://openid.net/specs/openi
 1. User authorize and consent
 1. Auth Gear set Idp session in eTLD+1, redirect empty result back to client SDK
 1. Since Idp session is set in eTLD+1, cookies header will be included when user send request to Microsevices too. Gateway will resolve the Idp Session and update request headers with auth result.
+
+## OpenID Provider conformance
+
+Some of the terms used in this session are defined in [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html#Terminology).
+
+Skygear Auth implements [Authorization Code Flow](https://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth) with [PKCE](https://tools.ietf.org/html/rfc7636).
+
+### Authentication Request
+
+The following sessions list out the request parameters that Skygear Auth supports.
+
+#### scope
+
+The value must be `openid`.
+
+#### response_type
+
+- `code`: Using Authorization Code Flow
+- `none`: Use in [Tradition web app or SSR app](#case-3-traditional-web-app--server-side-rendering-app-ssr), Idp session is used when requesting api
+
+#### client_id
+
+The value must be a client id which configured in App Config.
+
+#### redirect_uri
+
+No difference from the spec.
+
+#### state
+
+No difference from the spec.
+
+#### nonce
+
+No difference from the spec.
+
+#### display
+
+It is not supported. The only supported display mode is `page`.
+
+#### prompt
+
+- not specified: Prompt user for authentication or authorization, depends on Idp session state.
+- `none`: No difference from the spec. For requesting new access token when token expire in SPA.
+
+#### max_age
+
+It is not supported.
+
+#### ui_locales
+
+No difference from the spec.
+
+#### id_token_hint
+
+No difference from the spec, for `prompt=none` case.
+
+#### login_hint
+
+It is not supported.
+
+#### acr_values
+
+It is not supported.
+
+#### code_challenge_method
+
+Only `S256` is supported. `plain` is not supported. The reason is the existing implementation of SSO is using `S256` already. Since it defaults to plain, it is required and the value must be `S256`.
+
+#### code_challenge
+
+No difference from the spec.
+
+#### Example of valid Authentication Request
+
+`response_type=code&scope=openid&client_id=CLIENT_ID&redirect_uri=REDIRECT_URI&code_challenge_method=S256&code_challenge=CODE_CHALLENGE&ui_locales=en`
+
+### Token Request
+
+The following sessions list out the request parameters and their difference from the spec.
+
+#### grant_type
+
+Either `authorization_code` or `refresh_token`
+
+#### code
+
+No difference from the spec.
+
+#### redirect_uri
+
+No difference from the spec.
+
+#### client_id
+
+It is always required.
+
+#### code_verifier
+
+No difference from the spec.
+
+#### Example of valid Token Request
+
+`grant_type=authorization_code&code=AUTHORIZATION_CODE&redirect_uri=REDIRECT_URI&client_id=API_KEY&code_verifier=CODE_VERIFIER`
+
+### Token Response
+
+#### id_token
+
+No difference from the spec.
+
+#### token_type
+
+It is always the value `bearer`.
+
+#### access_token
+
+No difference from the spec.
+
+#### expires_in
+
+No difference from the spec.
+
+#### refresh_token
+
+No difference from the spec. Absent in [SPA](#case-2-single-page-web-app-spa) flow.
+
+#### scope
+
+It is always absent.
+
+#### Example of Token Response
+
+```json
+{
+  "token_type": "bearer",
+  "access_token": "access.token",
+  "refresh_token": "refresh.token"
+}
+```
