@@ -52,7 +52,19 @@ The authorization endpoint `/oauth2/authorize` is the entry point of OIDC. The u
 
 ## The root endpoint
 
-The root endpoint `/` is unrelated to OIDC. If the request is authenticated, the user is redirected to the settings endpoint. Otherwise the user is prompted to authenticate.
+The root endpoint `/` is unrelated to OIDC.
+
+It supports `redirect_uri`. `redirect_uri` is resolved against the current URL. Redirection is only performed if the origin of the resolved URL remains the same. Otherwise `redirect_uri` is treated as `/settings`.
+
+### Example of invalid redirect_uri
+
+`https://accounts.myapp.com/?redirect_uri=https%3A%2F%2Fwww.google.com` is invalid and is treated as `redirect_uri=/settings`.
+
+### Example of valid redirect_uri
+
+`https://accounts.myapp.com/?redirect_uri=https%3A%2F%2Faccounts.myapp.com%2Fverify` is valid because the origin is the same.
+
+If the request is authenticated, redirection is performed immediately. Otherwise the user is prompted to authenticate.
 
 ### The sign in page
 
@@ -132,7 +144,7 @@ The settings endpoint `/settings` allows the user to manage their account. Featu
 
 ### The verification endpoint
 
-The verification endpoint `/verify` allows the user to verify their login ID. This page requires authenticated user. Unauthenticated access is redirected to the root endpoint. Verification is not a strict requirement. For example, if auto send verification email is enabled, the email is sent behind the scene and the user is redirected to the application immediately after performing the Authorization Code Flow successfully.
+The verification endpoint `/verify` allows the user to verify their login ID. This page requires authenticated user. Unauthenticated access is redirected to the root endpoint with `redirect_uri=/verify`. Verification is not a strict requirement. For example, if auto send verification email is enabled, the email is sent behind the scene and the user is redirected to the application immediately after performing the Authorization Code Flow successfully.
 
 ## Future improvements
 
