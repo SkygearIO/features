@@ -25,7 +25,7 @@ The resolution of custom domain is purely table-driven. The developer is free to
 
 ## Delegating request authentication to Skygear Auth
 
-Skygear Gateway initiate subrequest to the resolve endpoint of Skygear Auth after resolving the app. The subrequest does not contain body. The gateway must remove `x-skygear-*` headers from the original request before initiating the subrequest. The gateway must copy `x-skygear-*` headers from the response of the subrequest to the original request. If `x-skygear-session-valid` is `false` and `x-skygear-session-transport` is `cookie`, then the gateway must clear the cookie named by `x-skygear-session-cookie-name`.
+Skygear Gateway initiate subrequest to the resolve endpoint of Skygear Auth after resolving the app. The subrequest does not contain body. The gateway must remove `x-skygear-*` headers from the original request before initiating the subrequest. The gateway must copy `x-skygear-*` headers from the response of the subrequest to the original request.
 
 ## Authenticating the request
 
@@ -48,10 +48,6 @@ If the value is `false`, it indicates that the original request has an invalid s
 Tell the session transport used to resolve the session when `x-skygear-session-valid` is present.
 
 The value is either `cookie` or `header`.
-
-### x-skygear-session-cookie-name
-
-Tell the cookie name of the session identifier.
 
 ### x-skygear-user-id
 
@@ -183,7 +179,6 @@ No headers are added.
 ```
 x-skygear-session-valid: true
 x-skygear-session-transport: cookie
-x-skygear-session-cookie-name: session
 x-skygear-user-id: a
 x-skygear-user-verified: true
 x-skygear-user-disabled: false
@@ -201,7 +196,6 @@ x-skygear-session-authenticator-updated-at: 2019-09-17T00:00:00.000Z
 ```
 x-skygear-session-valid: false
 x-skygear-session-transport: header
-x-skygear-session-cookie-name: session
 ```
 
 ## Proxying legacy request convention
