@@ -128,6 +128,8 @@ interface AuthorizeOptions {
 
 // Modeled after https://tools.ietf.org/html/rfc6749#section-5.2
 interface OAuthError {
+  // The state from AuthorizeOptions.
+  state?: string;
   error: string;
   error_description?: string;
   error_uri?: string;
@@ -213,6 +215,8 @@ interface AuthorizeOptions {
 
 // Modeled after https://tools.ietf.org/html/rfc6749#section-5.2
 interface OAuthError {
+  // The state from AuthorizeOptions.
+  state?: string;
   error: string;
   error_description?: string;
   error_uri?: string;
@@ -224,8 +228,8 @@ function authorize(options: AuthorizeOptions): Promise<void>;
 
 // exchangeToken looks at window.location
 // It checks if error is present and rejects with OAuthError.
-// Otherwise if code is present, make a token request.
-function exchangeToken(): Promise<User>;
+// Otherwise assume code is present, make a token request.
+function exchangeToken(): Promise<{ user: User; state?: string }>;
 ```
 
 #### Example
@@ -253,10 +257,7 @@ function AuthenticationScreen() {
 function ContinueScreen() {
   useEffect(() => {
     try {
-      const u = new URL(window.location.href);
-      const state = u.searchParams.get("state");
-
-      const user = await skygear.auth.exchangeToken();
+      const { user, state } = await skygear.auth.exchangeToken();
       if (!user.isVerified) {
         window.location = "https://myapp.skygearapps.com/verify";
       } else {
