@@ -96,7 +96,7 @@ session:
     idle_timeout: 300
     cookie_same_site: None
     cookie_domain: example.com
-    cookie_expiration: false
+    cookie_non_persistent: false
 clients:
     - auth_api_use_cookie: false
 ```
@@ -112,8 +112,9 @@ clients:
                             default to `Lax`, and other possible values are
                             `None` and `Strict`.
     - **cookie_domain**: The `Domain` attribute of cookie, optional.
-    - **cookie_expiration**: Whether the session cookie would expire
-                             (i.e. HTTP permanent cookie), default to false.
+    - **cookie_non_persistent**: Whether the session cookie would not persist
+                                 across browser sessions (i.e. HTTP
+                                 session cookie), default to false.
 - **clients**: Configuration of OIDC clients. Details are in other specs.
     - **auth_api_use_cookie**: Whether the Auth API would set session cookie,
                                instead of returning OIDC access/refresh tokens,
