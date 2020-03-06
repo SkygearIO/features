@@ -238,7 +238,6 @@ app_config:
     session_idle_timeout_enabled: true
     session_idle_timeout: 300
     client_name: Mobile App
-    application_type: native
     redirect_uris:
     - "https://example.com"
     logo_uri: "https://example.com/logo.png"
@@ -258,7 +257,6 @@ Some parameters are defined in OIDC, see [ClientMetadata](https://openid.net/spe
 They are
 
 - `client_name`
-- `application_type`
 - `redirect_uris`
 - `login_uri`
 - `grant_types`
@@ -280,8 +278,7 @@ They are
 ```yaml
 app_config:
   clients:
-  - application_type: native
-    redirect_uris:
+  - redirect_uris:
     - "https://app-backend-endpoint.com"
     grant_types:
     - "authorization_code"
@@ -290,7 +287,6 @@ app_config:
     - "code"
 ```
 
-- `application_type` should be `native`
 - Should include app backend endpoint in `redirect_uris` which handle code to access token exchange
 - Generic OIDC RP run authentication code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
 
@@ -299,8 +295,7 @@ app_config:
 ```yaml
 app_config:
   clients:
-  - application_type: native
-    redirect_uris:
+  - redirect_uris:
     - "https://client-app-endpoint.com"
     grant_types:
     - "authorization_code"
@@ -309,7 +304,6 @@ app_config:
     - "code"
 ```
 
-- `application_type` should be `native`
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
 - Native app run authentication code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
 
@@ -318,8 +312,7 @@ app_config:
 ```yaml
 app_config:
   clients:
-  - application_type: web
-    redirect_uris:
+  - redirect_uris:
     - "https://client-app-endpoint.com"
     grant_types:
     - "authorization_code"
@@ -327,7 +320,6 @@ app_config:
     - "code"
 ```
 
-- `application_type` should be `native`
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
 - SPA run authentication code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
 - `session_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config]().
@@ -337,15 +329,13 @@ app_config:
 ```yaml
 app_config:
   clients:
-  - application_type: web
-    redirect_uris:
+  - redirect_uris:
     - "https://client-app-endpoint.com"
     grant_types: []
     response_types:
     - "none"
 ```
 
-- `application_type` should be `web`
 - Should include client app endpoint in `redirect_uris`. When Auth Gear set the Idp Session, it will redirect back to client app with empty result. Only authorized uris can be redirected.
 - Traditional web / SSR app use Idp session for authentication, no OIDC grants would be returned. So `grant_types` should be [] and `response_types` should be ["none"].
 - `session_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout`, `access_token_lifetime` will be ignored. Since Idp session will be used, so the session lifetime will be the same as Idp session. See [Idp session config]().
