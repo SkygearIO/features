@@ -304,4 +304,6 @@ function SettingsScreen() {
 
 ## The open source AppAuth library
 
-The open source AppAuth library has three variants, namely Android, iOS and JS. The JS one is for web. However, our JS SDK must support three common JS environments browser, Node and React Native. Therefore AppAuth is not being used.
+There exists an open source library AppAuth which affiliates with OpenID. It comes with 3 variants, namely [Android](https://github.com/openid/AppAuth-Android), [iOS](https://github.com/openid/AppAuth-iOS) and [JS](https://github.com/openid/AppAuth-JS). The JS variant supports both browser and Node, but not React Native. There also exists an open source library [react-native-app-auth](https://github.com/FormidableLabs/react-native-app-auth) which is a bridge for AppAuth-Android and AppAuth-iOS.
+
+However AppAuth is not particularly useful for the SDK. The more challenging part of the SDK is the refresh flows, which are not covered by AppAuth. Therefore AppAuth is not used internally by the SDK. Skygear Auth, however, should be compatible with any conforming client.
