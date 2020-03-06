@@ -43,12 +43,6 @@ If the value is `true`, it indicates the original request has valid session. Mor
 
 If the value is `false`, it indicates that the original request has an invalid session.
 
-### x-skygear-session-transport
-
-Tell the session transport used to resolve the session when `x-skygear-session-valid` is present.
-
-The value is either `cookie` or `header`.
-
 ### x-skygear-user-id
 
 The user id.
@@ -178,7 +172,6 @@ No headers are added.
 
 ```
 x-skygear-session-valid: true
-x-skygear-session-transport: cookie
 x-skygear-user-id: a
 x-skygear-user-verified: true
 x-skygear-user-disabled: false
@@ -195,7 +188,6 @@ x-skygear-session-authenticator-updated-at: 2019-09-17T00:00:00.000Z
 
 ```
 x-skygear-session-valid: false
-x-skygear-session-transport: header
 ```
 
 ## Proxying legacy request convention
