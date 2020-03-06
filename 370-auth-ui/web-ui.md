@@ -48,7 +48,7 @@ The developer can also provide their own templates via [the existing template me
 
 ## The authorization endpoint
 
-The authorization endpoint `/authorize` is the entry point of OIDC. The user can sign up, sign in, perform multi-factor authentication, reset forgotten password and authorize access.
+The authorization endpoint `/oauth2/authorize` is the entry point of OIDC. The user can sign up, sign in, perform multi-factor authentication, reset forgotten password and authorize access.
 
 ## The root endpoint
 
