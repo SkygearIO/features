@@ -316,7 +316,7 @@ app_config:
   clients:
   - client_id: XXX
     client_secret: XXX
-    session_lifetime: 86400
+    refresh_token_lifetime: 86400
     access_token_lifetime: 1800
     session_idle_timeout_enabled: true
     session_idle_timeout: 300
@@ -350,7 +350,7 @@ They are
 - `client_id`: OIDC client id.
 - `client_secret`: OIDC client secret, used in RP integration.
 - `access_token_lifetime`: OIDC access token lifetime in seconds, default to 1800.
-- `session_lifetime`: OIDC refresh token lifetime in seconds, default to max(access_token_lifetime, 86400). Must greater than or equal to `access_token_lifetime`.
+- `refresh_token_lifetime`: OIDC refresh token lifetime in seconds, default to max(access_token_lifetime, 86400). Must greater than or equal to `access_token_lifetime`.
 - `session_idle_timeout_enabled`: Indicate whether OIDC session idle timeout is enabled, default to `false`.
 - `session_idle_timeout`: The OIDC session idle timeout in seconds, default to min(`access_token_lifetime`, 300). Must less than or equal to `access_token_lifetime`.
 
@@ -405,7 +405,7 @@ app_config:
 
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
 - SPA run authentication code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
-- `session_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config]().
+- `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config]().
 
 #### Skygear Microservice case 3: Traditional web app / Server side rendering app (SSR)
 
