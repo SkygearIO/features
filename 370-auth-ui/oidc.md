@@ -224,6 +224,72 @@ It is always absent.
 }
 ```
 
+## Authorization Server Metadata Document
+
+Skygear supports OpenID Connect and OAuth metadata document which contains most of the information required for an app to do sign-in. The document includes information about endpoints and location of public keys. It is in JSON format, for values definition see [OpenID Connect Discovery](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata) and [Authorization Server Metadata](https://tools.ietf.org/html/rfc8414#section-2).
+
+The OpenID Connect discovery document can be retrieved from:
+
+```
+https://{auth_gear_endpoint}/.well-known/openid-configuration
+```
+
+The OAuth Authorization Server Metadata can be retrieved from:
+
+```
+https://{auth_gear_endpoint}/.well-known/oauth-authorization-server
+```
+
+The following sessions list out the metadata values that Skygear Auth supports.
+
+#### issuer
+
+No difference from the spec.
+
+#### authorization_endpoint
+
+No difference from the spec.
+
+#### token_endpoint
+
+No difference from the spec.
+
+#### userinfo_endpoint
+
+No difference from the spec.
+
+#### jwks_uri
+
+No difference from the spec.
+
+### scopes_supported
+
+The values will be `["openid"]`.
+
+#### response_types_supported`
+
+The values will be `["code", "none"]`.
+
+#### grant_types_supported
+
+The values will be `["authorization_code", "refresh_token"]`.
+
+#### subject_types_supported
+
+The values will be `["public"]`.
+
+#### id_token_signing_alg_values_supported
+
+`RS256` is supported.
+
+#### claims_supported
+
+The values will be `["sub", "iss", "aud", "exp", "iat", "email", "email_verified", "phone_number", "phone_number_verified"]`.
+
+### code_challenge_methods_supported
+
+The values will be `["plain", "S256"]`
+
 ## Configurations
 
 ### Sample configuration
