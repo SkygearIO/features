@@ -270,7 +270,7 @@ The values will be `["sub", "iss", "aud", "exp", "iat"]`.
 
 ### code_challenge_methods_supported
 
-The values will be `["plain", "S256"]`
+The values will be `["S256"]`
 
 ### revocation_endpoint
 
