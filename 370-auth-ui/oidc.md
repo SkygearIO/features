@@ -51,28 +51,7 @@ Skygear Auth offers authentication flow which conforms OIDC specification. You c
 1. When app launch or access token expiry, send token request with refresh token
 1. Auth Gear return token response with new access token
 
-### Case 2: Single page web app (SPA)
-
-[![](https://mermaid.ink/img/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gIHBhcnRpY2lwYW50IEJyb3dzZXJcbiAgcGFydGljaXBhbnQgU2t5Z2VhckF1dGhcbiAgcGFydGljaXBhbnQgU2t5Z2Vhck1pcm9zZXJ2aWNlc1xuICBCcm93c2VyLT4-QnJvd3NlcjogR2VuZXJhdGUgY29kZSB2ZXJpZmllciArIGNvZGUgY2hhbGxlbmdlXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiBjb2RlIHJlcXVlc3QgKyBjb2RlIGNoYWxsZW5nZVxuICBTa3lnZWFyQXV0aC0-PkJyb3dzZXI6IFJlZGlyZWN0IHRvIGF1dGhvcml6YXRpb24gZW5kcG9pbnRcbiAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBBdXRob3JpemF0aW9uIGFuZCBjb25zZW50XG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogQXV0aG9yaXphdGlvbiBjb2RlXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiBjb2RlICsgY29kZSB2ZXJpZmllclxuICBTa3lnZWFyQXV0aC0-PlNreWdlYXJBdXRoOiBWYWxpZGF0ZSBhdXRob3JpemF0aW9uIGNvZGUgKyBjb2RlIHZlcmlmaWVyXG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogVG9rZW4gcmVzcG9uc2UgKElEIHRva2VuICsgYWNjZXNzIHRva2VuKVxuICBCcm93c2VyLT4-U2t5Z2Vhck1pcm9zZXJ2aWNlczogUmVxdWVzdCBNaWNyb3NlcnZpY2VzIHdpdGggYWNjZXNzIHRva2VuXG4gIGxvb3AgV2hlbiBhcHAgbGF1bmNoIG9yIGNsb3NlIHRvIGV4cGlyZWRfaW5cbiAgICBOb3RlIG92ZXIgQnJvd3NlcixTa3lnZWFyTWlyb3NlcnZpY2VzOiBSZW5ldyBhY2Nlc3MgdG9rZW5cbiAgICBCcm93c2VyLT4-QnJvd3NlcjogR2VuZXJhdGUgY29kZSB2ZXJpZmllciArIGNvZGUgY2hhbGxlbmdlXG4gICAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBJbmplY3QgaWZyYW1lIHRvIHNlbmQgYXV0aG9yaXphdGlvbiByZXF1ZXN0XG4gICAgU2t5Z2VhckF1dGgtPj5Ta3lnZWFyQXV0aDogUmVkaXJlY3QgYXV0aG9yaXphdGlvbiBjb2RlIHJlc3VsdCB0byBTa3lnZWFyQXV0aCBlbmRwb2ludFxuICAgIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogUG9zdCBtZXNzYWdlIHdpdGggYXV0aG9yaXphdGlvbiBjb2RlIHJlc3VsdFxuICAgIEJyb3dzZXItLT4-QnJvd3NlcjogSWYgSWRwIFNlc3Npb24gaXMgaW52YWxpZCwgbG9nb3V0XG4gICAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBTZW5kIHRva2VuIHJlcXVlc3Qgd2l0aCBjb2RlICsgY29kZSB2ZXJpZmllclxuICAgIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogVG9rZW4gcmVzcG9uc2UgKGlkIHRva2VuICsgYWNjZXNzIHRva2VuKVxuICBlbmRcbiIsIm1lcm1haWQiOnsidGhlbWUiOiJkZWZhdWx0Iiwic2VxdWVuY2UiOnsic2hvd1NlcXVlbmNlTnVtYmVycyI6dHJ1ZX19LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gIHBhcnRpY2lwYW50IEJyb3dzZXJcbiAgcGFydGljaXBhbnQgU2t5Z2VhckF1dGhcbiAgcGFydGljaXBhbnQgU2t5Z2Vhck1pcm9zZXJ2aWNlc1xuICBCcm93c2VyLT4-QnJvd3NlcjogR2VuZXJhdGUgY29kZSB2ZXJpZmllciArIGNvZGUgY2hhbGxlbmdlXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiBjb2RlIHJlcXVlc3QgKyBjb2RlIGNoYWxsZW5nZVxuICBTa3lnZWFyQXV0aC0-PkJyb3dzZXI6IFJlZGlyZWN0IHRvIGF1dGhvcml6YXRpb24gZW5kcG9pbnRcbiAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBBdXRob3JpemF0aW9uIGFuZCBjb25zZW50XG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogQXV0aG9yaXphdGlvbiBjb2RlXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiBjb2RlICsgY29kZSB2ZXJpZmllclxuICBTa3lnZWFyQXV0aC0-PlNreWdlYXJBdXRoOiBWYWxpZGF0ZSBhdXRob3JpemF0aW9uIGNvZGUgKyBjb2RlIHZlcmlmaWVyXG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogVG9rZW4gcmVzcG9uc2UgKElEIHRva2VuICsgYWNjZXNzIHRva2VuKVxuICBCcm93c2VyLT4-U2t5Z2Vhck1pcm9zZXJ2aWNlczogUmVxdWVzdCBNaWNyb3NlcnZpY2VzIHdpdGggYWNjZXNzIHRva2VuXG4gIGxvb3AgV2hlbiBhcHAgbGF1bmNoIG9yIGNsb3NlIHRvIGV4cGlyZWRfaW5cbiAgICBOb3RlIG92ZXIgQnJvd3NlcixTa3lnZWFyTWlyb3NlcnZpY2VzOiBSZW5ldyBhY2Nlc3MgdG9rZW5cbiAgICBCcm93c2VyLT4-QnJvd3NlcjogR2VuZXJhdGUgY29kZSB2ZXJpZmllciArIGNvZGUgY2hhbGxlbmdlXG4gICAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBJbmplY3QgaWZyYW1lIHRvIHNlbmQgYXV0aG9yaXphdGlvbiByZXF1ZXN0XG4gICAgU2t5Z2VhckF1dGgtPj5Ta3lnZWFyQXV0aDogUmVkaXJlY3QgYXV0aG9yaXphdGlvbiBjb2RlIHJlc3VsdCB0byBTa3lnZWFyQXV0aCBlbmRwb2ludFxuICAgIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogUG9zdCBtZXNzYWdlIHdpdGggYXV0aG9yaXphdGlvbiBjb2RlIHJlc3VsdFxuICAgIEJyb3dzZXItLT4-QnJvd3NlcjogSWYgSWRwIFNlc3Npb24gaXMgaW52YWxpZCwgbG9nb3V0XG4gICAgQnJvd3Nlci0-PlNreWdlYXJBdXRoOiBTZW5kIHRva2VuIHJlcXVlc3Qgd2l0aCBjb2RlICsgY29kZSB2ZXJpZmllclxuICAgIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogVG9rZW4gcmVzcG9uc2UgKGlkIHRva2VuICsgYWNjZXNzIHRva2VuKVxuICBlbmRcbiIsIm1lcm1haWQiOnsidGhlbWUiOiJkZWZhdWx0Iiwic2VxdWVuY2UiOnsic2hvd1NlcXVlbmNlTnVtYmVycyI6dHJ1ZX19LCJ1cGRhdGVFZGl0b3IiOmZhbHNlfQ)
-
-1. SDK generate code verifier + code challenge
-1. SDK send authorization code request with code challenge
-1. Auth Gear direct user to authorization page
-1. User authorize and consent in authorization page
-1. Auth Gear set Idp session and redirect the result (authorization code) back to client SDK
-1. SDK send token request with authorization code + code verifier
-1. Auth Gear validate authorization code + code verifier
-1. Auth Gear return token response to SDK with id token + access token
-1. SDK inject authorization header for later on requests to Microservices, gateway resolve the access token and update request headers with auth result.
-1. Trigger silent authentication to obtain new access token when app launch or access token expiry, generate code verifier + code challenge for new authorization flow
-1. Inject iframe with Auth Gear authorization endpoint, the authorization request includes code request + code challenge + id_token_hint + prompt=none
-1. Auth Gear redirect the result (authorization code) back to an Auth Gear specific endpoint
-1. Auth Gear specific endpoint post the result back to parent window (SDK)
-1. SDK read the result message, logout if the result indicate Idp Session is invalid
-1. If authorization code request result is success, send the token request to Auth Gear with code + code verifier
-1. Auth Gear return token response to SDK with id token + new access token
-
-### Case 3: Traditional web app / Server side rendering app (SSR)
+### Case 2: First party web app (Traditional web app / Server side rendering app / Single Page app)
 
 [![](https://mermaid.ink/img/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gIHBhcnRpY2lwYW50IEJyb3dzZXJcbiAgcGFydGljaXBhbnQgU2t5Z2VhckF1dGggYXMgU2t5Z2VhckF1dGg8YnIvPihhY2NvdW50cy5leGFtcGxlLmNvbSlcbiAgcGFydGljaXBhbnQgU2t5Z2Vhck1pcm9zZXJ2aWNlcyBhcyBTa3lnZWFyTWlyb3NlcnZpY2VzPGJyLz4oZXhhbXBsZS5jb20pXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiByZXF1ZXN0IHdpdGggcmVzcG9uc2VfdHlwZT1ub25lICsgY2xpZW50X2lkXG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogUmVkaXJlY3QgdG8gYXV0aG9yaXphdGlvbiBlbmRwb2ludFxuICBCcm93c2VyLT4-U2t5Z2VhckF1dGg6IEF1dGhvcml6YXRpb24gYW5kIGNvbnNlbnRcbiAgU2t5Z2VhckF1dGgtPj5Ccm93c2VyOiBTZXQgSWRwIHNlc3Npb24gaW4gZVRMRCsxIGFuZCByZWRpcmVjdCBiYWNrIHRvIFNreWdlYXJNaXJvc2VydmljZXNcbiAgQnJvd3Nlci0-PlNreWdlYXJNaXJvc2VydmljZXM6IFNlbmQgYXBpIHJlcXVlc3Qgd2l0aCBJZHAgc2Vzc2lvbiwgZ2F0ZXdheSByZXNvbHZlIElkcCBzZXNzaW9uIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQiLCJzZXF1ZW5jZSI6eyJzaG93U2VxdWVuY2VOdW1iZXJzIjp0cnVlfX0sInVwZGF0ZUVkaXRvciI6ZmFsc2V9)](https://mermaid-js.github.io/mermaid-live-editor/#/edit/eyJjb2RlIjoic2VxdWVuY2VEaWFncmFtXG4gIHBhcnRpY2lwYW50IEJyb3dzZXJcbiAgcGFydGljaXBhbnQgU2t5Z2VhckF1dGggYXMgU2t5Z2VhckF1dGg8YnIvPihhY2NvdW50cy5leGFtcGxlLmNvbSlcbiAgcGFydGljaXBhbnQgU2t5Z2Vhck1pcm9zZXJ2aWNlcyBhcyBTa3lnZWFyTWlyb3NlcnZpY2VzPGJyLz4oZXhhbXBsZS5jb20pXG4gIEJyb3dzZXItPj5Ta3lnZWFyQXV0aDogQXV0aG9yaXphdGlvbiByZXF1ZXN0IHdpdGggcmVzcG9uc2VfdHlwZT1ub25lICsgY2xpZW50X2lkXG4gIFNreWdlYXJBdXRoLT4-QnJvd3NlcjogUmVkaXJlY3QgdG8gYXV0aG9yaXphdGlvbiBlbmRwb2ludFxuICBCcm93c2VyLT4-U2t5Z2VhckF1dGg6IEF1dGhvcml6YXRpb24gYW5kIGNvbnNlbnRcbiAgU2t5Z2VhckF1dGgtPj5Ccm93c2VyOiBTZXQgSWRwIHNlc3Npb24gaW4gZVRMRCsxIGFuZCByZWRpcmVjdCBiYWNrIHRvIFNreWdlYXJNaXJvc2VydmljZXNcbiAgQnJvd3Nlci0-PlNreWdlYXJNaXJvc2VydmljZXM6IFNlbmQgYXBpIHJlcXVlc3Qgd2l0aCBJZHAgc2Vzc2lvbiwgZ2F0ZXdheSByZXNvbHZlIElkcCBzZXNzaW9uIiwibWVybWFpZCI6eyJ0aGVtZSI6ImRlZmF1bHQiLCJzZXF1ZW5jZSI6eyJzaG93U2VxdWVuY2VOdW1iZXJzIjp0cnVlfX0sInVwZGF0ZUVkaXRvciI6ZmFsc2V9)
 
@@ -101,7 +80,7 @@ The value must be `openid`.
 #### response_type
 
 - `code`: Using Authorization Code Flow
-- `none`: Use in [Tradition web app or SSR app](#case-3-traditional-web-app--server-side-rendering-app-ssr), Idp session is used when requesting api
+- `none`: Use in [First party web app](#case-2-first-party-web-app-traditional-web-app--server-side-rendering-app--single-page-app), Idp session is used when requesting api
 
 #### client_id
 
@@ -390,24 +369,8 @@ app_config:
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
 - Native app run authentication code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
 
-#### Skygear Microservice case 2: SPA
 
-```yaml
-app_config:
-  clients:
-  - redirect_uris:
-    - "https://client-app-endpoint.com"
-    grant_types:
-    - "authorization_code"
-    response_types:
-    - "code"
-```
-
-- Should include client app endpoint in `redirect_uris` which handle code to access token exchange
-- SPA run authentication code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
-- `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config]().
-
-#### Skygear Microservice case 3: Traditional web app / Server side rendering app (SSR)
+#### Skygear Microservice case 3: First party web app
 
 ```yaml
 app_config:
@@ -420,5 +383,5 @@ app_config:
 ```
 
 - Should include client app endpoint in `redirect_uris`. When Auth Gear set the Idp Session, it will redirect back to client app with empty result. Only authorized uris can be redirected.
-- Traditional web / SSR app use Idp session for authentication, no OIDC grants would be returned. So `grant_types` should be [] and `response_types` should be ["none"].
-- `session_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout`, `access_token_lifetime` will be ignored. Since Idp session will be used, so the session lifetime will be the same as Idp session. See [Idp session config]().
+- First party web app use Idp session for authentication, no OIDC grants would be returned. So `grant_types` should be [] and `response_types` should be ["none"].
+- `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout`, `access_token_lifetime` will be ignored. Since Idp session will be used, so the session lifetime will be the same as Idp session. See [Idp session config]().
