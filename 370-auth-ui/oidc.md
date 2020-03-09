@@ -300,8 +300,6 @@ app_config:
     client_secret: XXX
     refresh_token_lifetime: 86400
     access_token_lifetime: 1800
-    session_idle_timeout_enabled: true
-    session_idle_timeout: 300
     client_name: Mobile App
     redirect_uris:
     - "https://example.com"
@@ -333,8 +331,6 @@ They are
 - `client_secret`: OIDC client secret, used in RP integration.
 - `access_token_lifetime`: OIDC access token lifetime in seconds, default to 1800.
 - `refresh_token_lifetime`: OIDC refresh token lifetime in seconds, default to max(access_token_lifetime, 86400). Must greater than or equal to `access_token_lifetime`.
-- `session_idle_timeout_enabled`: Indicate whether OIDC session idle timeout is enabled, default to `false`.
-- `session_idle_timeout`: The OIDC session idle timeout in seconds, default to min(`access_token_lifetime`, 300). Must less than or equal to `access_token_lifetime`.
 
 ### Configuration in different cases
 
@@ -387,7 +383,7 @@ app_config:
 
 - Should include client app endpoint in `redirect_uris`. When Auth Gear set the Idp Session, it will redirect back to client app with empty result. Only authorized uris can be redirected.
 - First party web app use Idp session for authentication, no OIDC grants would be returned. So `grant_types` should be [] and `response_types` should be ["none"].
-- `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout`, `access_token_lifetime` will be ignored. Since Idp session will be used, so the session lifetime will be the same as Idp session. See [Idp session config]().
+- `refresh_token_lifetime`, `access_token_lifetime` will be ignored. Since Idp session will be used, so the session lifetime will be the same as Idp session. See [Idp session config](./session.md).
 
 ## Future Enhancement
 
@@ -451,5 +447,5 @@ app_config:
 
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
 - SPA run authorization code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
-- `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config](./session.md).
+- `refresh_token_lifetime` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config](./session.md).
 
