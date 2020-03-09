@@ -75,7 +75,10 @@ The following sessions list out the request parameters that Skygear Auth support
 
 #### scope
 
-The value must be `openid`.
+The value cloud be:
+
+- `["openid"]`: First party web app
+- `["openid", "offline_access"]`: Generic OIDC RP or Native app
 
 #### response_type
 
@@ -187,7 +190,7 @@ No difference from the spec.
 
 #### refresh_token
 
-No difference from the spec. Absent in [SPA](#case-2-single-page-web-app-spa) flow.
+No difference from the spec. Exist only if authorized scopes have `offline_access`.
 
 #### scope
 
@@ -243,7 +246,7 @@ No difference from the spec.
 
 ### scopes_supported
 
-The values will be `["openid"]`.
+The values will be `["openid", "offline_access"]`.
 
 #### response_types_supported`
 
