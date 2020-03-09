@@ -230,11 +230,11 @@ No difference from the spec.
 
 #### authorization_endpoint
 
-No difference from the spec.
+The value will be `https://{auth_gear_endpoint}/oauth2/authorize`.
 
 #### token_endpoint
 
-No difference from the spec.
+The value will be `https://{auth_gear_endpoint}/oauth2/token`.
 
 #### userinfo_endpoint
 
@@ -274,7 +274,8 @@ The values will be `["S256"]`
 
 ### revocation_endpoint
 
-No difference from the spec. See [Revocation Request](https://tools.ietf.org/html/rfc7009#section-2.1) for detail.
+The value will be `https://{auth_gear_endpoint}/oauth2/revoke`.
+For revocation request, see [Revocation Request](https://tools.ietf.org/html/rfc7009#section-2.1) for detail.
 
 ## Signing ID token
 
