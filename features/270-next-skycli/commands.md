@@ -415,7 +415,7 @@ DNS records
 
 ### skycli domain update
 
-`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt --disable-redirect --redirect-domain=[REDIRECT_DOMAIN]`
+`skycli domain update [CUSTOM_DOMAIN] --tls-secret=[SECRET_NAME] --use-letsencrypt --disable-redirect --redirect-domain=[REDIRECT_DOMAIN] --assign-to=[ASSIGNMENT]`
 
 Update domain tls certificates and configure redirect, user can only provide either `tls-secret` or `use-letsencrypt`.
 
@@ -425,7 +425,8 @@ Update domain tls certificates and configure redirect, user can only provide eit
 - `--use-letsencrypt` Configure using let's encrypt certs for the given domain.
 - `--disable-redirect` Disable domain redirect.
 - `--redirect-domain` Configure domain redirect, 307 redirect will be performed.
-
+- `--assign-to=[ASSIGNMENT]` Configure the assignment of the domain.
+   Available values are `microservices`, `auth`, and `asset`.
 
 ### skycli domain remove
 
