@@ -284,7 +284,7 @@ The values will be `["public"]`.
 
 #### claims_supported
 
-The values will be `["sub", "iss", "aud", "exp", "iat", "email", "email_verified", "phone_number", "phone_number_verified"]`.
+The values will be `["sub", "iss", "aud", "exp", "iat"]`.
 
 ### code_challenge_methods_supported
 
