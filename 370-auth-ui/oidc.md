@@ -290,6 +290,10 @@ The values will be `["sub", "iss", "aud", "exp", "iat"]`.
 
 The values will be `["plain", "S256"]`
 
+### revocation_endpoint
+
+No difference from the spec. See [Revocation Request](https://tools.ietf.org/html/rfc7009#section-2.1) for detail.
+
 ## Signing ID token
 
 ID token signing key will be generated per app during app creation and store in App Config. For config compatibility, keys is an array, but Auth Gear only supports one key in this stage. Keys length will be checked by JSON schema.
