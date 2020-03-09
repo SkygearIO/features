@@ -192,6 +192,19 @@ x-skygear-session-valid: false
 
 ## Proxying legacy request convention
 
-If the request path starts with `/_auth/` then the request is proxied to Skygear Auth.
+A request is proxied if all of the following hold:
 
-If the request path starts with `/_asset/` then the request is proxied to Asset Gear.
+- The request host is the app host.
+- The request path starts with `/_<gear_prefix>`.
+
+Suppose the request URL is `https://myapp.skygearapp.com/_auth/login`. It is a request to the app domain and the path starts with `/_auth/` so it is eligible for proxying. The rewritten URL is `https://accounts.myapp.skygearapp.com/_auth/login`. `x-forwarded-host` is `myapp.skygearapp.com`.
+
+Suppose the request URL is `https://myapp.com/_auth/login`. It is a request to the app domain and the path starts with `/_auth/` so it is eligible for proxying. The rewritten URL is `https://accounts.myapp.skygearapp.com/_auth/login`. `x-forwarded-host` is `myapp.com`.
+
+Suppose the request URL is `https://accounts.myapp.skygearapp.com/settings`. It is *NOT* a request to the app domain so it is not proxied.
+
+The same logic applies to Asset Gear as well, with `/_auth/` being substituted with `/_asset/`.
+
+---
+
+By proxying the legacy request convention, the cookie is shared seamlessly. This is proxying is intended for backward compatibility for legacy app, which does not use Auth UI.
