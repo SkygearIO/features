@@ -10,16 +10,17 @@ When user is logged in using Auth UI, a new session would be created. A cookie
 would be returned to client browser representing the newly created session.
 
 User can also log in using Auth API. All APIs that authenticate the user (e.g.
-login, signup, SSO login) requires a valid Client ID, and developer can
-configure whether the Auth API returns a session cookie or OIDC tokens to the
-client:
+login, signup, SSO login) requires a valid Client ID (put in API Key header),
+and developer can configure whether the Auth API returns a session cookie or
+OIDC tokens to the client:
 
 - If the client is configured to receive a session cookie:
     1. A new session is created.
     2. A cookie representing the created session is returned to client.
 - If the client is configured to receive OIDC tokens:
     1. If there is no authorization from the user to the OIDC client,
-       a new authorization granting full access would be implicitly created.
+       a new authorization with full access scope
+       (https://skygear.io/auth-api/full-access) would be implicitly created.
     2. A new offline grant is created from the authorization.
        This grant contains the OIDC refresh token.
     3. A new access token is created from the new grant.
@@ -67,12 +68,7 @@ storage.
 - `Secure` flag is set, to ensure HTTPS is used. (can be disabled for
   development purpose).
 - `HttpOnly` flag is set, to ensure the token cannot be read in JS.
-- `SameSite` attribute is set to `Lax` by default. This can be configured by
-  developer:
-    - Setting to `None` is possible, but not recommended since it is not secure
-      and vulnerable to CSRF.
-    - Setting to `Strict` is possible, but not recommended since it may cause
-      misbehavior to due missing session cookie in initial requests.
+- `SameSite` attribute is set to `Lax`.
 - `Domain` attribute is not set by default. This can be configured by developer:
     - If not set, the session cookie is only accessible by the auth domain.
       Sharing session across services is not possible. For example,
@@ -94,9 +90,10 @@ session:
     lifetime: 86400
     idle_timeout_enabled: true
     idle_timeout: 300
-    cookie_same_site: None
     cookie_domain: example.com
     cookie_non_persistent: false
+auth:
+    enable_api: true
 clients:
     - auth_api_use_cookie: false
 ```
@@ -108,14 +105,14 @@ clients:
                                 default to false.
     - **idle_timeout**: The session idle timeout period in seconds,
                         default to 300 (5 minutes).
-    - **cookie_same_site**: The `SameSite` attribute of cookie,
-                            default to `Lax`, and other possible values are
-                            `None` and `Strict`.
     - **cookie_domain**: The `Domain` attribute of cookie, optional.
     - **cookie_non_persistent**: Whether the session cookie would not persist
                                  across browser sessions (i.e. HTTP
                                  session cookie), default to false.
+- **auth**: Auth Configurations
+    - **enable_api**: Allow Auth API to be used, default to false.
 - **clients**: Configuration of OIDC clients. Details are in other specs.
+    - **client_id**: OIDC client ID. Also act as API Key.
     - **auth_api_use_cookie**: Whether the Auth API would set session cookie,
                                instead of returning OIDC access/refresh tokens,
                                default to false.
