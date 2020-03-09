@@ -353,7 +353,7 @@ app_config:
 ```
 
 - Should include app backend endpoint in `redirect_uris` which handle code to access token exchange
-- Generic OIDC RP run authentication code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
+- Generic OIDC RP run authorization code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
 
 #### Skygear Microservice case 1: Native app
 
@@ -370,7 +370,7 @@ app_config:
 ```
 
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
-- Native app run authentication code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
+- Native app run authorization code flow, and token endpoint will return refresh token. So `grant_types` should be [`authorization_code`, `refresh_token`] and `response_types` should be [`code`].
 
 
 #### Skygear Microservice case 3: First party web app
@@ -450,6 +450,6 @@ app_config:
 ```
 
 - Should include client app endpoint in `redirect_uris` which handle code to access token exchange
-- SPA run authentication code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
+- SPA run authorization code flow and use Idp session for access token renew, refresh token should not be issued in this case. So `grant_types` should be [`authorization_code`] and `response_types` should be [`code`].
 - `refresh_token_lifetime`, `session_idle_timeout_enabled`, `session_idle_timeout` will be ignored in this case. Since Idp session will be used for renewing access token, so the session lifetime will be the same as the Idp session. See [Idp session config](./session.md).
 
