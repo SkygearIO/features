@@ -85,13 +85,13 @@ storage.
   development purpose).
 - `HttpOnly` flag is set, to ensure the token cannot be read in JS.
 - `SameSite` attribute is set to `Lax`.
-- `Domain` attribute is not set by default. This can be configured by developer:
-    - If not set, the session cookie is only accessible by the auth domain.
-      Sharing session across services is not possible. For example,
-      `accounts.example.com` cannot share session with `forum.example.com`.
-    - To share sessions across services, this attribute should be set to a
-      common suffix of the service domains. For the previous example, a
-      suitable suffix would be `example.com`.
+- `Domain` attribute set eTLD+1 of default domain by default. This can be
+  configured by developer:
+    - By default, session would be shared across services under same eTLD+1
+      domains. For example, `accounts.example.com` shares session with `forum.example.com` when domain attribute is `example.com`.
+    - If custom domain is used, developer should set a correct value here.
+    - If this behavior is not desiable, set to empty explicitly (i.e. attribute
+      is absent from the cookie).
 - Developer can configured whether the cookie is a HTTP session cookie:
     - If it is configured as a HTTP session cookie, the cookie would be deleted
       from client side when browser session ends.
