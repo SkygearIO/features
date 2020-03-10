@@ -4,6 +4,7 @@
 * [System Overview](#system-overview)
 * [Concepts](#concepts)
 * [Architecture](#architecture)
+* [Major changes](#major-changes)
 
 ## Introduction
 
@@ -108,3 +109,23 @@ Therefore, we will have following architecture for these requirements:
     - last access updates
 - Gateway would resolve **IdP Session** cookies and **AccessGrant** tokens
   into authentication data, and pass them to backend services as headers.
+
+## Major changes
+- Session transport (i.e. token/cookies) is no longer directly configuable.
+  We encourage developers to use shared session cookie with Authorization
+  Server whenever possible.
+- API Key is no longer required for API endpoints. Instead, authentication API
+  endpoints require client ID. For backward compatibility, client ID is read
+  from API Key header.
+- It is expected that Authorization Server should share same eTLD+1 with
+  first-party apps to enable SSO session sharing.
+    - For example:
+        - `accounts.my-app.com`: Authorization Server
+        - `forum.my-app.com`: Support Forum
+        - `my-app.com`: Main App
+      
+      Once user is logged in Authorization Server, the session is also usable
+      in Support Forum and Main App.
+    - Default domain is configured correctly. For custom domains, developer
+      should assign a suitable domain to Authorization Server and set domain
+      cookie attribute correctly.
