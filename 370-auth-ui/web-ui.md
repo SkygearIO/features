@@ -162,10 +162,6 @@ An introduction of workflow may be required to support some of the above use cas
 
 ## Security considerations
 
-### The session cookie is SameSite=Lax by default
-
-To make cookie visible in third-party context, the developer must set it to None.
-
 ### Derived frame-ancestors from redirect_uris
 
 Skygear Auth derives frame-ancestors by looking at the redirect_uris of all registered clients. If the redirect_uri is `https`, then the domain is added to frame-ancestors. If the redirect_uri is `http` and the domain is loopback address or the domain ends with `localhost`, then the domain is also added to frame-ancestors.
