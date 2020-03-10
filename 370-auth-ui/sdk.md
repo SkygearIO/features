@@ -188,7 +188,7 @@ function SettingsScreen() {
     // Application-specific settings
   }, []);
   const onPressSecuritySettings = useCallback(() => {
-    skygear.auth.openURL("https://accounts.myapp.com").catch(e => {
+    skygear.auth.openURL("https://accounts.myapp.com/settings").catch(e => {
       // The error here should be unrecoverable.
     });
   }, []);
