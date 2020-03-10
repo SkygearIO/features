@@ -155,9 +155,8 @@ import {Button, View} from "react-native";
 function AuthenticationScreen({ navigate } : { navigate: (screenName: string) => void }) {
   const onPress = useCallback(() => {
     try {
-      const user = await skygear.auth.authorizeWithWeb({
+      const user = await skygear.auth.authorize({
         redirectURI: "myappid://anyhost/anypath",
-        endpoint: "https://accounts.myapp.com",
       });
       // If the application requires verification, check if the user is verified.
       if (!user.isVerified) {
@@ -242,7 +241,7 @@ import skygear from "@skygear/web";
 
 function AuthenticationScreen() {
   const onClick = useCallback(() => {
-    await skygear.auth.authorizeWithWeb({
+    await skygear.auth.authorize({
       redirectURI: "https://www.myapp.com/continue",
       state: "mystate",
     });
