@@ -136,7 +136,7 @@ interface OAuthError {
 }
 
 // The promise rejects with an JavaScript Error that looks like a OAuthError.
-function authorize(options: AuthorizeOptions): Promise<User>;
+function authorize(options: AuthorizeOptions): Promise<{ user: User; state?: string }>;
 
 // Open the URL with the user agent that is used to perform authentication.
 // On iOS it is SFAuthenticationSession or ASWebAuthenticationSession
