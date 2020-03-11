@@ -46,25 +46,33 @@ CSS properties:
 
 The developer can also provide their own templates via [the existing template mechanism](../251-templates/index.md).
 
-## The authorization endpoint
+## redirect_uri
 
-The authorization endpoint `/oauth2/authorize` is the entry point of OIDC. The user can sign up, sign in, perform multi-factor authentication, reset forgotten password and authorize access.
+### redirect_uri without client_id
 
-## The root endpoint
+`redirect_uri` is resolved against the current URL. Redirection is only performed if the origin of the resolved URL remains the same. Otherwise `redirect_uri` is treated as `/settings`.
 
-The root endpoint `/` is unrelated to OIDC.
-
-It supports `redirect_uri`. `redirect_uri` is resolved against the current URL. Redirection is only performed if the origin of the resolved URL remains the same. Otherwise `redirect_uri` is treated as `/settings`.
-
-### Example of invalid redirect_uri
+#### Example of invalid redirect_uri
 
 `https://accounts.myapp.com/?redirect_uri=https%3A%2F%2Fwww.google.com` is invalid and is treated as `redirect_uri=/settings`.
 
-### Example of valid redirect_uri
+#### Example of valid redirect_uri
 
 `https://accounts.myapp.com/?redirect_uri=https%3A%2F%2Faccounts.myapp.com%2Fverify` is valid because the origin is the same.
 
-If the request is authenticated, redirection is performed immediately. Otherwise the user is prompted to authenticate.
+### redirect_uri with client_id
+
+`redirect_uri` must match one of the `redirect_uris` in Client Metadata.
+
+## The authorization endpoint
+
+[The authorization endpoint](./oidc.md#authorization_endpoint) authenticates the user and obtain user consent. It uses the flow of [the root endpoint](#the-root-endpoint) to authenticate the user. After the authentication flow, it obtains user consent.
+
+## The root endpoint
+
+At the root endpoint `/`, the user can sign up, sign in, perform multi-factor authentication, reset forgotten password.
+
+This endpoint supports [redirect_uri without client_id](#redirect-uri-without-client-id) and redirects immediately if the request is authenticated.
 
 ### The sign in page
 
@@ -144,7 +152,11 @@ The settings endpoint `/settings` allows the user to manage their account. Featu
 
 ### The verification endpoint
 
-The verification endpoint `/verify` allows the user to verify their login ID. This page requires authenticated user. Unauthenticated access is redirected to the root endpoint with `redirect_uri=/verify`. Verification is not a strict requirement. For example, if auto send verification email is enabled, the email is sent behind the scene and the user is redirected to the application immediately after performing the Authorization Code Flow successfully.
+The verification endpoint `/verify` lets the user to verify their login ID. Unauthenticated access is redirected to the root endpoint with current URL being `redirect_uri`, for example, `redirect_uri=https://accounts.myapp.com/verify?redirect_uri=com.myapp.ios://host/path`.
+
+Verification is not a strict requirement. For example, if auto send verification email is enabled, the email is sent behind the scene and the user is redirected to the application immediately after performing the Authorization Code Flow successfully.
+
+This endpoint supports [redirect_uri with client_id](#redirect-uri-with-client-id) and redirects immediately if the user is considered verified.
 
 ## Future improvements
 
