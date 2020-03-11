@@ -91,7 +91,7 @@ x-skygear-session-identity-id: 87dfaacf-a872-444a-948a-1497c6bb2a03
 
 What kind of identity the user authenticated as.
 
-The value is `password`, `oauth` or `custom_token`.
+The value is `password` or `oauth`.
 
 Example
 
