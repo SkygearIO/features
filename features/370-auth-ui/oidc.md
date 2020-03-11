@@ -238,11 +238,11 @@ The value will be `https://{auth_gear_endpoint}/oauth2/token`.
 
 #### userinfo_endpoint
 
-No difference from the spec.
+The value will be `https://{auth_gear_endpoint}/oauth2/userinfo`.
 
 #### jwks_uri
 
-No difference from the spec.
+The value will be `https://{auth_gear_endpoint}/oauth2/jwks`.
 
 ### scopes_supported
 
