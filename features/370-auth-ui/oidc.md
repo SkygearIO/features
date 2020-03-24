@@ -77,8 +77,8 @@ The following sessions list out the request parameters that Skygear Auth support
 
 The value cloud be:
 
-- `["openid"]`: First party web app
-- `["openid", "offline_access"]`: Generic OIDC RP or Native app
+- `["openid", "https://skygear.io/auth-api/full-access"]`: First party web app
+- `["openid", "offline_access", "https://skygear.io/auth-api/full-access"]`: Generic OIDC RP or Native app
 
 #### response_type
 
@@ -246,7 +246,7 @@ The value will be `https://{auth_gear_endpoint}/oauth2/jwks`.
 
 ### scopes_supported
 
-The values will be `["openid", "offline_access"]`.
+The values will be `["openid", "offline_access", "https://skygear.io/auth-api/full-access"]`.
 
 #### response_types_supported`
 
@@ -266,7 +266,9 @@ The values will be `["public"]`.
 
 #### claims_supported
 
-The values will be `["sub", "iss", "aud", "exp", "iat"]`.
+The values will be `["sub", "iss", "aud", "exp", "iat", "skygear_user", "skygear_identity", "skygear_session_id"]`.
+
+- `skygear_user`, `skygear_identity`, `skygear_session_id` will be provided, if authorization has `https://skygear.io/auth-api/full-access` scope.
 
 ### code_challenge_methods_supported
 
