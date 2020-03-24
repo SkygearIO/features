@@ -123,7 +123,6 @@ Depending on platform, the flow is a little bit different.
 interface AuthorizeOptions {
   redirectURI: string;
   state?: string;
-  onUserDuplicate?: "abort" | "merge" | "create";
 }
 
 // Modeled after https://tools.ietf.org/html/rfc6749#section-5.2
@@ -209,7 +208,6 @@ function SettingsScreen() {
 interface AuthorizeOptions {
   redirectURI: string;
   state?: string;
-  onUserDuplicate?: "abort" | "merge" | "create";
 }
 
 // Modeled after https://tools.ietf.org/html/rfc6749#section-5.2
@@ -221,14 +219,17 @@ interface OAuthError {
   error_uri?: string;
 }
 
-// The promise resolves to nothing. It is because after calling this function,
-// the URL is changed. The app is destoryed so the return value is not usable at all.
-function authorize(options: AuthorizeOptions): Promise<void>;
+// startAuthorization resolves to nothing. It is because after calling this function,
+// the URL is changed. The app is destroyed so the return value is not usable at all.
+function startAuthorization(options: AuthorizeOptions): Promise<void>;
 
-// exchangeToken looks at window.location
+// if client app is third party app (configured SDK container with isThirdPartyApp is true)
+// finishAuthorization looks at window.location
 // It checks if error is present and rejects with OAuthError.
 // Otherwise assume code is present, make a token request.
-function exchangeToken(): Promise<{ user: User; state?: string }>;
+// if client app is first party app, session cookie will be used for authorization
+// finishAuthorization will call userinfo endpoint directly to retrieve current user.
+function finishAuthorization(): Promise<{ user: User; state?: string }>;
 ```
 
 #### Example
