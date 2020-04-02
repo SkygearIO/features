@@ -44,6 +44,12 @@ All templates have default value so template resolution always succeed.
 
 The templates are first resolved by matching the type and the key. And then select the best language according to the user preferred languages.
 
+## Component templates
+
+Some template may depend on other templates which are included during rendering. This enables customizing a particular component of a template.
+
+For example, `auth_ui_login.html` depend on `auth_ui_header.html` and `auth_ui_footer.html` to provide the header and footer. If the developer just wants to customize the header, they do not need to provide customized templates for ALL pages. They just need to provide `auth_ui_header.html`.
+
 ## The `templates` directory next to `skygear.yaml`
 
 The developer organizes their templates in the `templates` directory next to `skygear.yaml`.
