@@ -50,6 +50,45 @@ Some template may depend on other templates which are included during rendering.
 
 For example, `auth_ui_login.html` depend on `auth_ui_header.html` and `auth_ui_footer.html` to provide the header and footer. If the developer just wants to customize the header, they do not need to provide customized templates for ALL pages. They just need to provide `auth_ui_header.html`.
 
+## Localization of the text of the template
+
+In addition to the template language tag, sometimes it is preferred to localize the text of the template rather the whole template.
+
+For example, `auth_ui_login.html` defines the HTML structure and is used for all languages. What the developer wants to localize is the text.
+
+A special function named `localize` can be used to format a localized string.
+
+```html
+<input type="password" placeholder="{{ localize "enter.password" }}">
+<!-- <input type="password placeholder="Enter Password">
+```
+
+```html
+<p>{{ localize "email.sent" .email .name }}</p>
+<!-- <p>Hi John, an email has been sent to john.doe@example.com</p -->
+```
+
+`localized` takes a translation key, followed any arguments required by that translation key. If the key is not found, the key itself is returned.
+
+The translation file itself is a template so it is loaded as template as usual. For example:
+
+```
+templates/auth_ui_translation.json
+templates/zh-Hant/auth_ui_translation.json
+templates/zh-Hans/auth_ui_translation.json
+templates/ja/auth_ui_translation.json
+```
+
+The translation file is simply a flat JSON object with string keys and string values. The value is in ICU MessageFormat. Not all ICU MessageFormat arguments are supported. The supported are `select`, `plural` and `selectordinal`.
+
+Here is an example of the translation file.
+
+```json
+{
+  "email.sent": "Hi {1}, an email has been sent to {0}"
+}
+```
+
 ## The `templates` directory next to `skygear.yaml`
 
 The developer organizes their templates in the `templates` directory next to `skygear.yaml`.
