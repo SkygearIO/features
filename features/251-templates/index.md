@@ -60,7 +60,7 @@ A special function named `localize` can be used to format a localized string.
 
 ```html
 <input type="password" placeholder="{{ localize "enter.password" }}">
-<!-- <input type="password placeholder="Enter Password">
+<!-- <input type="password placeholder="Enter Password"> -->
 ```
 
 ```html
