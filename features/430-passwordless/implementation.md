@@ -30,8 +30,8 @@ Authentication sessions would have four kind of steps:
 - Setup secondary authentication: `mfa:setup`
     - User must setup one secondary authenticator to proceed.
 
-For Auth API, client will always recieve authentication session after
-`identity:authn` step. i.e. `mfa:authn` or `mfa:setup`.
+For Auth API, if client recieved authentication session, it will always be
+one of the steps after `identity:authn` step. i.e. `mfa:authn` or `mfa:setup`.
 
 ## API models
 
