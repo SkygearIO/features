@@ -56,6 +56,8 @@ In addition to the template language tag, sometimes it is preferred to localize 
 
 For example, `auth_ui_login.html` defines the HTML structure and is used for all languages. What the developer wants to localize is the text.
 
+### localize
+
 A special function named `localize` can be used to format a localized string.
 
 ```html
@@ -68,9 +70,11 @@ A special function named `localize` can be used to format a localized string.
 <!-- <p>Hi John, an email has been sent to john.doe@example.com</p -->
 ```
 
-`localized` takes a translation key, followed any arguments required by that translation key. If the key is not found, the key itself is returned.
+`localize` takes a translation key, followed any arguments required by that translation key. If the key is not found, the key itself is returned.
 
-The translation file itself is a template so it is loaded as template as usual. For example:
+### Translation file
+
+The translation file is a template itself. For example:
 
 ```
 templates/auth_ui_translation.json
@@ -88,6 +92,31 @@ Here is an example of the translation file.
   "email.sent": "Hi {1}, an email has been sent to {0}"
 }
 ```
+
+#### Translation Resolution
+
+Translation resolution is different from template resolution. Template resolution is file-based while translation resolution is key-based.
+
+For example,
+
+```json
+// templates/zh/auth_ui_translation.json
+{
+  "enter.password": "輸入密碼",
+  "enter.email": "輸入電郵地址"
+}
+```
+
+```json
+// templates/zh-Hant-HK/auth_ui_translation.json
+{
+  "enter.password": "入你嘅密碼"
+}
+```
+
+And the user preferred languages is `["zh-Hant-HK"]`.
+
+`"enter.password"` resolves to `"入你嘅密碼"` and `"enter.email"` resolves to `"輸入電郵地址"`.
 
 ## The `templates` directory next to `skygear.yaml`
 
