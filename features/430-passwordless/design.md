@@ -55,16 +55,17 @@ proposed:
              `{kind: azureadv2, tenant: my-app}`, etc.) and external subject ID
              (e.g. `D71441BA-3628-412C-A1B3-95DFFFFB0120`).
     - WebAuthn: consists of user key ID, for resident key (TBD).
+    - Anonymous: consists of key ID and public key.
 - There are types of Authenticator:
     - Password: can be primary authenticator.
     - OAuth: can be primary authenticator.
         - Created implicitly for each OAuth identity.
         - Applicable to OAuth identity only.
     - WebAuthn: can be primary/secondary authenticator.
-    - Time-based OTP: can be primary/secondary authenticator.
-    - Out-of-band OTP: can be primary/secondary authenticator.
-        - If primary authenticator: expect `email` or `phone` claim of,
-          identity matches.
+    - Anonymous: can be primary authenticator.
+    - One-time password: can be primary/secondary authenticator.
+        - For out-of-band OTP: must match `email` or `phone` claim of
+          identity if used as primary authenticator.
     - Device token: can be secondary authenticator
         - Used as MFA bearer token.
         - Generated after secondary authentication, if user requested,
@@ -75,10 +76,11 @@ proposed:
         - Generated when the first secondary authenticator is setup for the
           user, according to configuration.
 - Some authenticators require activation when setting up:
-    - Time-based OTP: TOTP parameters are generated and given to client,
+    - OTP:
+        - Time-based: TOTP parameters are generated and given to client,
                       and a valid TOTP must be entered to activate it.
-    - OOB OTP: A OTP is sent to the OOB channel, and the received OTP must be
-               entered to activate it.
+        - Out-of-band: A OTP is sent to the OOB channel, and the received
+                       OTP must be entered to activate it.
     - WebAuthn: TBD.
 - Developer can configure multiple authenticators:
     - At least one primary authenticators must be configured, and secondary
@@ -211,17 +213,21 @@ To model this use case securely, we reference the WebAuthn model.
     - Signing up:
         1. App generates key-pair, and put it in platform secure key store.
         2. App request challenge from server.
-        2. App generates Attestion object using the challenge and key-pair, and
-           include it in authorization request as `login_hint`.
+        2. App creates Attestation object using the challenge and key-pair,
+           and include it in authorization request as `login_hint`.
         3. Server decode and verify `login_hint`, and register new anonymous
            user using the public key.
     - Logging in:
         1. App retrieve key-pair from platform secure key store.
         2. App request challenge from server.
-        2. App generates Assertion object using the challenge and key-pair, and
+        2. App creates Assertion object using the challenge and key-pair, and
            include it in authorization request as `login_hint`.
         3. Server decode and verify `login_hint`, and authenticate existing
            anonymous user using the public key.
+
+Attestation and Assertion object are included as base64-encoded CBOR in
+`login_hint` query parameter. Practical testing show that typical object
+is < 1KB encoded, so there is no problem to include it in query parameter.
 
 Two entities are introduced in the identity model:
 - Anonymous identity: consist of a key ID and public key
@@ -270,6 +276,8 @@ parameter. For examples:
   `login_id:email` or `login_id:email:<email address>`.
 - To authenticate with Google OAuth, `login_hint` should be `oauth:google` or
   `oauth:google:<subject ID>`.
+- To authenticate anonymous user, `login_hint` should be `anonymous` or
+  `anonymous:<assertion object>`.
 
 If user is already logged in and the provided hint is not valid for the
 current user, it will be ignored.

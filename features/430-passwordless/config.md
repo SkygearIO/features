@@ -4,7 +4,8 @@ Configurations are refactored to better match the current identity model:
 
 ## Change Summary
 - Email sender & reply-to become a global option, applying to all email
-  messages.
+  messages. Each features have individual config to override global default
+  settings.
 - Email subjects can be localized like OIDC client metadata.
 - Identity conflict policy is grouped together as a configuration group.
 - MFA config are generalized to authenticator configs.
@@ -44,6 +45,8 @@ authenticator:
         email:
             maximum: 1
             subject: Email one-time password
+            sender: 'no-reply@example.com'
+            reply_to: 'no-reply@example.com'
     bearer_token: {} # ...
     recovery_code: {} # ...
 
@@ -63,7 +66,7 @@ the authentication flow in Auth UI.
                 List of usable identity types.
 - `primary_authenticators`: string list, must be non-empty.
                             List of primary authenticator types.
-- `secondary_authenticators`: string list, can be non-empty.
+- `secondary_authenticators`: string list, can be empty.
                               List of secondary authenticator types.
 
 Identity and authenticator types must be included in one of the lists to be
