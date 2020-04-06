@@ -5,6 +5,8 @@ Developers may want to enable user to login without using a password.
 - User may login using credentials other than password, for example:
     - One-time-password
     - WebAuthn (TBC)
+    - Biometric authentication protected key (TBC)
+- User may login anonymously, without explicit credentials.
 - For OTP passwordless authentication, user may receive OTP through:
     - Email
     - SMS
@@ -18,6 +20,8 @@ Developers may want to enable user to login without using a password.
 3. User login with email and authenticated using password, and use
    WebAuthn for multi-factor authentication (e.g. GitHub)
 4. User login with SSO, and use OTP for multi-factor authentication.
+5. User login with key-pair protected by biometric-authentication.
+6. User login anonymously, using implicit credentials.
 
 # Design
 
@@ -56,15 +60,18 @@ proposed:
     - OAuth: can be primary authenticator.
         - Created implicitly for each OAuth identity.
         - Applicable to OAuth identity only.
+    - WebAuthn: can be primary/secondary authenticator.
     - Time-based OTP: can be primary/secondary authenticator.
     - Out-of-band OTP: can be primary/secondary authenticator.
-    - WebAuthn: can be primary/secondary authenticator.
+        - If primary authenticator: expect `email` or `phone` claim of,
+          identity matches.
     - Device token: can be secondary authenticator
         - Used as MFA bearer token.
         - Generated after secondary authentication, if user requested,
           according to configuration.
     - Recovery Code: can be secondary authenticator
         - Used for recovery for secondary authentication (i.e. MFA).
+        - Always enabled.
         - Generated when the first secondary authenticator is setup for the
           user, according to configuration.
 - Some authenticators require activation when setting up:
@@ -77,6 +84,8 @@ proposed:
     - At least one primary authenticators must be configured, and secondary
       authenticator is optional.
     - Authenticator types can be configured as either primary or secondary.
+    - Authenticators has priorities, which determine the default authenticator
+      in the UI.
     - During authentication, one of the configured primary authenticators is
       needed, and one of the configured secondary authenticators is needed.
     - For examples:
@@ -98,10 +107,10 @@ proposed:
 - Developer can require authenticators to be set up.
     - A primary authenticator must be set up in the sign-up process.
     - Secondary authenticator is set up after authentication.
-        - If secondary authentication is configured as required,
+        - If secondary authentication is configured as 'required',
           and no secondary authenticator is set up, user must setup secondary
           authenticators before a session is created.
-        - If secondary authentication is configured as optional,
+        - If secondary authentication is configured as 'optional'/'off',
           user can setup secondary authenticators in Auth UI settings page.
 
 ## Authentication session
@@ -116,13 +125,18 @@ model, there will be extra steps in the authentication session:
 2. Perform Primary Authentication
     - If multiple primary authenticators is applicable for the selected
       identity, user is prompted to select one.
+    - The first configured primary authenticator is default.
 3. Perform Secondary Authentication (if configured)
     - If multiple secondary authenticators is set up for the user, user is
       prompted to select one.
+    - The first configured secondary authenticator is default.
+    - If secondary authentication is 'required', or 'optional' and user has
+      secondary authenticator, user is required to perform secondary
+      authentication.
     - If no secondary authenticators is configured:
-        - If secondary authentication is required, user is prompted to
+        - If secondary authentication is 'required', user is prompted to
           setup a secondary authenticator.
-        - If secondary authentication is optional, this step is skipped.
+        - If secondary authentication is 'optional'/'off', this step is skipped.
 
 For examples:
 - Simple password login:
@@ -169,18 +183,96 @@ For examples:
         - Omitted for brevity.
     4. Done.
 
-## OIDC claims
+## Anonymous user
+
+Anonymous users are users without explicit credentials. User can create a user
+using `Continue as Guest` option in UI, without entering any credentials,
+such as email/password.
+
+To model this use case securely, we reference the WebAuthn model.
+- Web platform:
+    - We do not have access to secure key store on web platform, so
+      cookie is used instead.
+    - Signing up:
+        1. User select `Continue as Guest`
+        2. Server check a key cookie: not found.
+        3. Server generate key-pair: put private key in key cookie, and public
+           key in new anonymous identity and authenticator.
+        4. Create new user, associated with the new identity and authenticator.
+        5. Authenticate as the new user.
+    - Logging in:
+        1. User select `Continue as Guest`
+        2. Server check a key cookie: found.
+        3. Select and authenticate the user using the private key in key
+           cookie.
+        4. Authenticate as the user.
+- Native platform:
+    - App should store the key-pair securely.
+    - Signing up:
+        1. App generates key-pair, and put it in platform secure key store.
+        2. App request challenge from server.
+        2. App generates Attestion object using the challenge and key-pair, and
+           include it in authorization request as `login_hint`.
+        3. Server decode and verify `login_hint`, and register new anonymous
+           user using the public key.
+    - Logging in:
+        1. App retrieve key-pair from platform secure key store.
+        2. App request challenge from server.
+        2. App generates Assertion object using the challenge and key-pair, and
+           include it in authorization request as `login_hint`.
+        3. Server decode and verify `login_hint`, and authenticate existing
+           anonymous user using the public key.
+
+Two entities are introduced in the identity model:
+- Anonymous identity: consist of a key ID and public key
+- Anonymous authenticator: consist of a key ID and public key
+    - This is not designed as generic 'key-pair authenticator', since it has
+      different security properties from normal key-pair authentication: the
+      generation of key-pair is done on server-side, and private key may be
+      stored insecurely.
+
+For native platforms:
+- SDK should have ability to generate key-pairs
+- To enable browser-less anonymous authentication, a simple fetch with
+  follow-redirect should be able to complete authentication flow. SDK can
+  extract the authorization code from the response URL.
+
+## OIDC
+
+### `amr` claim
 
 To indicate authenticator used in authentication, `amr` claim is used in OIDC
 ID token.
 
 `amr` claim is an array of string. It includes authentication method used:
+- If secondary authentication is performed: `mfa` is included.
 - If password authenticator is used: `pwd` is included.
 - If any OTP (TOTP/OOB-OTP) is used: `otp` is included.
 - If WebAuthn is used: `hwk` is included.
 
 If no authentication method is to be included in `amr` claim, `amr` claim would
 be omitted from the ID token.
+
+### `acr` claim
+
+If any secondary authenticator is performed, `acr` claim would be included in
+ID token with value `http://schemas.openid.net/pape/policies/2007/06/multi-factor`.
+
+To perform step-up authentication, developer can pass a `acr_values` of 
+`http://schemas.openid.net/pape/policies/2007/06/multi-factor` to the
+authorize endpoint.
+
+### `login_hint` parameter
+
+Developer can optionally pre-select the identity to use using `login_hint`
+parameter. For examples:
+- To authenticate with email, `login_hint` should be
+  `login_id:email` or `login_id:email:<email address>`.
+- To authenticate with Google OAuth, `login_hint` should be `oauth:google` or
+  `oauth:google:<subject ID>`.
+
+If user is already logged in and the provided hint is not valid for the
+current user, it will be ignored.
 
 ## Feature compatibility
 
