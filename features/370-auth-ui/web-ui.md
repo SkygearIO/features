@@ -176,6 +176,11 @@ auth_ui:
     .primary-btn {
       background-color: purple;
     }
+  country_calling_code:
+    values: ["1", "852"]
+    default: "852"
 ```
 
 - `css`: A snippet of CSS to be included in all pages. See [Customizing the theme with CSS](customizing-the-theme-with-css)
+- `country_calling_code.values`: Specify the country calling code list that the user can select from. If unspecified, a full list is used by default. The list must be non-empty.
+- `country_calling_code.default`: Specify the default selected country calling code. It is a configuration error if the value is not a member of the actual list. In the future, the default value may not be used at all because a sensible default value will be derived from the client IP address.
