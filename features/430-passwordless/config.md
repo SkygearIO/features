@@ -64,10 +64,14 @@ the authentication flow in Auth UI.
 
 - `identities`: string list, must be non-empty.
                 List of usable identity types.
+                Default to `[oauth, login_id]`.
 - `primary_authenticators`: string list, must be non-empty.
                             List of primary authenticator types.
+                            Order in list represents priority in UI.
+                            Default to `[oauth, password]`.
 - `secondary_authenticators`: string list, can be empty.
                               List of secondary authenticator types.
+                              Default to `[totp, oob, bearer_token]`.
 
 Identity and authenticator types must be included in one of the lists to be
 enabled. There must be no duplicated authenticators across primary and
