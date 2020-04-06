@@ -271,16 +271,35 @@ authorize endpoint.
 ### `login_hint` parameter
 
 Developer can optionally pre-select the identity to use using `login_hint`
-parameter. For examples:
-- To authenticate with email, `login_hint` should be
-  `login_id:email` or `login_id:email:<email address>`.
-- To authenticate with Google OAuth, `login_hint` should be `oauth:google` or
-  `oauth:google:<subject ID>`.
-- To authenticate anonymous user, `login_hint` should be `anonymous` or
-  `anonymous:<assertion object>`.
+parameter. `login_hint` should be a URL of form
+`https://auth.skygear.io/login_hint?<query params>`.
 
-If user is already logged in and the provided hint is not valid for the
-current user, it will be ignored.
+The following are recognized query parameters:
+- `type`: Identity type
+- `user_id`: User ID
+- `email`: Email claim of the user
+- `oauth_provider`: OAuth provider ID
+- `oauth_sub`: Subject ID of OAuth provider
+- `attestation`: Base-64 encoded CBOR of attestation object
+- `assertion`:  Base-64 encoded CBOR of assertion object
+
+For examples:
+- To login with email `user@example.com`:
+    `https://auth.skygear.io/login_hint?type=login_id&email=user%40example.com`
+- To login with Google OAuth provider:
+    `https://auth.skygear.io/login_hint?oauth_provider=google`
+- To signup as anonymous user:
+    `https://auth.skygear.io/login_hint?type=anonymous&attestation=...`
+- To login as anonymous user:
+    `https://auth.skygear.io/login_hint?type=anonymous&assertion=...`
+
+Auth UI will try to select appropiate identities according to the provided
+parameters. If exactly one identity is selected, Auth UI would proceed using
+the selected identity. Otherwise, `login_hint` is ignored.
+
+Unknown parameters are ignored, and invalid parameters are rejected.
+However, if user is already logged in and the provided hint is not valid for
+the current user, it will be ignored instead.
 
 ## Feature compatibility
 
