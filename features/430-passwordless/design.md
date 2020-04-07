@@ -112,7 +112,7 @@ proposed:
         - If secondary authentication is configured as 'required',
           and no secondary authenticator is set up, user must setup secondary
           authenticators before a session is created.
-        - If secondary authentication is configured as 'optional'/'off',
+        - If secondary authentication is configured as 'if-requested'/'if-exists',
           user can setup secondary authenticators in Auth UI settings page.
 
 ## Authentication session
@@ -132,13 +132,13 @@ model, there will be extra steps in the authentication session:
     - If multiple secondary authenticators is set up for the user, user is
       prompted to select one.
     - The first configured secondary authenticator is default.
-    - If secondary authentication is 'required', or 'optional' and user has
+    - If secondary authentication is 'required', or 'if-exists' and user has
       secondary authenticator, user is required to perform secondary
       authentication.
     - If no secondary authenticators is configured:
         - If secondary authentication is 'required', user is prompted to
           setup a secondary authenticator.
-        - If secondary authentication is 'optional'/'off', this step is skipped.
+        - If secondary authentication is 'if-exists'/'if-requested', this step is skipped.
 
 For examples:
 - Simple password login:
