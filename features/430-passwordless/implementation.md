@@ -38,6 +38,9 @@ one of the steps after `identity:authn` step. i.e. `mfa:authn` or `mfa:setup`.
 Previously, we have two types of identities: `password` and `oauth`. Under the
 new design, `password` type should be renamed to `login_id`.
 
+Also, identity ID is removed from identity model, so that identity information
+represent a snapshot of the identity at the time of authentication.
+
 ## Session Headers
 
 The authenticator headers would be removed and replaced with the following
@@ -45,7 +48,8 @@ headers:
 - `X-Skygear-Session-Acr`: `acr` claim, URI value.
 - `X-Skygear-Session-Amr`: `amr` claim, space separated values.
 
-Also, `X-Skygear-Session-Identity-Updated-At` header would be removed.
+Also, `X-Skygear-Session-Identity-Id` and `X-Skygear-Session-Identity-Updated-At`
+headers would be removed.
 
 ## Authentication Session
 OAuth API should pass parameters to Auth UI through query parameters. e.g.
