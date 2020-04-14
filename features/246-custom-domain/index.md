@@ -8,6 +8,7 @@ Allow developer to setup custom domain for their application, basically followin
 - Let's Encrypt certificate will be provided by default, certificate will be renew automatically.
 - Developer can configure to use custom SSL certificates for their domain. They will need to update the certificates before it expires in this case.
 - Support configure custom domain to serve the app or redirect to another domain.
+- Support configure custom domain to be assigned to microservice or gears.
 
 ## Use Cases
 
@@ -79,6 +80,22 @@ Allow developer to setup custom domain for their application, basically followin
 - If the provided DNS records other than `TXT` is not present during verification, a warning would be issued to remind developer of potential misconfiguration. If this is intentional, e.g. using CDN DNS records, the warning can be safely ignored.
 - If the provided `A` record is not present, the custom domain would not be accessible directly. Instead, developer should configure reverse proxy (e.g. CDN) to direct traffic from custom domain to app default domain. The gateway would verify the forwarded host (i.e. custom domain) is valid.
 - Let's Encrypt HTTP certificate would be issued only if the provided `A` record is present.
+
+## Domain Assignment
+
+Custom domain can be assigned to microservices or gears. By default, custom
+domains are assigned to microservices. Developers can change assignment by
+updating custom domain using `skycli`.
+
+For example, suppose developer would like to have 2 custom domains:
+- `my-app.com`: serve main app (i.e. microservice)
+- `accounts.my-app.com`: serve auth service (i.e. auth gear)
+
+Developer can add `my-app.com` and `accounts.my-app.com` as usual, then use
+skycli to assign `accounts.my-app.com` to auth gear:
+```
+skycli domain update accounts.my-app.com --assign-to=auth
+```
 
 ## Scenario
 
