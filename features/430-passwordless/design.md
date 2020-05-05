@@ -185,64 +185,6 @@ For examples:
         - Omitted for brevity.
     4. Done.
 
-## Anonymous user
-
-Anonymous users are users without explicit credentials. User can create a user
-using `Continue as Guest` option in UI, without entering any credentials,
-such as email/password.
-
-To model this use case securely, we reference the WebAuthn model.
-- Web platform:
-    - We do not have access to secure key store on web platform, so
-      cookie is used instead.
-    - Signing up:
-        1. User select `Continue as Guest`
-        2. Server check a key cookie: not found.
-        3. Server generate key-pair: put private key in key cookie, and public
-           key in new anonymous identity and authenticator.
-        4. Create new user, associated with the new identity and authenticator.
-        5. Authenticate as the new user.
-    - Logging in:
-        1. User select `Continue as Guest`
-        2. Server check a key cookie: found.
-        3. Select and authenticate the user using the private key in key
-           cookie.
-        4. Authenticate as the user.
-- Native platform:
-    - App should store the key-pair securely.
-    - Signing up:
-        1. App generates key-pair, and put it in platform secure key store.
-        2. App request challenge from server.
-        2. App creates Attestation object using the challenge and key-pair,
-           and include it in authorization request as `login_hint`.
-        3. Server decode and verify `login_hint`, and register new anonymous
-           user using the public key.
-    - Logging in:
-        1. App retrieve key-pair from platform secure key store.
-        2. App request challenge from server.
-        2. App creates Assertion object using the challenge and key-pair, and
-           include it in authorization request as `login_hint`.
-        3. Server decode and verify `login_hint`, and authenticate existing
-           anonymous user using the public key.
-
-Attestation and Assertion object are included as base64-encoded CBOR in
-`login_hint` query parameter. Practical testing show that typical object
-is < 1KB encoded, so there is no problem to include it in query parameter.
-
-Two entities are introduced in the identity model:
-- Anonymous identity: consist of a key ID and public key
-- Anonymous authenticator: consist of a key ID and public key
-    - This is not designed as generic 'key-pair authenticator', since it has
-      different security properties from normal key-pair authentication: the
-      generation of key-pair is done on server-side, and private key may be
-      stored insecurely.
-
-For native platforms:
-- SDK should have ability to generate key-pairs
-- To enable browser-less anonymous authentication, a simple fetch with
-  follow-redirect should be able to complete authentication flow. SDK can
-  extract the authorization code from the response URL.
-
 ## OIDC
 
 ### `amr` claim
@@ -280,18 +222,15 @@ The following are recognized query parameters:
 - `email`: Email claim of the user
 - `oauth_provider`: OAuth provider ID
 - `oauth_sub`: Subject ID of OAuth provider
-- `attestation`: Base-64 encoded CBOR of attestation object
-- `assertion`:  Base-64 encoded CBOR of assertion object
+- `jwt`: JWT object
 
 For examples:
 - To login with email `user@example.com`:
     `https://auth.skygear.io/login_hint?type=login_id&email=user%40example.com`
 - To login with Google OAuth provider:
     `https://auth.skygear.io/login_hint?oauth_provider=google`
-- To signup as anonymous user:
-    `https://auth.skygear.io/login_hint?type=anonymous&attestation=...`
-- To login as anonymous user:
-    `https://auth.skygear.io/login_hint?type=anonymous&assertion=...`
+- To signup/login as anonymous user:
+    `https://auth.skygear.io/login_hint?type=anonymous&jwt=...`
 
 Auth UI will try to select appropiate identities according to the provided
 parameters. If exactly one identity is selected, Auth UI would proceed using
