@@ -40,6 +40,8 @@ Anonymous identity has fields:
 To signup as anonymous user:
 - Client SDK generates an asymmetric key-pair with a random unique key ID
   (e.g. UUID) and store it securely.
+- Client SDK requests a challenge from server, which can be used once and has
+  limited validity period.
 - Client SDK self-signs a JWT using the key-pair, for example:
     ```
     eyJhbGciOiJSUzI1NiIsInR5cCI6InZuZC5za3lnZWFyLmF1dGguYW5vbnltb3VzLXJlcXVlc3QiLCJqd2siOnsia3R5IjoiUlNBIiwiZSI6IkFRQUIiLCJ1c2UiOiJzaWciLCJraWQiOiIwOEQ3RDU3Ni04NUZELTQzNjUtODZBNC1EQkFEMDQ2OTBCNTkiLCJhbGciOiJSUzI1NiIsIm4iOiJzZUxpZWVKaFM5Rk1rWGhBeWhVVmZCWG4tTkpaZi1aNWdTcWV6UzNHYWZmbUlSampkQUgzdmRCM245WUNqZmk0V1NXMXViRVNIQ1JqTnNTZTNpejRqUSJ9fQ.eyJpYXQiOjE1ODg3NTQ0MjEsImV4cCI6MTU4ODg1NDcyMSwiYWN0aW9uIjoiYXV0aCJ9.FT_SXGKxoErqU2SN8cRMbU9As7bd2TSlJVt_OZxDeBx4nIqAWPAjQtT_sjMCxzxA1hCd9lVIqZHvbbpQ0VHU1Q
