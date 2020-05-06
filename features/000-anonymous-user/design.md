@@ -58,32 +58,19 @@ To authenticate as anonymous user:
 
 ### Browser-less flow
 
-Since anonymous user signup & authentication does not requires user
-interaction, some applications may want to avoid flashing a browser for
+Since anonymous user signup & authentication does not require user
+interaction, native applications may want to avoid flashing a browser for
 authentication purpose.
 
-To acheive this, application may specifies a special endpoint as the redirect
-URI in authorization request, which would intercept the authorization code to
-perform post-authentication actions.
+To acheive this, OAuth token endpoint would support a custom grant type
+`urn:skygear-auth:params:oauth:grant-type:anonymous` using the self-signed
+JWT as value. This endpoint would perform anonymous user signup/login as
+specified, and return OAuth tokens directly.
 
-For example:
-1. Client fetches `https://accounts.skygear.test/oauth2/authorize?xxx&redirect_uri=https%3A%2F%2Fapp.test%2Fauth_callback&login_hint=xxx`
-2. Server redirects to `https://app.test/auth_callback?code=xxx`
-3. Auth callback endpoint exchanges the code, creates session in cookie, and
-   writes a indicator response.
-4. Client recieves the indicator response from the fetch in step 1, and
-   know that user has been authenticated.
-
-For convenience, such an endpoint would be provided and integrated with client
-SDK. For example:
-1. Suppose client SDK knows key ID is `E01D13A3-2A80-4B3D-8184-DD190D5D80FE`
-2. Client SDK fetches `https://accounts.skygear.test/oauth2/authorize?xxx&redirect_uri=https%3A%2F%2Faccounts.skygear.test%2Futils%2Fauth-callback%2FE01D13A3-2A80-4B3D-8184-DD190D5D80FE&login_hint=xxx`
-3. Server redirects to `https://accounts.skygear.test/utils/auth-callback/E01D13A3-2A80-4B3D-8184-DD190D5D80FE`
-4. Auth callback endpoints would load the public using the key ID, encrypt the
-   authorization code using the key, and write the encrypted JWE in the
-   response.
-5. Client SDK received the encrypted JWE from the fetch in step 2, decrypts
-   using the private key, and continue OAuth flow using the authorization code.
+Example token request URL:
+```
+https://accounts.skygear.test/oauth2/token?client_id=xxx&grant_type=urn%3Askygear-auth%3Aparams%3Aoauth%3Agrant-type%3Aanonymous&scope=openid%20offline_access&jwt=eyJhbGciOiJSUzI1NiIsInR5cxxxx
+```
 
 ### Promotion
 
