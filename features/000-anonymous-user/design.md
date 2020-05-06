@@ -19,22 +19,40 @@ Anonymous identity has fields:
 
 ### Authentication
 
+> Note: following examples are using the same JWK:
+> ```json
+> {
+>     "p": "1nhvE3YSzjw8x-xZjYRCSRMjEPIbeBzg9F9ESK7jlwc",
+>     "kty": "RSA",
+>     "q": "1FTtgLRv5cXPQ1CAjVx3aXP6Fdci1Keq59xEkAHWmss",
+>     "d": "sGjh0qAHf2n8NhN8pSvNl7Ydy6vHqEiHXOpIfBAWQgU4Bq2sL6YvJOoB1xQcSLpEamukXZ5kSJ9x1XsM6Qt3PQ",
+>     "e": "AQAB",
+>     "use": "sig",
+>     "kid": "08D7D576-85FD-4365-86A4-DBAD04690B59",
+>     "qi": "LtPJ5n5A9ekQvKyr9C88elRI75LNxSXbdr0P29cG0H8",
+>     "dp": "Wxp3nJ24aVDfRNGaTOoUujPd3nHpx0EFMelR-UoJNXs",
+>     "alg": "RS256",
+>     "dq": "lkMf7MREp_vLyJxwzRlR3EvaAJjGKm4ZkYoc7ziN0e8",
+>     "n": "seLieeJhS9FMkXhAyhUVfBXn-NJZf-Z5gSqezS3GaffmIRjjdAH3vdB3n9YCjfi4WSW1ubESHCRjNsSe3iz4jQ"
+> }
+> ```
+
 To signup as anonymous user:
-- Client SDK generates an asymmetric key-pair and store it securely.
+- Client SDK generates an asymmetric key-pair with a random unique key ID
+  (e.g. UUID) and store it securely.
 - Client SDK self-signs a JWT using the key-pair, for example:
     ```
-    eyJhbGciOiJSUzI1NiIsInR5cCI6InZuZC5za3lnZWFyLmF1dGguYW5vbnltb3VzLXRva2VuIiwiaWF0IjoxNTg4NjY1MDUzLCJleHAiOjE1ODg2NjUzNTMsImp3ayI6eyJrdHkiOiJSU0EiLCJraWQiOiIzMTUyREM5MC0wM0UzLTRCODYtQTIyNi1BNjFCOUIwNEYyMTIiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImFsZyI6IlJTMjU2IiwibiI6Im5pWXp0c0NzT2UyV1BQSmZwWE15NTJqYWhwYzRqZlR2YkU2SnQ3UFd5aTdMUUFqUDd6cnB1MGxHYjNycE01eUNmb21aY2ZwQ2ZJV0dNOHB2QS10OUpRIn19.eyJhY3Rpb24iOiJzaWdudXAifQ.e1K-SDPi0Exd49z3j7Lm9EhORZogLm2LOP0N8RfWff9k3xa1QNetmZppOT3OvjYKsPMYxyJ_XC1GJm68ZjgRDw
+    eyJhbGciOiJSUzI1NiIsInR5cCI6InZuZC5za3lnZWFyLmF1dGguYW5vbnltb3VzLXJlcXVlc3QiLCJqd2siOnsia3R5IjoiUlNBIiwiZSI6IkFRQUIiLCJ1c2UiOiJzaWciLCJraWQiOiIwOEQ3RDU3Ni04NUZELTQzNjUtODZBNC1EQkFEMDQ2OTBCNTkiLCJhbGciOiJSUzI1NiIsIm4iOiJzZUxpZWVKaFM5Rk1rWGhBeWhVVmZCWG4tTkpaZi1aNWdTcWV6UzNHYWZmbUlSampkQUgzdmRCM245WUNqZmk0V1NXMXViRVNIQ1JqTnNTZTNpejRqUSJ9fQ.eyJpYXQiOjE1ODg3NTQ0MjEsImV4cCI6MTU4ODg1NDcyMSwiYWN0aW9uIjoiYXV0aCJ9.FT_SXGKxoErqU2SN8cRMbU9As7bd2TSlJVt_OZxDeBx4nIqAWPAjQtT_sjMCxzxA1hCd9lVIqZHvbbpQ0VHU1Q
     ```
 - Client SDK creates an authorization request using the JWT, for example:
     ```
     https://accounts.skygear.test/oauth2/authorize?xxx&redirect_uri=app://on_authorized&login_hint=https%3A%2F%2Fauth.skygear.io%2Flogin_hint%3Ftype%3Danonymous%26jwt%3DeyJhbGciOiJSUzI1Nxxx
     ```
 - Client SDK redirects users to the authorization endpoint.
-- Server validates the self-signed JWT in login hint parameter, and validate
-  the action in JWT payload (signup).
-- Server creates a new user with anonymous identity, using the specified
-  public key.
-- Server rediercts to the redirect URI with an authorization code.
+- Server validates the JWT, and the action in payload (auth).
+- Since no anonymous identity with specified key ID exists, server creates a
+  new user with anonymous identity, using the specified public key.
+- Server redirects to the redirect URI with an authorization code.
 
 To authenticate as anonymous user:
 - Client SDK retrieves the key-pair from local secure storage.
@@ -42,19 +60,18 @@ To authenticate as anonymous user:
   limited validity period.
 - Client SDK self-signs a JWT with the challenge, for example:
     ```
-    eyJhbGciOiJSUzI1NiIsInR5cCI6InZuZC5za3lnZWFyLmF1dGguYW5vbnltb3VzLXRva2VuIiwiaWF0IjoxNTg4NjY1MDUzLCJleHAiOjE1ODg2NjUzNTMsImtpZCI6IjMxNTJEQzkwLTAzRTMtNEI4Ni1BMjI2LUE2MUI5QjA0RjIxMiJ9.eyJjaGFsbGVuZ2UiOiJiRlpPNGxPY0kvRHpuS2xPUU1zNXkrbnl6dCs3R1B1dyIsImFjdGlvbiI6ImxvZ2luIn0.gJfOJ6IPy-LeDEDqnYWjwfmdCUb_q2URY_E3QAP2D4e4qC_bBsq5PQbk39Wlih4eY6EOM6k-1TQ4G8T8CYZt0Q
+    eyJhbGciOiJSUzI1NiIsInR5cCI6InZuZC5za3lnZWFyLmF1dGguYW5vbnltb3VzLXJlcXVlc3QiLCJraWQiOiIwOEQ3RDU3Ni04NUZELTQzNjUtODZBNC1EQkFEMDQ2OTBCNTkifQ.eyJpYXQiOjE1ODg3NTQ0MjEsImV4cCI6MTU4ODg1NDcyMSwiY2hhbGxlbmdlIjoiRlg3SDZTNlM1VzY1VlpGRVE4VEhDM1dRREZOUUpRWEgiLCJhY3Rpb24iOiJhdXRoIn0.cgMwTDdZGYDVxD4cyKvos7tXqn-Fio-8M95qxjf5Bc-sK3uA6q_ZnCRLtPAoQJ3Ax0zZK4sBZ_ihXssw1J80lw
     ```
 - Client SDK creates an authorization request using the JWT, for example:
     ```
     https://accounts.skygear.test/oauth2/authorize?xxx&redirect_uri=app://on_authorized&login_hint=https%3A%2F%2Fauth.skygear.io%2Flogin_hint%3Ftype%3Danonymous%26jwt%3DeyJhbGciOiJSUzI1Nxxx
     ```
 - Client SDK redirects users to the authorization endpoint.
-- Server validates the challenge.
-- Server lookup identity using the provided key ID.
-- Server validates the self-signed JWT in login hint parameter, and validate
-  the action in JWT payload (login).
-- Server has authenticated anonymous user.
-- Server rediercts to the redirect URI with an authorization code.
+- Server lookup identity using the provided key ID, and discover an existing
+  anonymous identity.
+- Server validates the challenge for logging in.
+- Server validates the JWT, and the action in payload (auth).
+- Server redirects to the redirect URI with an authorization code.
 
 ### Browser-less flow
 
@@ -63,9 +80,9 @@ interaction, native applications may want to avoid flashing a browser for
 authentication purpose.
 
 To acheive this, OAuth token endpoint would support a custom grant type
-`urn:skygear-auth:params:oauth:grant-type:anonymous` using the self-signed
-JWT as value. This endpoint would perform anonymous user signup/login as
-specified, and return OAuth tokens directly.
+`urn:skygear-auth:params:oauth:grant-type:anonymous-request` using the
+self-signed JWT as value. This endpoint would perform anonymous user
+signup/login as specified, and return OAuth tokens directly.
 
 Example token request URL:
 ```
@@ -88,6 +105,12 @@ For example:
 4. After promotion, server performs the actions described above, and redirect
    user to redirect URI with authorization code.
 5. Client SDK continues the OAuth flow and uses the new session.
+
+### Restrictions
+
+Anonymous users have restrictions on actions they can perform:
+- Cannot setup secondary authenticators (i.e. MFA)
+- Cannot have other identities (only single anonymous identity is allowed)
 
 ### Settings Page
 
