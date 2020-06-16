@@ -2,57 +2,121 @@
 
 ## Overview
 
-Skygear has many features to send message where message is either email or SMS.
-Some features like Forgot Password allows the developer to customize the HTML page.
+Skygear has some features that require loading a template, such as sending email, sending SMS and rendering HTML.
 This document introduces a new way to organize templates with localization support.
-
 
 ## Template
 
-The template is represented by the following struct
-
-```golang
-type TemplateConfiguration struct {
-  Type        string
-  LanguageTag string
-  Key         string
-  // The following fields are not user-facing.
-  // URI         string
-  // ContentMD5  string
-}
-```
+Each template must have a type, optionally a key and a language tag.
 
 ### Template Type
 
-Each template must have a type. The type identifies how the template is used by Skygear.
+Each template must have a type. The list of types are predefined. Here are some examples
 
-The following listing is the initially defined types.
+```
+forgot_password_email.html
+forgot_password_email.txt
 
-```golang
-type TemplateConfigurationType string
-const (
-  TemplateConfigurationTypeForgotPasswordEmailTXT             TemplateConfigurationType = "forgot_password_email.txt"
-  TemplateConfigurationTypeForgotPasswordEmailHTML            TemplateConfigurationType = "forgot_password_email.html"
-  TemplateConfigurationTypeForgotPasswordResetHTML            TemplateConfigurationType = "forgot_password_reset.html"            // Keep URL option
-  TemplateConfigurationTypeForgotPasswordSuccessHTML          TemplateConfigurationType = "forgot_password_success.html"          // Keep URL option
-  TemplateConfigurationTypeForgotPasswordErrorHTML            TemplateConfigurationType = "forgot_password_error.html"            // Keep URL option
-  TemplateConfigurationTypeWelcomeEmailTXT                    TemplateConfigurationType = "welcome_email.txt"
-  TemplateConfigurationTypeWelcomeEmailHTML                   TemplateConfigurationType = "welcome_email.html"
-  TemplateConfigurationTypeUserVerificationGeneralErrorHTML   TemplateConfigurationType = "user_verification_general_error.html"  // Keep URL option
-  TemplateConfigurationTypeUserVerificationMessageTXT         TemplateConfigurationType = "user_verification_message.txt"
-  TemplateConfigurationTypeUserVerificationMessageHTML        TemplateConfigurationType = "user_verification_message.html"
-  TemplateConfigurationTypeUserVerificationSuccessHTML        TemplateConfigurationType = "user_verification_success.html"        // Keep URL option
-  TemplateConfigurationTypeUserVerificationErrorHTML          TemplateConfigurationType = "user_verification_error.html"          // Keep URL option
-)
+user_verification_message.html
+user_verification_message.txt
+```
+
+### Template Key
+
+Some template may require a key. The key is used differentiate different instances of the same type of the template. For example, there is a template type `VerificationMessage`. Login ID key `email` and Login ID key `phone` usually should be different templates, as the former is an email message while the latter is SMS message.
+
+```
+templates/email/user_verification_message.html   # This is an HTML email template
+templates/email/user_verification_message.txt    # This is an plaintext email template
+
+templates/phone/user_verification_message.txt    # this is an SMS message template
 ```
 
 ### Template Language Tag
 
-Each template may optionally have a language tag. In the future, we may support sending localized message. The language tag is specified in [BCP47](https://tools.ietf.org/html/bcp47).
+Each template may optionally have a language tag. The language tag is specified in [BCP47](https://tools.ietf.org/html/bcp47).
 
-### Template Key
+## Template resolution
 
-If the developer has configured `email` and `secondary_email` as login IDs. User Verification supports verifying both with different templates. Therefore, `key` is required to differentiate different instances of the same type of the template.
+To resolve a template, the input is the template type, optionally the template key and finally the user preferred languages. The type and key is determined by the feature while the user preferred languages is provided by the user.
+
+All templates have default value so template resolution always succeed.
+
+The templates are first resolved by matching the type and the key. And then select the best language according to the user preferred languages.
+
+## Component templates
+
+Some template may depend on other templates which are included during rendering. This enables customizing a particular component of a template. The dependency is expressed by a whitelist that is hard-coded by the Skygear developer. It can be assumed there is no dependency cycle.
+
+For example, `auth_ui_login.html` depend on `auth_ui_header.html` and `auth_ui_footer.html` to provide the header and footer. If the developer just wants to customize the header, they do not need to provide customized templates for ALL pages. They just need to provide `auth_ui_header.html`.
+
+## Localization of the text of the template
+
+In addition to the template language tag, sometimes it is preferred to localize the text of the template rather the whole template.
+
+For example, `auth_ui_login.html` defines the HTML structure and is used for all languages. What the developer wants to localize is the text.
+
+### localize
+
+A special function named `localize` can be used to format a localized string.
+
+```html
+<input type="password" placeholder="{{ localize "enter.password" }}">
+<!-- <input type="password placeholder="Enter Password"> -->
+```
+
+```html
+<p>{{ localize "email.sent" .email .name }}</p>
+<!-- <p>Hi John, an email has been sent to john.doe@example.com</p -->
+```
+
+`localize` takes a translation key, followed any arguments required by that translation key. If the key is not found, the key itself is returned.
+
+### Translation file
+
+The translation file is a template itself. For example:
+
+```
+templates/auth_ui_translation.json
+templates/zh-Hant/auth_ui_translation.json
+templates/zh-Hans/auth_ui_translation.json
+templates/ja/auth_ui_translation.json
+```
+
+The translation file is simply a flat JSON object with string keys and string values. The value is in ICU MessageFormat. Not all ICU MessageFormat arguments are supported. The supported are `select`, `plural` and `selectordinal`.
+
+Here is an example of the translation file.
+
+```json
+{
+  "email.sent": "Hi {1}, an email has been sent to {0}"
+}
+```
+
+#### Translation Resolution
+
+Translation resolution is different from template resolution. Template resolution is file-based while translation resolution is key-based.
+
+For example,
+
+```json
+// templates/zh/auth_ui_translation.json
+{
+  "enter.password": "輸入密碼",
+  "enter.email": "輸入電郵地址"
+}
+```
+
+```json
+// templates/zh-Hant-HK/auth_ui_translation.json
+{
+  "enter.password": "入你嘅密碼"
+}
+```
+
+And the user preferred languages is `["zh-Hant-HK"]`.
+
+`"enter.password"` resolves to `"入你嘅密碼"` and `"enter.email"` resolves to `"輸入電郵地址"`.
 
 ## The `templates` directory next to `skygear.yaml`
 
@@ -122,10 +186,6 @@ Given the above hierarchy, the developer provides:
 - Plain text and HTML Welcome email in Traditional Chinese
 - Plain text and HTML Welcome email in Simplified Chinese
 - Plain text and HTML Welcome email in Japanese
-
-## Language Tag Matching
-
-The matching is done by the package `"golang.org/x/text/language"`.
 
 ## Integration with skycli
 
